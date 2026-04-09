@@ -3,6 +3,72 @@ from enum import Enum
 from itertools import groupby
 
 
+class Book(Enum):
+    MATTHEW = "Matthew"
+    MARK = "Mark"
+    LUKE = "Luke"
+    JOHN = "John"
+    ACTS = "Acts"
+    ROMANS = "Romans"
+    FIRST_CORINTHIANS = "1 Corinthians"
+    SECOND_CORINTHIANS = "2 Corinthians"
+    GALATIANS = "Galatians"
+    EPHESIANS = "Ephesians"
+    PHILIPPIANS = "Philippians"
+    COLOSSIANS = "Colossians"
+    FIRST_THESSALONIANS = "1 Thessalonians"
+    SECOND_THESSALONIANS = "2 Thessalonians"
+    FIRST_TIMOTHY = "1 Timothy"
+    SECOND_TIMOTHY = "2 Timothy"
+    TITUS = "Titus"
+    PHILEMON = "Philemon"
+    HEBREWS = "Hebrews"
+    JAMES = "James"
+    FIRST_PETER = "1 Peter"
+    SECOND_PETER = "2 Peter"
+    FIRST_JOHN = "1 John"
+    SECOND_JOHN = "2 John"
+    THIRD_JOHN = "3 John"
+    JUDE = "Jude"
+    REVELATION = "Revelation"
+
+    @classmethod
+    def from_index(cls, index: int) -> "Book":
+        _books = {
+            1: Book.MATTHEW,
+            2: Book.MARK,
+            3: Book.LUKE,
+            4: Book.JOHN,
+            5: Book.ACTS,
+            6: Book.ROMANS,
+            7: Book.FIRST_CORINTHIANS,
+            8: Book.SECOND_CORINTHIANS,
+            9: Book.GALATIANS,
+            10: Book.EPHESIANS,
+            11: Book.PHILIPPIANS,
+            12: Book.COLOSSIANS,
+            13: Book.FIRST_THESSALONIANS,
+            14: Book.SECOND_THESSALONIANS,
+            15: Book.FIRST_TIMOTHY,
+            16: Book.SECOND_TIMOTHY,
+            17: Book.TITUS,
+            18: Book.PHILEMON,
+            19: Book.HEBREWS,
+            20: Book.JAMES,
+            21: Book.FIRST_PETER,
+            22: Book.SECOND_PETER,
+            23: Book.FIRST_JOHN,
+            24: Book.SECOND_JOHN,
+            25: Book.THIRD_JOHN,
+            26: Book.JUDE,
+            27: Book.REVELATION,
+        }
+        if index not in _books:
+            raise ValueError(f"Invalid book index: {index}")
+
+        return _books[index]
+
+
 class PartOfSpeech(Enum):
     ADJECTIVE = "adjective"
     CONJUNCTION = "conjunction"
@@ -200,7 +266,7 @@ class Degree(Enum):
 class Word:
     """A single word with morphology"""
 
-    book: str
+    book: Book
     chapter: int
     verse: int
     index: int
@@ -237,7 +303,7 @@ class Word:
         person, tense, voice, mood, case, number, gender, degree = split_parsing_code
 
         return cls(
-            book=ref[:2],
+            book=Book.from_index(int(ref[:2])),
             chapter=int(ref[2:4]),
             verse=int(ref[4:]),
             index=word_in_verse,
