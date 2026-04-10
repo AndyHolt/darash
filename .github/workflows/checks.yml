@@ -16,5 +16,12 @@ jobs:
         with:
           tool: prek
 
+      - name: Set up uv for dev tool access
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install ingest Python dev dependencies
+        working-directory: ingest
+        run: uv sync --dev
+
       - name: Run checks
         run: prek . --all-files --skip no-commit-to-branch
