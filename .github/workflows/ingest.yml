@@ -1,0 +1,35 @@
+name: Ingest
+
+on:
+  push:
+    paths:
+      - "ingest/**"
+
+jobs:
+  ingest:
+    name: Ingest checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install prek
+        uses: taiki-e/install-action@v2
+        with:
+          tool: prek
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        working-directory: ingest
+        run: uv sync --dev
+
+      - name: General checks
+        run: prek . --all-files --skip no-commit-to-branch
+
+      - name: Ingest checks (ruff lint, ruff format, ty)
+        run: prek ingest --all-files
+
+      - name: Run tests
+        run: make ingest_tests
