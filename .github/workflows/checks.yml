@@ -16,6 +16,11 @@ jobs:
         with:
           tool: prek
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
       - name: Set up uv for dev tool access
         uses: astral-sh/setup-uv@v5
 
