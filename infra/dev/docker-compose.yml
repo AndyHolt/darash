@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:18.3
+    environment:
+      POSTGRES_USER: darash
+      POSTGRES_PASSWORD: darash
+      POSTGRES_DB: darash
+    ports:
+      - "5432:5432"
+    volumes:
+      # Mount at /var/lib/postgresql (not /var/lib/postgresql/data) — the
+      # postgres:18+ image stores data in version-specific subdirectories
+      # under this root so pg_upgrade --link can work across major versions.
+      - darash_pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U darash -d darash"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  darash_pgdata:
