@@ -1,0 +1,7 @@
+# Override any of the defaults in variables.tf here.
+# Copy this file to terraform.tfvars (gitignored) and edit as needed.
+#
+# region      = "eu-west-1"
+# project     = "darash"
+# db_name     = "darash"
+# db_username = "darash"
