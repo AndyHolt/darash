@@ -17,3 +17,8 @@ output "db_master_user_secret_arn" {
   description = "ARN of the Secrets Manager secret holding the RDS master user credentials."
   value       = module.postgres.master_user_secret_arn
 }
+
+output "db_security_group_id" {
+  description = "Security group ID attached to the RDS instance."
+  value       = module.aws_interface.vpc_security_group_ids[0]
+}

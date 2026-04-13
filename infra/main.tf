@@ -23,4 +23,8 @@ module "postgres" {
   # Off while the project is still in early-dev apply/destroy cycles. Flip
   # back to true (or just drop this override) once there's data worth keeping.
   deletion_protection = false
+
+  # Allows the instance to be reached from outside the VPC (e.g. GitHub Actions
+  # ingest workflow). The security group still controls which IPs can connect.
+  publicly_accessible = true
 }

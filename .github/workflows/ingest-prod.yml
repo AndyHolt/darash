@@ -1,0 +1,76 @@
+name: Ingest (prod)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-1
+  DB_PORT: 5432
+  DB_NAME: darash
+
+jobs:
+  ingest:
+    name: Ingest MorphGNT into prod DB
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get runner public IP
+        id: ip
+        run: echo "ip=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
+      - name: Add temporary security group ingress rule
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id "${{ secrets.DB_SECURITY_GROUP_ID }}" \
+            --protocol tcp \
+            --port ${{ env.DB_PORT }} \
+            --cidr "${{ steps.ip.outputs.ip }}/32"
+
+      - name: Retrieve DB credentials from Secrets Manager
+        id: creds
+        run: |
+          secret_json=$(aws secretsmanager get-secret-value \
+            --secret-id "${{ secrets.DB_SECRET_ARN }}" \
+            --query SecretString --output text)
+          echo "username=$(echo "$secret_json" | jq -r .username)" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$(echo "$secret_json" | jq -r .password)"
+          echo "password=$(echo "$secret_json" | jq -r .password)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@c7f03d6b5e9fbc0394437efadf7a4f70ff60034a
+        # v6.0.0
+
+      - name: Install dependencies
+        working-directory: ingest
+        run: uv sync
+
+      - name: Run ingest
+        working-directory: ingest
+        env:
+          PGHOST: ${{ secrets.DB_HOST }}
+          PGPORT: ${{ env.DB_PORT }}
+          PGUSER: ${{ steps.creds.outputs.username }}
+          PGPASSWORD: ${{ steps.creds.outputs.password }}
+          PGDATABASE: ${{ env.DB_NAME }}
+        run: PYTHONPATH=src uv run python main.py
+
+      - name: Revoke temporary security group ingress rule
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id "${{ secrets.DB_SECURITY_GROUP_ID }}" \
+            --protocol tcp \
+            --port ${{ env.DB_PORT }} \
+            --cidr "${{ steps.ip.outputs.ip }}/32"

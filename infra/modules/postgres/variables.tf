@@ -59,6 +59,12 @@ variable "skip_final_snapshot" {
   default     = true
 }
 
+variable "publicly_accessible" {
+  description = "Whether the instance has a public IP and is reachable from outside the VPC. Access is still controlled by the security group."
+  type        = bool
+  default     = false
+}
+
 variable "apply_immediately" {
   description = "Whether modifications are applied immediately or in the next maintenance window."
   type        = bool

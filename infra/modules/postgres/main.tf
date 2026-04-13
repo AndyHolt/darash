@@ -15,7 +15,7 @@ resource "aws_db_instance" "this" {
 
   db_subnet_group_name   = var.db_subnet_group_name
   vpc_security_group_ids = var.vpc_security_group_ids
-  publicly_accessible    = false
+  publicly_accessible    = var.publicly_accessible
 
   backup_retention_period      = var.backup_retention_period
   deletion_protection          = var.deletion_protection
