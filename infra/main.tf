@@ -23,4 +23,46 @@ module "postgres" {
   # Off while the project is still in early-dev apply/destroy cycles. Flip
   # back to true (or just drop this override) once there's data worth keeping.
   deletion_protection = false
+
+  # Allows the instance to be reached from outside the VPC (e.g. GitHub Actions
+  # ingest workflow). The security group still controls which IPs can connect.
+  publicly_accessible = true
+}
+
+module "ingest_role" {
+  source = "./modules/github-actions-role"
+
+  role_name              = "${var.project}-ingest-prod"
+  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
+
+  policy_json = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::darash-terraform-state",
+          "arn:aws:s3:::darash-terraform-state/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:DescribeSecurityGroups"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["secretsmanager:GetSecretValue"]
+        Resource = "*"
+      }
+    ]
+  })
 }

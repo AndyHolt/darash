@@ -134,3 +134,19 @@ role:
 ```bash
 gh secret set AWS_ROLE_ARN --body "arn:aws:iam::<ACCOUNT_ID>:role/darash-terraform-ci"
 ```
+
+### Ingest role
+
+The IAM user and permissions for running the ingest workflow are configured in
+Terraform. But there's a partial bootstrapping issue when running the workflow
+itself as the role ARN is needed to access Terraform state from AWS. So to get
+the role ARN Terraform output, we need to already have it.
+
+The solution to this would be to have the "terraform apply" workflow add the role
+ARN to Github secrets when provisioning. But this requires significant
+additional permissions for the "terraform apply" workflow. So for now, we can do
+this manually after the user is created, and before running the workflow:
+
+```bash
+cd infra && terraform output -raw ingest_role_arn | gh secret set AWS_INGEST_ROLE_ARN
+```

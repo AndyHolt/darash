@@ -13,7 +13,22 @@ output "db_port" {
   value       = module.postgres.port
 }
 
+output "db_name" {
+  description = "Name of the Postgres database."
+  value       = module.postgres.db_name
+}
+
 output "db_master_user_secret_arn" {
   description = "ARN of the Secrets Manager secret holding the RDS master user credentials."
   value       = module.postgres.master_user_secret_arn
+}
+
+output "db_security_group_id" {
+  description = "Security group ID attached to the RDS instance."
+  value       = module.aws_interface.vpc_security_group_ids[0]
+}
+
+output "ingest_role_arn" {
+  description = "IAM role ARN for the ingest-prod GitHub Actions workflow."
+  value       = module.ingest_role.role_arn
 }
