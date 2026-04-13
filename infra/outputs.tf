@@ -13,6 +13,11 @@ output "db_port" {
   value       = module.postgres.port
 }
 
+output "db_name" {
+  description = "Name of the Postgres database."
+  value       = module.postgres.db_name
+}
+
 output "db_master_user_secret_arn" {
   description = "ARN of the Secrets Manager secret holding the RDS master user credentials."
   value       = module.postgres.master_user_secret_arn
