@@ -52,9 +52,7 @@ aws iam create-policy \
         "Effect": "Allow",
         "Action": [
           "rds:*",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups",
+          "ec2:Describe*",
           "ec2:CreateSecurityGroup",
           "ec2:DeleteSecurityGroup",
           "ec2:AuthorizeSecurityGroupIngress",
@@ -68,8 +66,12 @@ aws iam create-policy \
           "ec2:DeleteSecurityGroupEgressRule",
           "ec2:CreateSecurityGroupIngressRule",
           "ec2:DeleteSecurityGroupIngressRule",
+          "secretsmanager:CreateSecret",
+          "secretsmanager:TagResource",
           "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
+          "secretsmanager:DescribeSecret",
+          "kms:CreateGrant",
+          "kms:DescribeKey"
         ],
         "Resource": "*"
       },
