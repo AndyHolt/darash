@@ -27,3 +27,8 @@ output "db_security_group_id" {
   description = "Security group ID attached to the RDS instance."
   value       = module.aws_interface.vpc_security_group_ids[0]
 }
+
+output "ingest_role_arn" {
+  description = "IAM role ARN for the ingest-prod GitHub Actions workflow."
+  value       = module.ingest_role.role_arn
+}
