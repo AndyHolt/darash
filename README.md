@@ -87,6 +87,31 @@ aws iam create-policy \
           "arn:aws:s3:::darash-terraform-state",
           "arn:aws:s3:::darash-terraform-state/*"
         ]
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+        "iam:ListOpenIDConnectProviders",
+        "iam:GetOpenIDConnectProvider"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "iam:CreateRole",
+          "iam:GetRole",
+          "iam:DeleteRole",
+          "iam:UpdateAssumeRolePolicy",
+          "iam:TagRole",
+          "iam:UntagRole",
+          "iam:PutRolePolicy",
+          "iam:GetRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies"
+        ],
+        "Resource": "arn:aws:iam::<ACCOUNT_ID>:role/darash-*"
       }
     ]
   }'
