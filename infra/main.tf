@@ -29,13 +29,10 @@ module "postgres" {
   publicly_accessible = true
 }
 
-module "ingest_role" {
-  source = "./modules/github-actions-role"
-
-  role_name              = "${var.project}-ingest-prod"
-  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
-
-  policy_json = jsonencode({
+# Shared policy for workflows that need to connect to the prod DB: read
+# Terraform state, temporarily open a SG rule, and fetch the master secret.
+locals {
+  db_workflow_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
@@ -65,4 +62,20 @@ module "ingest_role" {
       }
     ]
   })
+}
+
+module "ingest_role" {
+  source = "./modules/github-actions-role"
+
+  role_name              = "${var.project}-ingest-prod"
+  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
+  policy_json            = local.db_workflow_policy
+}
+
+module "query_role" {
+  source = "./modules/github-actions-role"
+
+  role_name              = "${var.project}-db-query"
+  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
+  policy_json            = local.db_workflow_policy
 }
