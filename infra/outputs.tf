@@ -32,3 +32,8 @@ output "ingest_role_arn" {
   description = "IAM role ARN for the ingest-prod GitHub Actions workflow."
   value       = module.ingest_role.role_arn
 }
+
+output "query_role_arn" {
+  description = "IAM role ARN for the db-query GitHub Actions workflow."
+  value       = module.query_role.role_arn
+}

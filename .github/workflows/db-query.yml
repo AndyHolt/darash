@@ -1,0 +1,93 @@
+name: DB query (prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      sql:
+        description: SQL statement to run against the prod DB
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-1
+
+jobs:
+  query:
+    name: Run SQL against prod DB
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
+        with:
+          role-to-assume: ${{ secrets.AWS_QUERY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85
+        # v4.0.0
+        with:
+          terraform_wrapper: false
+
+      - name: Read Terraform outputs
+        id: tf
+        working-directory: infra
+        run: |
+          terraform init -input=false
+          echo "db_host=$(terraform output -raw db_address)" >> "$GITHUB_OUTPUT"
+          echo "db_port=$(terraform output -raw db_port)" >> "$GITHUB_OUTPUT"
+          echo "db_name=$(terraform output -raw db_name)" >> "$GITHUB_OUTPUT"
+          echo "db_sg_id=$(terraform output -raw db_security_group_id)" >> "$GITHUB_OUTPUT"
+          echo "db_secret_arn=$(terraform output -raw db_master_user_secret_arn)" >> "$GITHUB_OUTPUT"
+
+      - name: Get runner public IP
+        id: ip
+        run: echo "ip=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
+      - name: Add temporary security group ingress rule
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id "${{ steps.tf.outputs.db_sg_id }}" \
+            --protocol tcp \
+            --port ${{ steps.tf.outputs.db_port }} \
+            --cidr "${{ steps.ip.outputs.ip }}/32"
+
+      - name: Retrieve DB credentials from Secrets Manager
+        id: creds
+        run: |
+          secret_json=$(aws secretsmanager get-secret-value \
+            --secret-id "${{ steps.tf.outputs.db_secret_arn }}" \
+            --query SecretString --output text)
+          echo "username=$(echo "$secret_json" | jq -r .username)" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$(echo "$secret_json" | jq -r .password)"
+          echo "password=$(echo "$secret_json" | jq -r .password)" >> "$GITHUB_OUTPUT"
+
+      - name: Install psql
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Run SQL
+        env:
+          PGHOST: ${{ steps.tf.outputs.db_host }}
+          PGPORT: ${{ steps.tf.outputs.db_port }}
+          PGUSER: ${{ steps.creds.outputs.username }}
+          PGPASSWORD: ${{ steps.creds.outputs.password }}
+          PGDATABASE: ${{ steps.tf.outputs.db_name }}
+          SQL: ${{ inputs.sql }}
+        run: psql -v ON_ERROR_STOP=1 -c "$SQL"
+
+      - name: Revoke temporary security group ingress rule
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id "${{ steps.tf.outputs.db_sg_id }}" \
+            --protocol tcp \
+            --port ${{ steps.tf.outputs.db_port }} \
+            --cidr "${{ steps.ip.outputs.ip }}/32"

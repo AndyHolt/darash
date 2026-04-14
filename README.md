@@ -175,3 +175,8 @@ this manually after the user is created, and before running the workflow:
 ```bash
 cd infra && terraform output -raw ingest_role_arn | gh secret set AWS_INGEST_ROLE_ARN
 ```
+
+Then also for query role:
+```bash
+cd infra && terraform output -raw query_role_arn | gh secret set AWS_QUERY_ROLE_ARN
+```
