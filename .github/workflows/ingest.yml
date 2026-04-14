@@ -1,4 +1,4 @@
-name: Ingest
+name: Ingest checks
 
 on:
   push:
