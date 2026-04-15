@@ -42,3 +42,13 @@ output "query_role_arn" {
   description = "IAM role ARN for the db-query GitHub Actions workflow."
   value       = module.query_role.role_arn
 }
+
+output "backend_ecr_repository_url" {
+  description = "URL of the ECR repository that holds backend service docker images."
+  value       = module.backend_ecr.repository_url
+}
+
+output "backend_ecr_repository_arn" {
+  description = "ARN of the ECR repository that holds backend service docker images."
+  value       = module.backend_ecr.repository_arn
+}
