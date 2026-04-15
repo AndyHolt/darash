@@ -46,100 +46,102 @@ import {
 
 # --- IAM policy for the terraform-ci role -----------------------------------
 
-resource "aws_iam_policy" "terraform_ci" {
-  name = local.terraform_ci_policy_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "rds:*",
-          "ec2:Describe*",
-          "ec2:CreateSecurityGroup",
-          "ec2:DeleteSecurityGroup",
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:AuthorizeSecurityGroupEgress",
-          "ec2:RevokeSecurityGroupEgress",
-          "ec2:CreateTags",
-          "ec2:DeleteTags",
-          "ec2:DescribeSecurityGroupRules",
-          "ec2:CreateSecurityGroupEgressRule",
-          "ec2:DeleteSecurityGroupEgressRule",
-          "ec2:CreateSecurityGroupIngressRule",
-          "ec2:DeleteSecurityGroupIngressRule",
-          "secretsmanager:CreateSecret",
-          "secretsmanager:TagResource",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret",
-          "kms:CreateGrant",
-          "kms:DescribeKey"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::${var.state_bucket_name}",
-          "arn:aws:s3:::${var.state_bucket_name}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:ListOpenIDConnectProviders",
-          "iam:GetOpenIDConnectProvider"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "iam:CreateRole",
-          "iam:GetRole",
-          "iam:DeleteRole",
-          "iam:UpdateAssumeRolePolicy",
-          "iam:TagRole",
-          "iam:UntagRole",
-          "iam:PutRolePolicy",
-          "iam:GetRolePolicy",
-          "iam:DeleteRolePolicy",
-          "iam:ListRolePolicies",
-          "iam:ListAttachedRolePolicies"
-        ]
-        Resource = "arn:aws:iam::${local.account_id}:role/${var.project}-*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:CreateRepository",
-          "ecr:DeleteRepository",
-          "ecr:DescribeRepositories",
-          "ecr:ListTagsForResource",
-          "ecr:TagResource",
-          "ecr:UntagResource",
-          "ecr:PutImageScanningConfiguration",
-          "ecr:PutImageTagMutability",
-          "ecr:GetRepositoryPolicy",
-          "ecr:SetRepositoryPolicy",
-          "ecr:DeleteRepositoryPolicy",
-          "ecr:GetLifecyclePolicy",
-          "ecr:PutLifecyclePolicy",
-          "ecr:DeleteLifecyclePolicy",
-          "ecr:BatchDeleteImage"
-        ]
-        Resource = "arn:aws:ecr:${var.region}:${local.account_id}:repository/${var.project}-*"
-      }
+data "aws_iam_policy_document" "terraform_ci" {
+  statement {
+    sid = "RdsEc2SecretsKms"
+    actions = [
+      "rds:*",
+      "ec2:Describe*",
+      "ec2:CreateSecurityGroup",
+      "ec2:DeleteSecurityGroup",
+      "ec2:AuthorizeSecurityGroupIngress",
+      "ec2:RevokeSecurityGroupIngress",
+      "ec2:AuthorizeSecurityGroupEgress",
+      "ec2:RevokeSecurityGroupEgress",
+      "ec2:CreateTags",
+      "ec2:DeleteTags",
+      "ec2:DescribeSecurityGroupRules",
+      "ec2:CreateSecurityGroupEgressRule",
+      "ec2:DeleteSecurityGroupEgressRule",
+      "ec2:CreateSecurityGroupIngressRule",
+      "ec2:DeleteSecurityGroupIngressRule",
+      "secretsmanager:CreateSecret",
+      "secretsmanager:TagResource",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "kms:CreateGrant",
+      "kms:DescribeKey",
     ]
-  })
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "TerraformState"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${var.state_bucket_name}",
+      "arn:aws:s3:::${var.state_bucket_name}/*",
+    ]
+  }
+
+  statement {
+    sid = "OidcProviderRead"
+    actions = [
+      "iam:ListOpenIDConnectProviders",
+      "iam:GetOpenIDConnectProvider",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ProjectScopedRoles"
+    actions = [
+      "iam:CreateRole",
+      "iam:GetRole",
+      "iam:DeleteRole",
+      "iam:UpdateAssumeRolePolicy",
+      "iam:TagRole",
+      "iam:UntagRole",
+      "iam:PutRolePolicy",
+      "iam:GetRolePolicy",
+      "iam:DeleteRolePolicy",
+      "iam:ListRolePolicies",
+      "iam:ListAttachedRolePolicies",
+    ]
+    resources = ["arn:aws:iam::${local.account_id}:role/${var.project}-*"]
+  }
+
+  statement {
+    sid = "ProjectScopedEcr"
+    actions = [
+      "ecr:CreateRepository",
+      "ecr:DeleteRepository",
+      "ecr:DescribeRepositories",
+      "ecr:ListTagsForResource",
+      "ecr:TagResource",
+      "ecr:UntagResource",
+      "ecr:PutImageScanningConfiguration",
+      "ecr:PutImageTagMutability",
+      "ecr:GetRepositoryPolicy",
+      "ecr:SetRepositoryPolicy",
+      "ecr:DeleteRepositoryPolicy",
+      "ecr:GetLifecyclePolicy",
+      "ecr:PutLifecyclePolicy",
+      "ecr:DeleteLifecyclePolicy",
+      "ecr:BatchDeleteImage",
+    ]
+    resources = ["arn:aws:ecr:${var.region}:${local.account_id}:repository/${var.project}-*"]
+  }
+}
+
+resource "aws_iam_policy" "terraform_ci" {
+  name   = local.terraform_ci_policy_name
+  policy = data.aws_iam_policy_document.terraform_ci.json
 }
 
 import {
@@ -149,29 +151,32 @@ import {
 
 # --- IAM role assumed by the terraform-apply workflow -----------------------
 
-resource "aws_iam_role" "terraform_ci" {
-  name = local.terraform_ci_role_name
+data "aws_iam_policy_document" "terraform_ci_assume" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Federated = aws_iam_openid_connect_provider.github.arn
-        }
-        Action = "sts:AssumeRoleWithWebIdentity"
-        Condition = {
-          StringEquals = {
-            "${local.github_oidc_provider_url}:aud" = "sts.amazonaws.com"
-          }
-          StringLike = {
-            "${local.github_oidc_provider_url}:sub" = "repo:${var.github_repo}:ref:refs/heads/main"
-          }
-        }
-      }
-    ]
-  })
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "${local.github_oidc_provider_url}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "${local.github_oidc_provider_url}:sub"
+      values   = ["repo:${var.github_repo}:ref:refs/heads/main"]
+    }
+  }
+}
+
+resource "aws_iam_role" "terraform_ci" {
+  name               = local.terraform_ci_role_name
+  assume_role_policy = data.aws_iam_policy_document.terraform_ci_assume.json
 }
 
 import {
