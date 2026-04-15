@@ -47,8 +47,7 @@ import {
 # --- IAM policy for the terraform-ci role -----------------------------------
 
 resource "aws_iam_policy" "terraform_ci" {
-  name        = local.terraform_ci_policy_name
-  description = "Permissions granted to the GitHub Actions terraform-apply workflow."
+  name = local.terraform_ci_policy_name
 
   policy = jsonencode({
     Version = "2012-10-17"
