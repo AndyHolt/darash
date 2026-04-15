@@ -24,16 +24,6 @@ terraform plan
 terraform apply
 ```
 
-On first run, the `import` blocks in `main.tf` adopt the existing resources
-that were originally created by hand (see the commit history for the old
-`aws iam create-*` commands). The plan should show only imports and no
-changes — if it wants to modify or replace anything, stop and reconcile
-before applying.
-
-Once the imports have applied cleanly, the `import` blocks can be removed in
-a follow-up commit (they're no-ops after the first apply, but pruning them
-keeps the config tidy).
-
 ## When to run
 
 Rarely. Only when a bootstrap resource needs to change — most commonly,
