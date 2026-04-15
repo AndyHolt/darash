@@ -30,8 +30,26 @@ resource "aws_security_group" "db" {
   }
 }
 
+resource "aws_security_group" "backend" {
+  name        = "${var.project}-backend"
+  description = "Security group for ${var.project} backend instances"
+  vpc_id      = data.aws_vpc.default.id
+
+  tags = {
+    Name    = "${var.project}-backend"
+    Project = var.project
+  }
+}
+
 resource "aws_vpc_security_group_egress_rule" "db_all" {
   security_group_id = aws_security_group.db.id
+  description       = "Allow all egress"
+  ip_protocol       = "-1"
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "backend_all" {
+  security_group_id = aws_security_group.backend.id
   description       = "Allow all egress"
   ip_protocol       = "-1"
   cidr_ipv4         = "0.0.0.0/0"
@@ -46,4 +64,13 @@ resource "aws_vpc_security_group_ingress_rule" "db" {
   from_port         = var.db_port
   to_port           = var.db_port
   cidr_ipv4         = each.value
+}
+
+resource "aws_vpc_security_group_ingress_rule" "db_from_backend" {
+  security_group_id            = aws_security_group.db.id
+  description                  = "Postgres ingress from backend security group"
+  ip_protocol                  = "tcp"
+  from_port                    = var.db_port
+  to_port                      = var.db_port
+  referenced_security_group_id = aws_security_group.backend.id
 }

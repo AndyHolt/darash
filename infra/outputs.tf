@@ -25,7 +25,12 @@ output "db_master_user_secret_arn" {
 
 output "db_security_group_id" {
   description = "Security group ID attached to the RDS instance."
-  value       = module.aws_interface.vpc_security_group_ids[0]
+  value       = module.aws_interface.db_security_group_id
+}
+
+output "backend_security_group_id" {
+  description = "Security group ID for backend instances."
+  value       = module.aws_interface.backend_security_group_id
 }
 
 output "ingest_role_arn" {
