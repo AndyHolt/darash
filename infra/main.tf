@@ -79,3 +79,13 @@ module "query_role" {
   oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
   policy_json            = local.db_workflow_policy
 }
+
+module "backend_ecr" {
+  source = "./modules/ecr"
+
+  name = "${var.project}-backend"
+
+  # Matches the RDS deletion_protection=false stance: allow destroy during
+  # early-dev apply/destroy cycles even if the repo still holds images.
+  force_delete = true
+}
