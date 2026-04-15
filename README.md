@@ -112,7 +112,28 @@ aws iam create-policy \
           "iam:ListAttachedRolePolicies"
         ],
         "Resource": "arn:aws:iam::<ACCOUNT_ID>:role/darash-*"
-      }
+      },
+      {
+          "Effect": "Allow",
+          "Action": [
+            "ecr:CreateRepository",
+            "ecr:DeleteRepository",
+            "ecr:DescribeRepositories",
+            "ecr:ListTagsForResource",
+            "ecr:TagResource",
+            "ecr:UntagResource",
+            "ecr:PutImageScanningConfiguration",
+            "ecr:PutImageTagMutability",
+            "ecr:GetRepositoryPolicy",
+            "ecr:SetRepositoryPolicy",
+            "ecr:DeleteRepositoryPolicy",
+            "ecr:GetLifecyclePolicy",
+            "ecr:PutLifecyclePolicy",
+            "ecr:DeleteLifecyclePolicy",
+            "ecr:BatchDeleteImage"
+          ],
+          "Resource": "arn:aws:ecr:eu-west-1:<ACCOUNT_ID>:repository/darash-*"
+        }
     ]
   }'
 ```
