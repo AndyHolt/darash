@@ -43,6 +43,7 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ec2:RevokeSecurityGroupEgress",
       "ec2:CreateTags",
       "ec2:DeleteTags",
+      "ec2:GetSecurityGroupsForVpc",
       "ec2:DescribeSecurityGroupRules",
       "ec2:CreateSecurityGroupEgressRule",
       "ec2:DeleteSecurityGroupEgressRule",
@@ -156,6 +157,7 @@ data "aws_iam_policy_document" "terraform_ci" {
     resources = [
       "arn:aws:ecs:${var.region}:${local.account_id}:cluster/${var.project}-*",
       "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-*/${var.project}-*",
+      "arn:aws:ecs:${var.region}:${local.account_id}:task-definition/${var.project}-*:*",
     ]
   }
 
