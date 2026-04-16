@@ -52,3 +52,18 @@ output "backend_ecr_repository_arn" {
   description = "ARN of the ECR repository that holds backend service docker images."
   value       = module.backend_ecr.repository_arn
 }
+
+output "backend_alb_dns_name" {
+  description = "Public DNS name of the backend ALB. Used as the CNAME target for the api subdomain in Cloudflare."
+  value       = module.backend_service.alb_dns_name
+}
+
+output "backend_cluster_name" {
+  description = "Name of the ECS cluster running the backend service."
+  value       = module.backend_service.cluster_name
+}
+
+output "backend_service_name" {
+  description = "Name of the ECS service running the backend."
+  value       = module.backend_service.service_name
+}
