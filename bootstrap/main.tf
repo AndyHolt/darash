@@ -191,8 +191,9 @@ data "aws_iam_policy_document" "terraform_ci" {
   statement {
     sid = "AcmRead"
     actions = [
-      "acm:ListCertificates",
       "acm:DescribeCertificate",
+      "acm:GetCertificate",
+      "acm:ListCertificates",
       "acm:ListTagsForCertificate",
     ]
     resources = ["*"]
