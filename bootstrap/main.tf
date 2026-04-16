@@ -19,6 +19,16 @@ resource "aws_s3_bucket_versioning" "state" {
   }
 }
 
+# --- ECS service-linked role ------------------------------------------------
+
+# AWS auto-provisions AWSServiceRoleForElasticLoadBalancing on first ALB
+# creation when the caller has iam:CreateServiceLinkedRole, so there's no
+# equivalent resource for ELB here. ECS's CreateService does not auto-create
+# its SLR, so we create it explicitly once at the account level.
+resource "aws_iam_service_linked_role" "ecs" {
+  aws_service_name = "ecs.amazonaws.com"
+}
+
 # --- GitHub Actions OIDC provider -------------------------------------------
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -113,19 +123,6 @@ data "aws_iam_policy_document" "terraform_ci" {
       test     = "StringEquals"
       variable = "iam:AWSServiceName"
       values   = ["elasticloadbalancing.amazonaws.com"]
-    }
-  }
-
-  statement {
-    sid     = "CreateEcsServiceLinkedRole"
-    actions = ["iam:CreateServiceLinkedRole"]
-    resources = [
-      "arn:aws:iam::${local.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
-    ]
-    condition {
-      test     = "StringEquals"
-      variable = "iam:AWSServiceName"
-      values   = ["ecs.amazonaws.com"]
     }
   }
 
