@@ -49,6 +49,11 @@ Then also for query role:
 cd infra && terraform output -raw query_role_arn | gh secret set AWS_QUERY_ROLE_ARN
 ```
 
+And for the backend deploy role:
+```bash
+cd infra && terraform output -raw backend_deploy_role_arn | gh secret set AWS_BACKEND_DEPLOY_ROLE_ARN
+```
+
 ### Backend DNS (Cloudflare)
 
 The backend runs behind an internet-facing ALB, but DNS for `darashbible.com`
@@ -67,3 +72,21 @@ that creates the ALB, point `api.darashbible.com` at it manually:
 
 The ACM certificate used by the ALB is managed manually in AWS and looked up
 by Terraform via a data source — no Terraform action needed when it auto-renews.
+
+## Deploying the backend
+
+The `backend-deploy` workflow (`.github/workflows/backend-deploy.yml`) builds
+a Docker image from `backend/`, pushes it to the `darash-backend` ECR repo,
+and rolls out a new ECS task-definition revision. It runs automatically on
+pushes to `main` that touch `backend/**`, and can be triggered manually via
+`workflow_dispatch`.
+
+Rolling back a bad deploy — flip the service back to the previous task-def
+revision:
+```bash
+aws ecs update-service --region eu-west-1 \
+  --cluster darash-backend --service darash-backend \
+  --task-definition darash-backend:<previous-revision>
+```
+Find `<previous-revision>` with
+`aws ecs list-task-definitions --family-prefix darash-backend`.

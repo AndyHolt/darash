@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "aws_interface" {
   source = "./modules/aws-interface"
 
@@ -107,4 +109,66 @@ module "backend_service" {
   subnet_ids                = module.aws_interface.subnet_ids
   backend_security_group_id = module.aws_interface.backend_security_group_id
   certificate_arn           = data.aws_acm_certificate.api.arn
+}
+
+locals {
+  backend_deploy_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "EcrAuth"
+        Effect   = "Allow"
+        Action   = "ecr:GetAuthorizationToken"
+        Resource = "*"
+      },
+      {
+        Sid    = "EcrPushPull"
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImage",
+          "ecr:BatchGetImage",
+          "ecr:DescribeImages",
+        ]
+        Resource = module.backend_ecr.repository_arn
+      },
+      # RegisterTaskDefinition and DescribeTaskDefinition don't support
+      # resource-level scoping per the AWS Service Authorization Reference.
+      {
+        Sid    = "EcsTaskDefinition"
+        Effect = "Allow"
+        Action = [
+          "ecs:RegisterTaskDefinition",
+          "ecs:DescribeTaskDefinition",
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "EcsDeploy"
+        Effect = "Allow"
+        Action = [
+          "ecs:DescribeServices",
+          "ecs:UpdateService",
+        ]
+        Resource = "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/${var.project}-backend/${var.project}-backend"
+      },
+      {
+        Sid      = "PassExecutionRole"
+        Effect   = "Allow"
+        Action   = "iam:PassRole"
+        Resource = module.backend_service.task_execution_role_arn
+      },
+    ]
+  })
+}
+
+module "backend_deploy_role" {
+  source = "./modules/github-actions-role"
+
+  role_name              = "${var.project}-backend-deploy"
+  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
+  policy_json            = local.backend_deploy_policy
 }

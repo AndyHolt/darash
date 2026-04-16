@@ -69,6 +69,12 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ]
+      environment = [
+        {
+          name  = "PORT"
+          value = tostring(var.container_port)
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -218,6 +224,13 @@ resource "aws_ecs_service" "this" {
   }
 
   depends_on = [aws_lb_listener.https]
+
+  # CI registers new task-definition revisions out-of-band on each deploy;
+  # without this, `terraform apply` would revert the service to the
+  # placeholder revision Terraform owns.
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
 
   tags = {
     Name = local.name
