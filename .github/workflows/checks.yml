@@ -34,7 +34,7 @@ jobs:
         run: uv sync --dev
 
       - name: Run checks
-        run: prek . --all-files --skip no-commit-to-branch,golangci-lint
+        run: prek . --all-files --skip no-commit-to-branch --skip golangci-lint
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v8
