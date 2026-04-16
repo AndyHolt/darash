@@ -32,7 +32,7 @@ variable "container_image" {
 variable "container_port" {
   description = "Port the container listens on. The ALB target group and backend SG ingress rule use this value."
   type        = number
-  default     = 80
+  default     = 8080
 }
 
 variable "desired_count" {

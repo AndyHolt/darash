@@ -69,6 +69,12 @@ resource "aws_ecs_task_definition" "this" {
           protocol      = "tcp"
         }
       ]
+      environment = [
+        {
+          name  = "PORT"
+          value = tostring(var.container_port)
+        }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -86,6 +92,15 @@ resource "aws_ecs_task_definition" "this" {
 }
 
 data "aws_region" "current" {}
+
+# Reads the currently-deployed task-def revision so the service can point at
+# max(terraform-registered, ci-registered). Lets CI register new revisions
+# out-of-band without Terraform reverting them, and lets Terraform-side
+# task-def changes (e.g. port, cpu) still roll forward automatically.
+data "aws_ecs_task_definition" "this" {
+  task_definition = aws_ecs_task_definition.this.family
+  depends_on      = [aws_ecs_task_definition.this]
+}
 
 # --- ALB + security groups --------------------------------------------------
 
@@ -146,7 +161,11 @@ resource "aws_lb" "this" {
 }
 
 resource "aws_lb_target_group" "this" {
-  name        = local.name
+  # Port is part of the name so a port change produces a distinct name.
+  # TG names are unique per region; without this, Terraform would try to
+  # replace in place and fail to delete the old one while the listener
+  # still references it.
+  name        = "${local.name}-${var.container_port}"
   port        = var.container_port
   protocol    = "HTTP"
   target_type = "ip"
@@ -163,8 +182,12 @@ resource "aws_lb_target_group" "this" {
     unhealthy_threshold = 3
   }
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   tags = {
-    Name = local.name
+    Name = "${local.name}-${var.container_port}"
   }
 }
 
@@ -201,7 +224,7 @@ resource "aws_lb_listener" "http_redirect" {
 resource "aws_ecs_service" "this" {
   name            = local.name
   cluster         = aws_ecs_cluster.this.id
-  task_definition = aws_ecs_task_definition.this.arn
+  task_definition = "${aws_ecs_task_definition.this.family}:${max(aws_ecs_task_definition.this.revision, data.aws_ecs_task_definition.this.revision)}"
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
