@@ -117,6 +117,19 @@ data "aws_iam_policy_document" "terraform_ci" {
   }
 
   statement {
+    sid     = "CreateEcsServiceLinkedRole"
+    actions = ["iam:CreateServiceLinkedRole"]
+    resources = [
+      "arn:aws:iam::${local.account_id}:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:AWSServiceName"
+      values   = ["ecs.amazonaws.com"]
+    }
+  }
+
+  statement {
     sid = "ProjectScopedEcr"
     actions = [
       "ecr:CreateRepository",
