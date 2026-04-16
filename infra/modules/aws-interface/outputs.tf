@@ -3,6 +3,11 @@ output "vpc_id" {
   value       = data.aws_vpc.default.id
 }
 
+output "subnet_ids" {
+  description = "Subnet IDs in the VPC. Default-VPC subnets are public, so suitable for both the ALB and Fargate tasks (with public IP) while RDS remains publicly accessible."
+  value       = data.aws_subnets.default.ids
+}
+
 output "db_subnet_group_name" {
   description = "Name of the DB subnet group to attach an RDS instance to."
   value       = aws_db_subnet_group.this.name

@@ -89,3 +89,22 @@ module "backend_ecr" {
   # early-dev apply/destroy cycles even if the repo still holds images.
   force_delete = true
 }
+
+# Looks up the manually-created ACM certificate. `most_recent` handles the
+# case where a cert was reissued — always picks the newest ISSUED one
+# matching the domain.
+data "aws_acm_certificate" "api" {
+  domain      = var.domain_name
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+module "backend_service" {
+  source = "./modules/backend-service"
+
+  project                   = var.project
+  vpc_id                    = module.aws_interface.vpc_id
+  subnet_ids                = module.aws_interface.subnet_ids
+  backend_security_group_id = module.aws_interface.backend_security_group_id
+  certificate_arn           = data.aws_acm_certificate.api.arn
+}

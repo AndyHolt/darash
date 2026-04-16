@@ -95,6 +95,9 @@ data "aws_iam_policy_document" "terraform_ci" {
       "iam:DeleteRolePolicy",
       "iam:ListRolePolicies",
       "iam:ListAttachedRolePolicies",
+      "iam:AttachRolePolicy",
+      "iam:DetachRolePolicy",
+      "iam:PassRole",
     ]
     resources = ["arn:aws:iam::${local.account_id}:role/${var.project}-*"]
   }
@@ -119,6 +122,80 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ecr:BatchDeleteImage",
     ]
     resources = ["arn:aws:ecr:${var.region}:${local.account_id}:repository/${var.project}-*"]
+  }
+
+  statement {
+    sid = "ProjectScopedEcs"
+    actions = [
+      "ecs:CreateCluster",
+      "ecs:DeleteCluster",
+      "ecs:DescribeClusters",
+      "ecs:UpdateCluster",
+      "ecs:TagResource",
+      "ecs:UntagResource",
+      "ecs:ListTagsForResource",
+      "ecs:RegisterTaskDefinition",
+      "ecs:DeregisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
+      "ecs:CreateService",
+      "ecs:UpdateService",
+      "ecs:DeleteService",
+      "ecs:DescribeServices",
+      "ecs:UpdateServicePrimaryTaskSet",
+    ]
+    resources = [
+      "arn:aws:ecs:${var.region}:${local.account_id}:cluster/${var.project}-*",
+      "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-*/${var.project}-*",
+      "arn:aws:ecs:${var.region}:${local.account_id}:task-definition/${var.project}-*:*",
+    ]
+  }
+
+  statement {
+    sid = "EcsDiscovery"
+    actions = [
+      "ecs:List*",
+      "ecs:DescribeTasks",
+      "ecs:DescribeTaskSets",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "Elb"
+    actions   = ["elasticloadbalancing:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "ProjectScopedLogs"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:DeleteLogGroup",
+      "logs:PutRetentionPolicy",
+      "logs:DeleteRetentionPolicy",
+      "logs:TagResource",
+      "logs:UntagResource",
+      "logs:ListTagsForResource",
+    ]
+    resources = ["arn:aws:logs:${var.region}:${local.account_id}:log-group:/ecs/${var.project}-*"]
+  }
+
+  statement {
+    sid = "LogsDiscovery"
+    actions = [
+      "logs:DescribeLogGroups",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AcmRead"
+    actions = [
+      "acm:ListCertificates",
+      "acm:DescribeCertificate",
+      "acm:ListTagsForCertificate",
+    ]
+    resources = ["*"]
   }
 }
 

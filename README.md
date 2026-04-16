@@ -48,3 +48,22 @@ Then also for query role:
 ```bash
 cd infra && terraform output -raw query_role_arn | gh secret set AWS_QUERY_ROLE_ARN
 ```
+
+### Backend DNS (Cloudflare)
+
+The backend runs behind an internet-facing ALB, but DNS for `darashbible.com`
+is managed in Cloudflare rather than Route53. After the first `infra/` apply
+that creates the ALB, point `api.darashbible.com` at it manually:
+
+1. Get the ALB DNS name:
+   ```bash
+   cd infra && terraform output -raw backend_alb_dns_name
+   ```
+2. In the Cloudflare dashboard for `darashbible.com`, add a DNS record:
+   - Type: `CNAME`
+   - Name: `api`
+   - Target: the ALB DNS name from step 1
+   - Proxy status: **DNS only** (grey cloud)
+
+The ACM certificate used by the ALB is managed manually in AWS and looked up
+by Terraform via a data source — no Terraform action needed when it auto-renews.
