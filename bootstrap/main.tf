@@ -103,6 +103,19 @@ data "aws_iam_policy_document" "terraform_ci" {
   }
 
   statement {
+    sid     = "CreateElbServiceLinkedRole"
+    actions = ["iam:CreateServiceLinkedRole"]
+    resources = [
+      "arn:aws:iam::${local.account_id}:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:AWSServiceName"
+      values   = ["elasticloadbalancing.amazonaws.com"]
+    }
+  }
+
+  statement {
     sid = "ProjectScopedEcr"
     actions = [
       "ecr:CreateRepository",
@@ -134,9 +147,6 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ecs:TagResource",
       "ecs:UntagResource",
       "ecs:ListTagsForResource",
-      "ecs:RegisterTaskDefinition",
-      "ecs:DeregisterTaskDefinition",
-      "ecs:DescribeTaskDefinition",
       "ecs:CreateService",
       "ecs:UpdateService",
       "ecs:DeleteService",
@@ -146,16 +156,22 @@ data "aws_iam_policy_document" "terraform_ci" {
     resources = [
       "arn:aws:ecs:${var.region}:${local.account_id}:cluster/${var.project}-*",
       "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-*/${var.project}-*",
-      "arn:aws:ecs:${var.region}:${local.account_id}:task-definition/${var.project}-*:*",
     ]
   }
 
+  # ecs:Register/Deregister/DescribeTaskDefinition don't support meaningful
+  # resource-level scoping (per the AWS Service Authorization Reference) and
+  # must be granted on "*". Lumped in with the rest of the read-only ECS
+  # discovery actions that likewise can't be scoped.
   statement {
     sid = "EcsDiscovery"
     actions = [
       "ecs:List*",
       "ecs:DescribeTasks",
       "ecs:DescribeTaskSets",
+      "ecs:RegisterTaskDefinition",
+      "ecs:DeregisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
     ]
     resources = ["*"]
   }
