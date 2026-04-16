@@ -16,11 +16,6 @@ jobs:
         with:
           tool: prek
 
-      - name: Install golangci-lint
-        uses: taiki-e/install-action@v2
-        with:
-          tool: golangci-lint
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -39,4 +34,9 @@ jobs:
         run: uv sync --dev
 
       - name: Run checks
-        run: prek . --all-files --skip no-commit-to-branch
+        run: prek . --all-files --skip no-commit-to-branch,golangci-lint
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          working-directory: backend
