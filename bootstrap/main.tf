@@ -19,6 +19,16 @@ resource "aws_s3_bucket_versioning" "state" {
   }
 }
 
+# --- ECS service-linked role ------------------------------------------------
+
+# AWS auto-provisions AWSServiceRoleForElasticLoadBalancing on first ALB
+# creation when the caller has iam:CreateServiceLinkedRole, so there's no
+# equivalent resource for ELB here. ECS's CreateService does not auto-create
+# its SLR, so we create it explicitly once at the account level.
+resource "aws_iam_service_linked_role" "ecs" {
+  aws_service_name = "ecs.amazonaws.com"
+}
+
 # --- GitHub Actions OIDC provider -------------------------------------------
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -43,6 +53,7 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ec2:RevokeSecurityGroupEgress",
       "ec2:CreateTags",
       "ec2:DeleteTags",
+      "ec2:GetSecurityGroupsForVpc",
       "ec2:DescribeSecurityGroupRules",
       "ec2:CreateSecurityGroupEgressRule",
       "ec2:DeleteSecurityGroupEgressRule",
@@ -103,6 +114,19 @@ data "aws_iam_policy_document" "terraform_ci" {
   }
 
   statement {
+    sid     = "CreateElbServiceLinkedRole"
+    actions = ["iam:CreateServiceLinkedRole"]
+    resources = [
+      "arn:aws:iam::${local.account_id}:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:AWSServiceName"
+      values   = ["elasticloadbalancing.amazonaws.com"]
+    }
+  }
+
+  statement {
     sid = "ProjectScopedEcr"
     actions = [
       "ecr:CreateRepository",
@@ -134,9 +158,6 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ecs:TagResource",
       "ecs:UntagResource",
       "ecs:ListTagsForResource",
-      "ecs:RegisterTaskDefinition",
-      "ecs:DeregisterTaskDefinition",
-      "ecs:DescribeTaskDefinition",
       "ecs:CreateService",
       "ecs:UpdateService",
       "ecs:DeleteService",
@@ -150,12 +171,19 @@ data "aws_iam_policy_document" "terraform_ci" {
     ]
   }
 
+  # ecs:Register/Deregister/DescribeTaskDefinition don't support meaningful
+  # resource-level scoping (per the AWS Service Authorization Reference) and
+  # must be granted on "*". Lumped in with the rest of the read-only ECS
+  # discovery actions that likewise can't be scoped.
   statement {
     sid = "EcsDiscovery"
     actions = [
       "ecs:List*",
       "ecs:DescribeTasks",
       "ecs:DescribeTaskSets",
+      "ecs:RegisterTaskDefinition",
+      "ecs:DeregisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
     ]
     resources = ["*"]
   }
@@ -191,8 +219,9 @@ data "aws_iam_policy_document" "terraform_ci" {
   statement {
     sid = "AcmRead"
     actions = [
-      "acm:ListCertificates",
       "acm:DescribeCertificate",
+      "acm:GetCertificate",
+      "acm:ListCertificates",
       "acm:ListTagsForCertificate",
     ]
     resources = ["*"]
