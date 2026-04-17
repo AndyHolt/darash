@@ -58,3 +58,23 @@ variable "log_retention_days" {
   type        = number
   default     = 7
 }
+
+variable "db_host" {
+  description = "RDS Postgres hostname."
+  type        = string
+}
+
+variable "db_port" {
+  description = "RDS Postgres port."
+  type        = number
+}
+
+variable "db_name" {
+  description = "Postgres database name."
+  type        = string
+}
+
+variable "db_secret_arn" {
+  description = "ARN of the Secrets Manager secret holding the RDS master user credentials (keys: username, password)."
+  type        = string
+}

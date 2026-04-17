@@ -1,17 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 )
-
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	if _, err := fmt.Fprint(w, "Hello, from Darash!"); err != nil {
-		log.Printf("write response: %v", err)
-	}
-}
 
 func main() {
 	port := os.Getenv("PORT")
@@ -19,7 +13,29 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", helloHandler)
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "require"
+	}
 
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	connConfig := ConnectionConfig{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		Database: os.Getenv("DB_NAME"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		SSLMode:  sslMode,
+	}
+
+	store, err := NewPgStore(context.Background(), connConfig)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create db connection pool: %v\n", err)
+		os.Exit(1)
+	}
+	defer store.Close()
+
+	morphgntService := NewMorphgntService(store)
+
+	srv := NewServer(morphgntService)
+	log.Fatal(srv.ListenAndServe(":" + port))
 }
