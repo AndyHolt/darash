@@ -43,12 +43,12 @@ type PgStore struct {
 func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
 	config, err := cfg.Config()
 	if err != nil {
-		return &PgStore{}, fmt.Errorf("connection config: %w", err)
+		return nil, fmt.Errorf("connection config: %w", err)
 	}
 
 	dbpool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		return &PgStore{}, fmt.Errorf("create pool: %w", err)
+		return nil, fmt.Errorf("create pool: %w", err)
 	}
 
 	store := PgStore{
