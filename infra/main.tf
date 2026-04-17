@@ -109,6 +109,10 @@ module "backend_service" {
   subnet_ids                = module.aws_interface.subnet_ids
   backend_security_group_id = module.aws_interface.backend_security_group_id
   certificate_arn           = data.aws_acm_certificate.api.arn
+  db_host                   = module.postgres.address
+  db_port                   = module.postgres.port
+  db_name                   = module.postgres.db_name
+  db_secret_arn             = module.postgres.master_user_secret_arn
 }
 
 locals {
