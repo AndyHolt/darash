@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+const rdsCACertPath = "/etc/ssl/certs/rds-ca.pem"
 
 type ConnectionConfig struct {
 	Host     string
@@ -35,9 +39,21 @@ func (c ConnectionConfig) Config() (*pgxpool.Config, error) {
 	config.ConnConfig.User = c.User
 	config.ConnConfig.Password = c.Password
 
-	if c.SSLMode == "require" || c.SSLMode == "verify-full" {
+	switch c.SSLMode {
+	case "require":
+		config.ConnConfig.TLSConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	case "verify-full":
+		caCert, err := os.ReadFile(rdsCACertPath)
+		if err != nil {
+			return nil, fmt.Errorf("read RDS CA bundle: %w", err)
+		}
+		caPool := x509.NewCertPool()
+		caPool.AppendCertsFromPEM(caCert)
 		config.ConnConfig.TLSConfig = &tls.Config{
 			ServerName: c.Host,
+			RootCAs:    caPool,
 		}
 	}
 

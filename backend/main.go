@@ -15,7 +15,7 @@ func main() {
 
 	sslMode := os.Getenv("DB_SSLMODE")
 	if sslMode == "" {
-		sslMode = "require"
+		sslMode = "verify-full"
 	}
 
 	connConfig := ConnectionConfig{
