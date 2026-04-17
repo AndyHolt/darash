@@ -59,11 +59,12 @@ func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
 		return nil, fmt.Errorf("create pool: %w", err)
 	}
 
-	store := PgStore{
-		db: dbpool,
+	if err := dbpool.Ping(ctx); err != nil {
+		dbpool.Close()
+		return nil, fmt.Errorf("ping db: %w", err)
 	}
 
-	return &store, nil
+	return &PgStore{db: dbpool}, nil
 }
 
 func (p *PgStore) Close() {
