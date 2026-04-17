@@ -40,29 +40,29 @@ type PgStore struct {
 	db *pgxpool.Pool
 }
 
-func NewPgStore(ctx context.Context, cfg ConnectionConfig) (PgStore, error) {
+func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
 	config, err := cfg.Config()
 	if err != nil {
-		return PgStore{}, fmt.Errorf("connection config: %w", err)
+		return &PgStore{}, fmt.Errorf("connection config: %w", err)
 	}
 
 	dbpool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		return PgStore{}, fmt.Errorf("create pool: %w", err)
+		return &PgStore{}, fmt.Errorf("create pool: %w", err)
 	}
 
 	store := PgStore{
 		db: dbpool,
 	}
 
-	return store, nil
+	return &store, nil
 }
 
-func (p PgStore) Close() {
+func (p *PgStore) Close() {
 	p.db.Close()
 }
 
-func (p PgStore) WordCount(ctx context.Context) (WordCount, error) {
+func (p *PgStore) WordCount(ctx context.Context) (WordCount, error) {
 	query := "SELECT COUNT(*) FROM morphgnt_sblgnt"
 
 	var count int64
