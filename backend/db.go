@@ -61,15 +61,3 @@ func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
 func (p *PgStore) Close() {
 	p.db.Close()
 }
-
-func (p *PgStore) WordCount(ctx context.Context) (WordCount, error) {
-	query := "SELECT COUNT(*) FROM morphgnt_sblgnt"
-
-	var count int64
-	err := p.db.QueryRow(ctx, query).Scan(&count)
-	if err != nil {
-		return WordCount{}, fmt.Errorf("failed to get word count: %w", err)
-	}
-
-	return WordCount{Count: count}, nil
-}
