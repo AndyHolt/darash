@@ -13,7 +13,8 @@ type MorphgntHandler struct {
 func (h MorphgntHandler) Count(w http.ResponseWriter, r *http.Request) {
 	count, err := h.service.Count(r.Context())
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Printf("count: %v", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
