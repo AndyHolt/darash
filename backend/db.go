@@ -19,12 +19,12 @@ type ConnectionConfig struct {
 func (c ConnectionConfig) Config() (*pgxpool.Config, error) {
 	config, err := pgxpool.ParseConfig("")
 	if err != nil {
-		return &pgxpool.Config{}, fmt.Errorf("parse pool config: %w", err)
+		return nil, fmt.Errorf("parse pool config: %w", err)
 	}
 
 	port, err := strconv.Atoi(c.Port)
 	if err != nil {
-		return &pgxpool.Config{}, fmt.Errorf("invalid DB_PORT: %w", err)
+		return nil, fmt.Errorf("invalid DB_PORT: %w", err)
 	}
 
 	config.ConnConfig.Host = c.Host
