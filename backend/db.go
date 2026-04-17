@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"strconv"
 
@@ -14,6 +15,7 @@ type ConnectionConfig struct {
 	Database string
 	User     string
 	Password string
+	SSLMode  string
 }
 
 func (c ConnectionConfig) Config() (*pgxpool.Config, error) {
@@ -32,6 +34,12 @@ func (c ConnectionConfig) Config() (*pgxpool.Config, error) {
 	config.ConnConfig.Database = c.Database
 	config.ConnConfig.User = c.User
 	config.ConnConfig.Password = c.Password
+
+	if c.SSLMode == "require" || c.SSLMode == "verify-full" {
+		config.ConnConfig.TLSConfig = &tls.Config{
+			ServerName: c.Host,
+		}
+	}
 
 	return config, nil
 }

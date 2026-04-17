@@ -13,12 +13,18 @@ func main() {
 		port = "8080"
 	}
 
+	sslMode := os.Getenv("DB_SSLMODE")
+	if sslMode == "" {
+		sslMode = "require"
+	}
+
 	connConfig := ConnectionConfig{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		Database: os.Getenv("DB_NAME"),
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
+		SSLMode:  sslMode,
 	}
 
 	store, err := NewPgStore(context.Background(), connConfig)
