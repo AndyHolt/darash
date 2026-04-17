@@ -18,6 +18,7 @@ func (h MorphgntHandler) Count(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(count); err != nil {
 		log.Printf("encode response: %v", err)
 	}
