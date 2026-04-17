@@ -2,9 +2,12 @@
 
 FROM golang:1.26-alpine AS builder
 
+RUN apk add --no-cache curl
+RUN curl -sSfo /rds-ca.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+
 WORKDIR /src
 
-COPY go.mod ./
+COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
@@ -16,6 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 
 FROM gcr.io/distroless/static-debian12:nonroot
 
+COPY --from=builder /rds-ca.pem /etc/ssl/certs/rds-ca.pem
 COPY --from=builder /out/backend /backend
 
 USER nonroot:nonroot
