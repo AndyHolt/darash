@@ -7,7 +7,7 @@
 -include .env
 export
 
-.PHONY: pre-commit prek ingest_tests ingest _require-env db-up db-down db-psql
+.PHONY: pre-commit prek ingest_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev
 
 pre-commit: prek
 prek:
@@ -31,3 +31,13 @@ db-down: _require-env
 
 db-psql: _require-env
 	docker compose -f infra/dev/docker-compose.yml exec postgres psql -U "$$PGUSER" -d "$$PGDATABASE"
+
+backend-up: _require-env
+	docker compose -f infra/dev/docker-compose.yml --profile backend up -d --build
+
+backend-down: _require-env
+	docker compose -f infra/dev/docker-compose.yml --profile backend down
+
+backend-dev: _require-env
+	cd backend && DB_HOST=localhost DB_PORT=$$PGPORT DB_NAME=$$PGDATABASE \
+		DB_USER=$$PGUSER DB_PASSWORD=$$PGPASSWORD DB_SSLMODE=disable air

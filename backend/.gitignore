@@ -28,3 +28,6 @@ go.work
 
 # binary created when testing build
 backend
+
+# air hot-reload build output
+tmp/
