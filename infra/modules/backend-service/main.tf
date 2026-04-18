@@ -214,7 +214,7 @@ resource "aws_lb_target_group" "this" {
   deregistration_delay = 30
 
   health_check {
-    path                = "/"
+    path                = "/health"
     matcher             = "200"
     interval            = 30
     timeout             = 5
