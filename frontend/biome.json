@@ -9,7 +9,10 @@
     "enabled": true
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": [
+      "!**/routeTree.gen.ts"
+    ]
   },
   "formatter": {
     "enabled": true,
