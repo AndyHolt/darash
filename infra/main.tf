@@ -182,7 +182,7 @@ module "backend_deploy_role" {
 # CloudFront requires ACM certificates in us-east-1.
 data "aws_acm_certificate" "frontend" {
   provider    = aws.us_east_1
-  domain      = "*.${var.domain_name}"
+  domain      = var.domain_name
   statuses    = ["ISSUED"]
   most_recent = true
 }
