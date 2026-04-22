@@ -72,3 +72,23 @@ output "backend_service_name" {
   description = "Name of the ECS service running the backend."
   value       = module.backend_service.service_name
 }
+
+output "cloudfront_distribution_domain_name" {
+  description = "Domain name of the CloudFront distribution. Used as the CNAME target for the root domain in Cloudflare."
+  value       = module.frontend_hosting.cloudfront_distribution_domain_name
+}
+
+output "cloudfront_distribution_id" {
+  description = "ID of the CloudFront distribution. Used for cache invalidation in the frontend deploy workflow."
+  value       = module.frontend_hosting.cloudfront_distribution_id
+}
+
+output "frontend_bucket_name" {
+  description = "Name of the S3 bucket holding frontend assets. Used for S3 sync in the frontend deploy workflow."
+  value       = module.frontend_hosting.s3_bucket_name
+}
+
+output "frontend_deploy_role_arn" {
+  description = "IAM role ARN for the frontend-deploy GitHub Actions workflow."
+  value       = module.frontend_deploy_role.role_arn
+}

@@ -176,3 +176,59 @@ module "backend_deploy_role" {
   oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
   policy_json            = local.backend_deploy_policy
 }
+
+# --- Frontend hosting -------------------------------------------------------
+
+# CloudFront requires ACM certificates in us-east-1.
+data "aws_acm_certificate" "frontend" {
+  provider    = aws.us_east_1
+  domain      = "*.${var.domain_name}"
+  statuses    = ["ISSUED"]
+  most_recent = true
+}
+
+module "frontend_hosting" {
+  source = "./modules/frontend-hosting"
+
+  project           = var.project
+  s3_bucket_name    = "${var.project}-frontend"
+  alb_origin_domain = "${var.api_subdomain}.${var.domain_name}"
+  certificate_arn   = data.aws_acm_certificate.frontend.arn
+  domain_aliases    = [var.domain_name]
+}
+
+locals {
+  frontend_deploy_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "S3Deploy"
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket",
+          "s3:GetObject",
+        ]
+        Resource = [
+          module.frontend_hosting.s3_bucket_arn,
+          "${module.frontend_hosting.s3_bucket_arn}/*",
+        ]
+      },
+      {
+        Sid      = "CloudFrontInvalidate"
+        Effect   = "Allow"
+        Action   = "cloudfront:CreateInvalidation"
+        Resource = module.frontend_hosting.cloudfront_distribution_arn
+      },
+    ]
+  })
+}
+
+module "frontend_deploy_role" {
+  source = "./modules/github-actions-role"
+
+  role_name              = "${var.project}-frontend-deploy"
+  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
+  policy_json            = local.frontend_deploy_policy
+}
