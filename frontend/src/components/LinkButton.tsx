@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import type React from "react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
 interface LinkButtonProps {
   to: ComponentProps<typeof Link>["to"];
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function LinkButton({ to, children }: LinkButtonProps) {
