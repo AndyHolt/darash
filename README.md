@@ -73,6 +73,38 @@ that creates the ALB, point `api.darashbible.com` at it manually:
 The ACM certificate used by the ALB is managed manually in AWS and looked up
 by Terraform via a data source — no Terraform action needed when it auto-renews.
 
+### ACM certificate in us-east-1
+
+CloudFront requires ACM certificates to be in `us-east-1`. Create a wildcard
+certificate for `*.darashbible.com` in the `us-east-1` region manually via the
+AWS console or CLI. Validate it using DNS (add the CNAME record Cloudflare).
+The existing `eu-west-1` wildcard cert stays in place for the ALB.
+
+### Frontend DNS (Cloudflare)
+
+The frontend is served by a CloudFront distribution backed by an S3 bucket.
+API requests (`/api/*`) are proxied through the same distribution to the
+backend ALB, avoiding CORS issues. After the first `infra/` apply that creates
+the CloudFront distribution:
+
+1. Get the CloudFront distribution domain name:
+   ```bash
+   cd infra && terraform output -raw cloudfront_distribution_domain_name
+   ```
+2. In the Cloudflare dashboard for `darashbible.com`, add a DNS record:
+   - Type: `CNAME`
+   - Name: `@` (root domain)
+   - Target: the CloudFront distribution domain name from step 1
+   - Proxy status: **DNS only** (grey cloud)
+
+### Frontend deploy role
+
+Add the frontend deploy role ARN to GitHub secrets so the frontend deployment
+workflow can assume it:
+```bash
+cd infra && terraform output -raw frontend_deploy_role_arn | gh secret set AWS_FRONTEND_DEPLOY_ROLE_ARN
+```
+
 ## Deploying the backend
 
 The `backend-deploy` workflow (`.github/workflows/backend-deploy.yml`) builds
