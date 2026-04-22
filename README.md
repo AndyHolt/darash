@@ -97,13 +97,23 @@ the CloudFront distribution:
    - Target: the CloudFront distribution domain name from step 1
    - Proxy status: **DNS only** (grey cloud)
 
-### Frontend deploy role
+### Frontend deploy secrets
 
-Add the frontend deploy role ARN to GitHub secrets so the frontend deployment
-workflow can assume it:
+Add the frontend deploy role ARN and CloudFront distribution ID to GitHub
+secrets so the frontend deployment workflow can assume the role and invalidate
+the cache:
 ```bash
 cd infra && terraform output -raw frontend_deploy_role_arn | gh secret set AWS_FRONTEND_DEPLOY_ROLE_ARN
+cd infra && terraform output -raw cloudfront_distribution_id | gh secret set AWS_CLOUDFRONT_DISTRIBUTION_ID
 ```
+
+## Deploying the frontend
+
+The `frontend-deploy` workflow (`.github/workflows/frontend-deploy.yml`) builds
+the React app with Vite and syncs the output to the `darash-frontend` S3
+bucket, then invalidates the CloudFront cache. It runs automatically on pushes
+to `main` that touch `frontend/**`, and can be triggered manually via
+`workflow_dispatch`.
 
 ## Deploying the backend
 
