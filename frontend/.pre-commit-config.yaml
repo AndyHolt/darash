@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check
+        language: system
+        entry: pnpm biome check --write
+        types_or: [ts, tsx, json]
+
+      - id: tsc
+        name: tsc typecheck
+        language: system
+        entry: pnpm tsc -b
+        types_or: [ts, tsx]
+        pass_filenames: false
