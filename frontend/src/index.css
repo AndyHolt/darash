@@ -119,6 +119,8 @@
   --ink-black-200: oklch(0.7200 0.0160 77.89);  /* faint text */
   --ink-black-100: oklch(0.8700 0.0130 77.89);  /* high-contrast text */
 
+  --parchment-white: oklch(0.9200 0.0080 85.00);
+
   --brown-black: oklch(0.2462 0.0179 82.14);
   --taupe: oklch(0.3334 0.0245 79.75);
   --olive-gray: oklch(0.5973 0.0378 84.51);
@@ -129,22 +131,22 @@
   --terracotta: oklch(0.6431 0.1416 37.54);
 
   --background: var(--ink-black-800);
-  --foreground: var(--warm-cream);
-  --card: var(--ink-black-700);
-  --card-foreground: var(--warm-cream);
-  --popover: var(--ink-black-700);
-  --popover-foreground: var(--warm-cream);
+  --foreground: var(--parchment-white);
+  --card: var(--ink-black-600);
+  --card-foreground: var(--parchment-white);
+  --popover: var(--ink-black-600);
+  --popover-foreground: var(--parchment-white);
   --primary: var(--amber);
   --primary-foreground: var(--ink-black-800);
-  --secondary: var(--brown-black);
-  --secondary-foreground: var(--warm-cream);
-  --muted: var(--ink-black-700);
+  --secondary: var(--ink-black-500);
+  --secondary-foreground: var(--parchment-white);
+  --muted: var(--ink-black-400);
   --muted-foreground: var(--ink-black-300);
   --accent: var(--ink-black-600);
-  --accent-foreground: var(--warm-cream);
+  --accent-foreground: var(--parchment-white);
   --destructive: oklch(0.64 0.2 25);    /* strawberry red */
-  --border: var(--ink-black-500);
-  --input: var(--ink-black-500);
+  --border: var(--ink-black-300);
+  --input: var(--ink-black-400);
   --ring: var(--ink-black-200);
 
   --chart-1: oklch(0.6800 0.1600 38.00);   /* terracotta, lifted */
@@ -154,11 +156,11 @@
   --chart-5: oklch(0.6400 0.0900 300.00);  /* aubergine, lifted */
 
   --sidebar: var(--ink-black-900);
-  --sidebar-foreground: var(--warm-cream);
+  --sidebar-foreground: var(--parchment-white);
   --sidebar-primary: var(--amber);
   --sidebar-primary-foreground: var(--ink-black-900);
   --sidebar-accent: var(--ink-black-700);
-  --sidebar-accent-foreground: var(--warm-cream);
+  --sidebar-accent-foreground: var(--parchment-white);
   --sidebar-border: var(--ink-black-700);
   --sidebar-ring: var(--ink-black-200);
 }
