@@ -7,7 +7,7 @@ export default function Header() {
     <>
       <div className="p-2 flex justify-between items-center bg-sidebar">
         <Link to="/">
-          <h1 className="font-bold text-2xl text-sidebar-foreground select-none">Darash</h1>
+          <h1 className="font-bold text-xl text-sidebar-foreground select-none">Darash</h1>
         </Link>
         <div className="flex gap-1">
           <LinkButton to="/about">About</LinkButton>
