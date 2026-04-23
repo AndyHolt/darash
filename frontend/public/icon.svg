@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <!-- 2b: Heavier stroke weight — bolder, more stamp-like -->
+  <!-- 2a: Current favorite — standard weight, organic strokes -->
   <rect width="512" height="512" rx="96" fill="#e8d5b7"/>
   <path
-    d="M365 115
-       C 363 117, 358 120, 355 122
-       L 140 252
-       C 130 258, 130 262, 140 268
-       L 355 392
-       C 360 395, 363 398, 365 400"
+    d="M385 78
+       C 383 80, 378 82, 375 85
+       L 108 248
+       C 100 253, 100 260, 108 265
+       L 375 428
+       C 380 431, 383 434, 385 436"
     fill="none"
     stroke="#b5452a"
-    stroke-width="48"
+    stroke-width="34"
     stroke-linecap="round"
     stroke-linejoin="round"
   />
   <path
-    d="M368 115
-       C 375 185, 378 330, 368 400"
+    d="M388 78
+       C 394 150, 397 260, 388 436"
     fill="none"
     stroke="#b5452a"
-    stroke-width="48"
+    stroke-width="34"
     stroke-linecap="round"
   />
 </svg>
