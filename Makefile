@@ -7,7 +7,7 @@
 -include .env
 export
 
-.PHONY: pre-commit prek ingest_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev
+.PHONY: pre-commit prek ingest_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev fe-dev fe-build fe-check fe-typecheck fe-preview fe-install
 
 pre-commit: prek
 prek:
@@ -41,3 +41,21 @@ backend-down: _require-env
 backend-dev: _require-env
 	cd backend && DB_HOST=localhost DB_PORT=$$PGPORT DB_NAME=$$PGDATABASE \
 		DB_USER=$$PGUSER DB_PASSWORD=$$PGPASSWORD DB_SSLMODE=disable air
+
+fe-install:
+	cd frontend && pnpm install
+
+fe-dev:
+	cd frontend && pnpm dev
+
+fe-build:
+	cd frontend && pnpm build
+
+fe-check:
+	cd frontend && pnpm check
+
+fe-typecheck:
+	cd frontend && pnpm typecheck
+
+fe-preview:
+	cd frontend && pnpm preview
