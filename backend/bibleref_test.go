@@ -32,6 +32,65 @@ func TestParseVerseReference(t *testing.T) {
 	}
 }
 
+func TestNewRangeReference(t *testing.T) {
+	tests := []struct {
+		name    string
+		start   VerseReference
+		end     VerseReference
+		wantErr bool
+	}{
+		{
+			name:  "valid, spans chapters",
+			start: VerseReference{Genesis, 1, 1},
+			end:   VerseReference{Genesis, 2, 3},
+		},
+		{
+			name:  "valid, same chapter",
+			start: VerseReference{John, 3, 16},
+			end:   VerseReference{John, 3, 17},
+		},
+		{
+			name:    "different books",
+			start:   VerseReference{Genesis, 50, 26},
+			end:     VerseReference{Exodus, 1, 1},
+			wantErr: true,
+		},
+		{
+			name:    "descending chapters",
+			start:   VerseReference{Genesis, 2, 1},
+			end:     VerseReference{Genesis, 1, 1},
+			wantErr: true,
+		},
+		{
+			name:    "same verse",
+			start:   VerseReference{John, 3, 16},
+			end:     VerseReference{John, 3, 16},
+			wantErr: true,
+		},
+		{
+			name:    "descending verses in same chapter",
+			start:   VerseReference{John, 3, 17},
+			end:     VerseReference{John, 3, 16},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewRangeReference(tt.start, tt.end)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("NewRangeReference(%+v, %+v) err = %v, wantErr = %v", tt.start, tt.end, err, tt.wantErr)
+			}
+			if tt.wantErr {
+				return
+			}
+			want := RangeReference{Start: tt.start, End: tt.end}
+			if got != want {
+				t.Errorf("got %+v, want %+v", got, want)
+			}
+		})
+	}
+}
+
 func TestParseRefStringSingleVerse(t *testing.T) {
 	ref, err := ParseRefString("John.3.16")
 	if err != nil {
@@ -75,6 +134,9 @@ func TestParseRefStringErrors(t *testing.T) {
 		{"bad verse", "John.3.xyz"},
 		{"bad range start", "Nonsense.1.1-John.3.16"},
 		{"bad range end", "John.3.16-Nonsense.1.1"},
+		{"range crosses books", "Gen.50.26-Exod.1.1"},
+		{"range descending", "John.3.17-John.3.16"},
+		{"range same verse", "John.3.16-John.3.16"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

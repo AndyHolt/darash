@@ -52,6 +52,16 @@ func ParseVerseReference(ref string) (VerseReference, error) {
 	}, nil
 }
 
+func NewRangeReference(start, end VerseReference) (RangeReference, error) {
+	if start.Book != end.Book {
+		return RangeReference{}, fmt.Errorf("reference range must be within a single book: starts in %v but ends in %v", start.Book, end.Book)
+	}
+	if end.Chapter < start.Chapter || (end.Chapter == start.Chapter && end.Verse <= start.Verse) {
+		return RangeReference{}, fmt.Errorf("end of range must be before beginning: start %d:%d is after end %d:%d", start.Chapter, start.Verse, end.Chapter, end.Verse)
+	}
+	return RangeReference{Start: start, End: end}, nil
+}
+
 func ParseRefString(ref string) (Reference, error) {
 	refs := strings.Split(ref, "-")
 
@@ -71,7 +81,11 @@ func ParseRefString(ref string) (Reference, error) {
 		if err != nil {
 			return nil, fmt.Errorf("parse range end %q: %w", ref, err)
 		}
-		return RangeReference{Start: start, End: end}, nil
+		rangeref, err := NewRangeReference(start, end)
+		if err != nil {
+			return nil, fmt.Errorf("parse range error %q: %w", ref, err)
+		}
+		return rangeref, nil
 	default:
 		return nil, fmt.Errorf("invalid reference string: %v", ref)
 	}
