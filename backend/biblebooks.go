@@ -35,7 +35,7 @@ const (
 	Psalms
 	Proverbs
 	Ecclesiastes
-	SongOfSolomon
+	SongOfSongs
 	Isaiah
 	Jeremiah
 	Lamentations
@@ -190,8 +190,8 @@ var books = map[BookID]Book{
 		ID: Ecclesiastes, Name: "Ecclesiastes", Abbrev: "Eccl", Testament: OldTestament,
 		Verses: []int{18, 26, 22, 17, 19, 12, 29, 17, 18, 20, 10, 14},
 	},
-	SongOfSolomon: {
-		ID: SongOfSolomon, Name: "Song of Songs", Abbrev: "Song", Testament: OldTestament,
+	SongOfSongs: {
+		ID: SongOfSongs, Name: "Song of Songs", Abbrev: "Song", Testament: OldTestament,
 		Verses: []int{17, 17, 11, 16, 16, 12, 14, 14},
 	},
 	Isaiah: {
