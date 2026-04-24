@@ -49,6 +49,25 @@ func TestBookNamesAndAbbrevsAreUnique(t *testing.T) {
 	}
 }
 
+func TestBookIDString(t *testing.T) {
+	tests := []struct {
+		id   BookID
+		want string
+	}{
+		{Genesis, "Genesis"},
+		{FirstSamuel, "1 Samuel"},
+		{SongOfSongs, "Song of Songs"},
+		{Revelation, "Revelation"},
+		{BookID(0), "BookID(0)"},
+		{BookID(999), "BookID(999)"},
+	}
+	for _, tt := range tests {
+		if got := tt.id.String(); got != tt.want {
+			t.Errorf("BookID(%d).String() = %q, want %q", int(tt.id), got, tt.want)
+		}
+	}
+}
+
 func TestLookup(t *testing.T) {
 	b, ok := Lookup(Genesis)
 	if !ok {

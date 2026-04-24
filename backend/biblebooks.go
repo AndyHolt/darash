@@ -14,6 +14,13 @@ const (
 
 type BookID int
 
+func (b BookID) String() string {
+	if book, ok := books[b]; ok {
+		return book.Name
+	}
+	return fmt.Sprintf("BookID(%d)", int(b))
+}
+
 const (
 	Genesis BookID = iota + 1
 	Exodus
