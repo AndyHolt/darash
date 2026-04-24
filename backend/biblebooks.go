@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Testament int
@@ -96,7 +97,7 @@ func (b Book) Chapters() int {
 
 func (b Book) VersesInChapter(chapter int) (int, error) {
 	chapterIdx := chapter - 1
-	if chapterIdx > b.Chapters() {
+	if chapterIdx < 0 || chapterIdx >= b.Chapters() {
 		return 0, fmt.Errorf("Book %s has no chapter %d", b.Name, chapter)
 	}
 	return b.Verses[chapterIdx], nil
@@ -388,14 +389,14 @@ func All() []Book {
 var bookByName = func() map[string]BookID {
 	m := make(map[string]BookID, len(books)*2)
 	for id, b := range books {
-		m[b.Name] = id
-		m[b.Abbrev] = id
+		m[strings.ToLower(b.Name)] = id
+		m[strings.ToLower(b.Abbrev)] = id
 	}
 	return m
 }()
 
 func ParseBookID(name string) (BookID, error) {
-	if id, ok := bookByName[name]; ok {
+	if id, ok := bookByName[strings.ToLower(name)]; ok {
 		return id, nil
 	}
 	return 0, fmt.Errorf("unknown book %q", name)
