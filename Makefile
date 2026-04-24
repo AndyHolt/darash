@@ -7,7 +7,7 @@
 -include .env
 export
 
-.PHONY: pre-commit prek ingest_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev fe-dev fe-build fe-check fe-typecheck fe-preview fe-install
+.PHONY: pre-commit prek ingest_tests backend_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev fe-dev fe-build fe-check fe-typecheck fe-preview fe-install
 
 pre-commit: prek
 prek:
@@ -15,6 +15,9 @@ prek:
 
 ingest_tests:
 	cd ingest && uv run pytest
+
+backend_tests:
+	cd backend && go test ./...
 
 ingest:
 	cd ingest && PYTHONPATH=src uv run python main.py
