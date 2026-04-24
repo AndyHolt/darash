@@ -384,3 +384,19 @@ func All() []Book {
 	}
 	return out
 }
+
+var bookByName = func() map[string]BookID {
+	m := make(map[string]BookID, len(books)*2)
+	for id, b := range books {
+		m[b.Name] = id
+		m[b.Abbrev] = id
+	}
+	return m
+}()
+
+func ParseBookID(name string) (BookID, error) {
+	if id, ok := bookByName[name]; ok {
+		return id, nil
+	}
+	return 0, fmt.Errorf("unknown book %q", name)
+}
