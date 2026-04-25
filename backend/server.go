@@ -28,7 +28,7 @@ func (s *Server) ListenAndServe(addr string) error {
 		w.WriteHeader(http.StatusOK)
 	})
 	mux.HandleFunc("GET /api/count", s.morphgntHandler.Count)
-	mux.HandleFunc("GET /morphgnt/passage/{ref}", s.morphgntHandler.FetchVerses)
+	mux.HandleFunc("GET /api/morphgnt/passage/{ref}", s.morphgntHandler.FetchVerses)
 	mux.HandleFunc("/", helloHandler)
 	return http.ListenAndServe(addr, mux)
 }
