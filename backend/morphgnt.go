@@ -244,23 +244,23 @@ func ParseDegree(s string) (Degree, error) {
 }
 
 type Word struct {
-	Book         string       `json:"book"`
-	Chapter      int          `json:"chapter"`
-	Verse        int          `json:"verse"`
-	WordIndex    int          `json:"word_index"`
-	PartOfSpeech PartOfSpeech `json:"part_of_speech"`
-	Person       *Person      `json:"person,omitempty"`
-	Tense        *Tense       `json:"tense,omitempty"`
-	Voice        *Voice       `json:"voice,omitempty"`
-	Mood         *Mood        `json:"mood,omitempty"`
-	Case         *Case        `json:"case,omitempty"`
-	Number       *Number      `json:"number,omitempty"`
-	Gender       *Gender      `json:"gender,omitempty"`
-	Degree       *Degree      `json:"degree,omitempty"`
-	Text         string       `json:"text"`
-	TextWord     string       `json:"text_word"`
-	Normalized   string       `json:"normalized"`
-	Lemma        string       `json:"lemma"`
+	Book         string       `json:"book"             db:"book"`
+	Chapter      int          `json:"chapter"          db:"chapter"`
+	Verse        int          `json:"verse"            db:"verse"`
+	WordIndex    int          `json:"word_index"       db:"word_index"`
+	PartOfSpeech PartOfSpeech `json:"part_of_speech"   db:"part_of_speech"`
+	Person       *Person      `json:"person,omitempty" db:"person"`
+	Tense        *Tense       `json:"tense,omitempty"  db:"tense"`
+	Voice        *Voice       `json:"voice,omitempty"  db:"voice"`
+	Mood         *Mood        `json:"mood,omitempty"   db:"mood"`
+	Case         *Case        `json:"case,omitempty"   db:"grammatical_case"`
+	Number       *Number      `json:"number,omitempty" db:"number"`
+	Gender       *Gender      `json:"gender,omitempty" db:"gender"`
+	Degree       *Degree      `json:"degree,omitempty" db:"degree"`
+	Text         string       `json:"text"             db:"text"`
+	TextWord     string       `json:"text_word"        db:"text_word"`
+	Normalized   string       `json:"normalized"       db:"normalized"`
+	Lemma        string       `json:"lemma"            db:"lemma"`
 }
 
 type Passage struct {
