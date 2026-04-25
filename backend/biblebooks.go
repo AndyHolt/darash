@@ -110,7 +110,7 @@ func (b Book) Chapters() int {
 func (b Book) VersesInChapter(chapter int) (int, error) {
 	chapterIdx := chapter - 1
 	if chapterIdx < 0 || chapterIdx >= b.Chapters() {
-		return 0, fmt.Errorf("Book %s has no chapter %d", b.Name, chapter)
+		return 0, fmt.Errorf("book %s has no chapter %d", b.Name, chapter)
 	}
 	return b.Verses[chapterIdx], nil
 }
