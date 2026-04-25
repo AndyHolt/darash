@@ -15,10 +15,10 @@ func NewMorphgntService(repo Repository) *MorphgntService {
 	return &MorphgntService{repo: repo}
 }
 
-func (s MorphgntService) Count(ctx context.Context) (WordCount, error) {
+func (s *MorphgntService) Count(ctx context.Context) (WordCount, error) {
 	return s.repo.WordCount(ctx)
 }
 
-func (s MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
+func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
 	return s.repo.FetchVerses(ctx, ref)
 }
