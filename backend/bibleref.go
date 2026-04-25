@@ -75,7 +75,7 @@ func NewRangeReference(start, end VerseReference) (RangeReference, error) {
 		return RangeReference{}, fmt.Errorf("reference range must be within a single book: starts in %v but ends in %v", start.Book, end.Book)
 	}
 	if end.Chapter < start.Chapter || (end.Chapter == start.Chapter && end.Verse <= start.Verse) {
-		return RangeReference{}, fmt.Errorf("end of range must be before beginning: start %d:%d is after end %d:%d", start.Chapter, start.Verse, end.Chapter, end.Verse)
+		return RangeReference{}, fmt.Errorf("range must be ascending: start %d:%d is not before end %d:%d", start.Chapter, start.Verse, end.Chapter, end.Verse)
 	}
 	return RangeReference{Start: start, End: end}, nil
 }
