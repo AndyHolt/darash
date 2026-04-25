@@ -1,20 +1,21 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 )
 
 type VerseReference struct {
-	Book    BookID
-	Chapter int
-	Verse   int
+	Book    BookID `json:"book"`
+	Chapter int    `json:"chapter"`
+	Verse   int    `json:"verse"`
 }
 
 type RangeReference struct {
-	Start VerseReference
-	End   VerseReference
+	Start VerseReference `json:"start"`
+	End   VerseReference `json:"end"`
 }
 
 // sealed interface for single verse and range references
@@ -24,6 +25,23 @@ type Reference interface {
 
 func (VerseReference) isReference() {}
 func (RangeReference) isReference() {}
+
+func (v VerseReference) MarshalJSON() ([]byte, error) {
+	type alias VerseReference
+	return json.Marshal(struct {
+		Kind string `json:"kind"`
+		alias
+	}{"verse", alias(v)})
+}
+
+func (r RangeReference) MarshalJSON() ([]byte, error) {
+	type alias VerseReference
+	return json.Marshal(struct {
+		Kind  string `json:"kind"`
+		Start alias  `json:"start"`
+		End   alias  `json:"end"`
+	}{"range", alias(r.Start), alias(r.End)})
+}
 
 func ParseVerseReference(ref string) (VerseReference, error) {
 	elements := strings.Split(ref, ".")

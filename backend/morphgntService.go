@@ -4,6 +4,7 @@ import "context"
 
 type Repository interface {
 	WordCount(ctx context.Context) (WordCount, error)
+	FetchVerses(ctx context.Context, ref Reference) (Passage, error)
 }
 
 type MorphgntService struct {
@@ -16,4 +17,8 @@ func NewMorphgntService(repo Repository) *MorphgntService {
 
 func (s MorphgntService) Count(ctx context.Context) (WordCount, error) {
 	return s.repo.WordCount(ctx)
+}
+
+func (s MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
+	return s.repo.FetchVerses(ctx, ref)
 }

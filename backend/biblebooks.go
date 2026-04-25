@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -19,6 +20,10 @@ func (b BookID) String() string {
 		return book.Name
 	}
 	return fmt.Sprintf("BookID(%d)", int(b))
+}
+
+func (b BookID) MarshalJSON() ([]byte, error) {
+	return json.Marshal(b.String())
 }
 
 const (
