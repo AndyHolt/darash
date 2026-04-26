@@ -7,20 +7,22 @@
 -include .env
 export
 
-.PHONY: pre-commit prek ingest_tests backend_tests ingest _require-env db-up db-down db-psql backend-up backend-down backend-dev fe-dev fe-build fe-check fe-typecheck fe-preview fe-install
+.PHONY: pre-commit prek \
+	ingest-run ingest-tests \
+	backend-up backend-down backend-dev backend-tests \
+	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-preview \
+	db-up db-down db-psql \
+	_require-env
 
 pre-commit: prek
 prek:
 	prek
 
-ingest_tests:
-	cd ingest && uv run pytest
-
-backend_tests:
-	cd backend && go test ./...
-
-ingest:
+ingest-run:
 	cd ingest && PYTHONPATH=src uv run python main.py
+
+ingest-tests:
+	cd ingest && uv run pytest
 
 # db-* targets are for local dev and require .env to exist.
 _require-env:
@@ -45,20 +47,23 @@ backend-dev: _require-env
 	cd backend && DB_HOST=localhost DB_PORT=$$PGPORT DB_NAME=$$PGDATABASE \
 		DB_USER=$$PGUSER DB_PASSWORD=$$PGPASSWORD DB_SSLMODE=disable air
 
-fe-install:
+backend-tests:
+	cd backend && go test ./...
+
+frontend-install:
 	cd frontend && pnpm install
 
-fe-dev:
+frontend-dev:
 	cd frontend && pnpm dev
 
-fe-build:
+frontend-build:
 	cd frontend && pnpm build
 
-fe-check:
+frontend-check:
 	cd frontend && pnpm check
 
-fe-typecheck:
+frontend-typecheck:
 	cd frontend && pnpm typecheck
 
-fe-preview:
+frontend-preview:
 	cd frontend && pnpm preview
