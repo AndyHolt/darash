@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 var (
@@ -33,7 +34,7 @@ func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passa
 	}
 	passage, err := s.repo.FetchVerses(ctx, ref)
 	if err != nil {
-		return Passage{}, err
+		return Passage{}, fmt.Errorf("fetch passage: %w", err)
 	}
 	if len(passage.Words) == 0 {
 		return Passage{}, ErrNoWordsFound
