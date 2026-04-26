@@ -12,12 +12,22 @@ func TestParseVerseReference(t *testing.T) {
 		{"valid", "Genesis.1.1", VerseReference{Genesis, 1, 1}, false},
 		{"valid with abbrev", "Gen.1.1", VerseReference{Genesis, 1, 1}, false},
 		{"numbered book", "1Sam.3.10", VerseReference{FirstSamuel, 3, 10}, false},
+		{"last chapter and verse", "Genesis.50.26", VerseReference{Genesis, 50, 26}, false},
+		{"single-chapter book", "Obadiah.1.21", VerseReference{Obadiah, 1, 21}, false},
 		{"too few dots", "Genesis.1", VerseReference{}, true},
 		{"too many dots", "Genesis.1.1.1", VerseReference{}, true},
 		{"empty", "", VerseReference{}, true},
 		{"unknown book", "Nonsense.1.1", VerseReference{}, true},
 		{"non-numeric chapter", "Genesis.abc.1", VerseReference{}, true},
 		{"non-numeric verse", "Genesis.1.abc", VerseReference{}, true},
+		{"chapter zero", "Genesis.0.1", VerseReference{}, true},
+		{"chapter negative", "Genesis.-1.1", VerseReference{}, true},
+		{"chapter past last", "Genesis.51.1", VerseReference{}, true},
+		{"chapter past last for short book", "Obadiah.2.1", VerseReference{}, true},
+		{"verse zero", "Genesis.1.0", VerseReference{}, true},
+		{"verse negative", "Genesis.1.-1", VerseReference{}, true},
+		{"verse past last in chapter", "Genesis.1.32", VerseReference{}, true},
+		{"verse one past last for last chapter", "Genesis.50.27", VerseReference{}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

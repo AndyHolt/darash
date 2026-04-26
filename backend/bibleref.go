@@ -50,21 +50,33 @@ func ParseVerseReference(ref string) (VerseReference, error) {
 		return VerseReference{}, fmt.Errorf("invalid reference, should have three dot-separated values: %q", ref)
 	}
 
-	book, err := ParseBookID(elements[0])
+	bookID, err := ParseBookID(elements[0])
 	if err != nil {
 		return VerseReference{}, fmt.Errorf("invalid book in ref string %q: %w", ref, err)
 	}
+	book, ok := Lookup(bookID)
+	if !ok {
+		return VerseReference{}, fmt.Errorf("could not get book details for bookID %v", bookID)
+	}
+
 	chapter, err := strconv.Atoi(elements[1])
 	if err != nil {
 		return VerseReference{}, fmt.Errorf("invalid chapter in ref string %q: %w", ref, err)
 	}
+	if chapter <= 0 || chapter > book.Chapters() {
+		return VerseReference{}, fmt.Errorf("chapter %d not available for book %v (%d chapters)", chapter, book.Name, book.Chapters())
+	}
+
 	verse, err := strconv.Atoi(elements[2])
 	if err != nil {
 		return VerseReference{}, fmt.Errorf("invalid verse in ref string %q: %w", ref, err)
 	}
+	if verse <= 0 || verse > book.Verses[chapter-1] {
+		return VerseReference{}, fmt.Errorf("invalid verse number %d (%v %d has %d verses)", verse, book.Name, chapter, book.Verses[chapter-1])
+	}
 
 	return VerseReference{
-		Book:    book,
+		Book:    bookID,
 		Chapter: chapter,
 		Verse:   verse,
 	}, nil
