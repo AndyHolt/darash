@@ -1,0 +1,22 @@
+name: Backend tests
+
+on:
+  push:
+    paths:
+      - "backend/**"
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+
+      - name: Run tests
+        run: make backend_tests
