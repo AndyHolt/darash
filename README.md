@@ -22,7 +22,7 @@ permissions in the first place). See
 
 ### Github repo secrets
 
-Add the bootstrapped AWS role ARN to Github secrets so the `terraform-apply`
+Add the bootstrapped AWS role ARN to Github secrets so the `infra-deploy.yml`
 workflow can assume it:
 ```bash
 cd bootstrap && terraform output -raw terraform_ci_role_arn | gh secret set AWS_ROLE_ARN

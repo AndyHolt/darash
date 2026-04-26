@@ -291,7 +291,7 @@ resource "aws_iam_policy" "terraform_ci" {
   policy = data.aws_iam_policy_document.terraform_ci.json
 }
 
-# --- IAM role assumed by the terraform-apply workflow -----------------------
+# --- IAM role assumed by the infra-deploy.yml workflow ----------------------
 
 data "aws_iam_policy_document" "terraform_ci_assume" {
   statement {

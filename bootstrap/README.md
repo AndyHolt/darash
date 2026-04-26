@@ -3,7 +3,7 @@
 Terraform for the "bootstrap" AWS resources that the rest of the project's
 Terraform depends on — the S3 bucket that holds remote state, the GitHub
 Actions OIDC provider, and the `darash-terraform-ci` role and policy that the
-`terraform-apply` workflow assumes.
+`infra-deploy.yml` workflow assumes.
 
 These resources can't be managed from `infra/` because `infra/` uses the S3
 bucket as its state backend, and the `terraform-ci` role is what runs it. So
@@ -30,5 +30,5 @@ Rarely. Only when a bootstrap resource needs to change — most commonly,
 adding a new action to the `darash-terraform-ci` IAM policy because the main
 infra has grown to manage a new AWS service.
 
-Day-to-day infra changes go through `infra/` and the `terraform-apply`
+Day-to-day infra changes go through `infra/` and the `infra-deploy.yml`
 workflow, not here.

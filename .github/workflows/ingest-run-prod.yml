@@ -1,4 +1,4 @@
-name: Ingest (prod)
+name: Ingest run (prod)
 
 on:
   workflow_dispatch:

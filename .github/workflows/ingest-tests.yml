@@ -1,4 +1,4 @@
-name: Ingest checks
+name: Ingest tests
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   ingest:
-    name: Ingest checks
+    name: Ingest tests
     runs-on: ubuntu-latest
 
     steps:

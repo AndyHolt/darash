@@ -4,7 +4,7 @@ output "state_bucket_name" {
 }
 
 output "terraform_ci_role_arn" {
-  description = "ARN of the IAM role assumed by the terraform-apply GitHub Actions workflow."
+  description = "ARN of the IAM role assumed by the infra-deploy.yml GitHub Actions workflow."
   value       = aws_iam_role.terraform_ci.arn
 }
 
