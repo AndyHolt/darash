@@ -36,12 +36,15 @@ func (h *MorphgntHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 
 	passage, err := h.service.FetchVerses(r.Context(), ref)
 	if err != nil {
-		if errors.Is(err, ErrNotNewTestament) {
+		switch {
+		case errors.Is(err, ErrNotNewTestament):
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
+		case errors.Is(err, ErrNoWordsFound):
+			http.Error(w, err.Error(), http.StatusNotFound)
+		default:
+			log.Printf("fetch verses error: %v", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
 		}
-		log.Printf("fetch verses error: %v", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 

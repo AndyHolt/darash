@@ -34,6 +34,19 @@ func TestFetchVersesRejectsOldTestament(t *testing.T) {
 	}
 }
 
+func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
+	repo := &fakeRepo{passage: Passage{
+		Reference: VerseReference{John, 3, 16},
+		Words:     []Word{},
+	}}
+	svc := NewMorphgntService(repo)
+
+	_, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
+	if !errors.Is(err, ErrNoWordsFound) {
+		t.Fatalf("err = %v, want ErrNoWordsFound", err)
+	}
+}
+
 func TestFetchVersesAcceptsNewTestament(t *testing.T) {
 	want := Passage{
 		Reference: VerseReference{John, 3, 16},
