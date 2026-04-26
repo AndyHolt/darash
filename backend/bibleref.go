@@ -129,6 +129,6 @@ func ParseRefString(ref string) (Reference, error) {
 		}
 		return rangeref, nil
 	default:
-		return nil, fmt.Errorf("invalid reference string: %v", ref)
+		return nil, fmt.Errorf("invalid reference string: %q", ref)
 	}
 }
