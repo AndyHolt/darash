@@ -13,7 +13,7 @@ The repo is a monorepo with four top-level code areas:
 - `ingest/` — Python (>=3.14, uv-managed) job that fetches and parses the
   MorphGNT SBLGNT source files into typed dataclasses and bulk-loads them into
   Postgres via `COPY ... FROM STDIN`. Runs on a schedule/manually via
-  `ingest-prod.yml`, not from within the app.
+  `ingest-run-prod.yml`, not from within the app.
 - `backend/` — Go HTTP server (`net/http`, `pgx/v5`). Layered as
   handler → service → store (`morphgnt_handler.go` → `morphgnt_service.go` →
   `morphgnt_store.go`), with `Repository` interface defined at the service
@@ -28,7 +28,7 @@ The repo is a monorepo with four top-level code areas:
   always calls same-origin `/api/...` — never hardcode the API URL.
 - `infra/` + `bootstrap/` — Terraform. `bootstrap/` is applied locally once
   and creates the S3 state bucket, OIDC provider, and the CI role that
-  `infra/` then uses. `infra/` runs via the `terraform-apply` workflow. See
+  `infra/` then uses. `infra/` runs via the `infra-deploy.yml` workflow. See
   README.md for the bootstrap dance and the manual Cloudflare DNS / ACM steps
   that Terraform doesn't automate.
 
