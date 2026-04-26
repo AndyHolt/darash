@@ -1,6 +1,34 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
+
+func TestReferenceTestament(t *testing.T) {
+	tests := []struct {
+		name string
+		ref  Reference
+		want Testament
+	}{
+		{"OT verse", VerseReference{Genesis, 1, 1}, OldTestament},
+		{"OT range", RangeReference{
+			Start: VerseReference{Psalms, 1, 1},
+			End:   VerseReference{Psalms, 1, 6},
+		}, OldTestament},
+		{"NT verse", VerseReference{John, 3, 16}, NewTestament},
+		{"NT range", RangeReference{
+			Start: VerseReference{Matthew, 12, 1},
+			End:   VerseReference{Matthew, 12, 8},
+		}, NewTestament},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.ref.Testament(); got != tt.want {
+				t.Errorf("%s.Testament() = %d, want %d", tt.name, got, tt.want)
+			}
+		})
+	}
+}
 
 func TestParseVerseReference(t *testing.T) {
 	tests := []struct {

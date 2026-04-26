@@ -1,6 +1,11 @@
 package main
 
-import "context"
+import (
+	"context"
+	"errors"
+)
+
+var ErrNotNewTestament = errors.New("reference must be in the New Testament")
 
 type Repository interface {
 	WordCount(ctx context.Context) (WordCount, error)
@@ -20,5 +25,8 @@ func (s *MorphgntService) Count(ctx context.Context) (WordCount, error) {
 }
 
 func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
+	if ref.Testament() != NewTestament {
+		return Passage{}, ErrNotNewTestament
+	}
 	return s.repo.FetchVerses(ctx, ref)
 }

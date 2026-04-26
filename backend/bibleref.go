@@ -21,10 +21,22 @@ type RangeReference struct {
 // sealed interface for single verse and range references
 type Reference interface {
 	isReference()
+	Testament() Testament
 }
 
 func (VerseReference) isReference() {}
 func (RangeReference) isReference() {}
+
+func (v VerseReference) Testament() Testament {
+	if book, ok := Lookup(v.Book); ok {
+		return book.Testament
+	}
+	return 0
+}
+
+func (r RangeReference) Testament() Testament {
+	return r.Start.Testament()
+}
 
 func (v VerseReference) MarshalJSON() ([]byte, error) {
 	type alias VerseReference
