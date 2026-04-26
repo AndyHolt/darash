@@ -1,8 +1,104 @@
 package main
 
 import (
+	"encoding/json"
 	"testing"
 )
+
+func TestVerseReferenceMarshalJSON(t *testing.T) {
+	got, err := json.Marshal(VerseReference{John, 3, 16})
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	want := `{"kind":"verse","book":"John","chapter":3,"verse":16}`
+	if string(got) != want {
+		t.Errorf("got  %s\nwant %s", got, want)
+	}
+}
+
+func TestRangeReferenceMarshalJSON(t *testing.T) {
+	r := RangeReference{
+		Start: VerseReference{Matthew, 12, 1},
+		End:   VerseReference{Matthew, 12, 8},
+	}
+	got, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+	want := `{"kind":"range","start":{"book":"Matthew","chapter":12,"verse":1},"end":{"book":"Matthew","chapter":12,"verse":8}}`
+	if string(got) != want {
+		t.Errorf("got  %s\nwant %s", got, want)
+	}
+}
+
+// TestRangeReferenceEndpointsHaveNoKind pins the alias-trick behaviour: the
+// nested start/end inside a range must NOT carry their own "kind":"verse"
+// discriminator, because the type is implied by the parent. If someone
+// removes the type alias from RangeReference.MarshalJSON, this test catches
+// it before clients see double-tagged JSON.
+func TestRangeReferenceEndpointsHaveNoKind(t *testing.T) {
+	r := RangeReference{
+		Start: VerseReference{John, 3, 16},
+		End:   VerseReference{John, 3, 17},
+	}
+	got, err := json.Marshal(r)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+
+	var decoded struct {
+		Kind  string                 `json:"kind"`
+		Start map[string]interface{} `json:"start"`
+		End   map[string]interface{} `json:"end"`
+	}
+	if err := json.Unmarshal(got, &decoded); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if decoded.Kind != "range" {
+		t.Errorf("top-level kind = %q, want %q", decoded.Kind, "range")
+	}
+	if _, ok := decoded.Start["kind"]; ok {
+		t.Errorf("start should not contain kind: %+v", decoded.Start)
+	}
+	if _, ok := decoded.End["kind"]; ok {
+		t.Errorf("end should not contain kind: %+v", decoded.End)
+	}
+}
+
+func TestPassageMarshalJSON(t *testing.T) {
+	p := Passage{
+		Reference: VerseReference{John, 3, 16},
+		Words: []Word{
+			{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, PartOfSpeech: PartOfSpeechAdverb,
+				Text: "Οὕτως", TextWord: "Οὕτως", Normalized: "οὕτως", Lemma: "οὕτως"},
+		},
+	}
+	got, err := json.Marshal(p)
+	if err != nil {
+		t.Fatalf("marshal error: %v", err)
+	}
+
+	var decoded struct {
+		Reference map[string]interface{}   `json:"reference"`
+		Words     []map[string]interface{} `json:"words"`
+	}
+	if err := json.Unmarshal(got, &decoded); err != nil {
+		t.Fatalf("unmarshal error: %v", err)
+	}
+	if decoded.Reference["kind"] != "verse" {
+		t.Errorf("reference.kind = %v, want \"verse\"", decoded.Reference["kind"])
+	}
+	if len(decoded.Words) != 1 {
+		t.Fatalf("got %d words, want 1", len(decoded.Words))
+	}
+	if decoded.Words[0]["book"] != "John" {
+		t.Errorf("words[0].book = %v, want \"John\"", decoded.Words[0]["book"])
+	}
+	// nullable morphology fields with omitempty should be absent
+	if _, ok := decoded.Words[0]["mood"]; ok {
+		t.Errorf("nil Mood should be omitted, got %v", decoded.Words[0]["mood"])
+	}
+}
 
 func TestReferenceTestament(t *testing.T) {
 	tests := []struct {
