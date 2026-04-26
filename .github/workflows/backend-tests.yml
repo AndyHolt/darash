@@ -19,4 +19,4 @@ jobs:
           go-version-file: backend/go.mod
 
       - name: Run tests
-        run: make backend_tests
+        run: make backend-tests

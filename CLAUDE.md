@@ -39,24 +39,25 @@ All via the root `Makefile` (which auto-loads `.env`). `.env` must exist for
 
 **Local dev loop:**
 ```
-make db-up         # start Postgres via docker-compose
-make backend-dev   # run backend with air (live reload); uses .env PG* vars
-make fe-dev        # pnpm dev (Vite on :5173 by default)
-make db-psql       # psql into the running container
+make db-up             # start Postgres via docker-compose
+make backend-dev       # run backend with air (live reload); uses .env PG* vars
+make frontend-dev      # pnpm dev (Vite on :5173 by default)
+make db-psql           # psql into the running container
 ```
 
 Run the ingest job against the DB pointed to by `PG*` env vars:
 ```
-make ingest        # cd ingest && PYTHONPATH=src uv run python main.py
+make ingest-run        # cd ingest && PYTHONPATH=src uv run python main.py
 ```
 
 **Checks / CI-equivalent:**
 ```
-make pre-commit    # runs `prek` (pre-commit drop-in) across the repo
-make fe-check      # biome check .
-make fe-typecheck  # tsc -b
-make fe-build      # tsc -b && vite build
-make ingest_tests  # cd ingest && uv run pytest
+make pre-commit        # runs `prek` (pre-commit drop-in) across the repo
+make frontend-check    # biome check .
+make frontend-typecheck # tsc -b
+make frontend-build    # tsc -b && vite build
+make ingest-tests      # cd ingest && uv run pytest
+make backend-tests     # cd backend && go test ./...
 ```
 Run a single Python test: `cd ingest && uv run pytest tests/morphgnt/test_parser.py::test_name`.
 
