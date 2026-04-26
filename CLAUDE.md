@@ -15,8 +15,8 @@ The repo is a monorepo with four top-level code areas:
   Postgres via `COPY ... FROM STDIN`. Runs on a schedule/manually via
   `ingest-prod.yml`, not from within the app.
 - `backend/` — Go HTTP server (`net/http`, `pgx/v5`). Layered as
-  handler → service → store (`morphgntHandler.go` → `morphgntService.go` →
-  `morphgntStore.go`), with `Repository` interface defined at the service
+  handler → service → store (`morphgnt_handler.go` → `morphgnt_service.go` →
+  `morphgnt_store.go`), with `Repository` interface defined at the service
   layer so the store is pluggable. `db.go` builds the pgx pool and picks a
   TLS mode based on `DB_SSLMODE` (`verify-full` loads an RDS CA bundle from
   `/etc/ssl/certs/rds-ca.pem`; `disable` is for local dev).
