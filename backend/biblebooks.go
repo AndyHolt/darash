@@ -15,6 +15,10 @@ const (
 
 type BookID int
 
+// String returns the canonical book name. The returned value is also the
+// representation used in the database `book` column (written by ingest), so
+// callers in the store layer rely on String() to build SQL queries — keep
+// the value in lockstep with books[id].Name. See TestBookIDStringMatchesName.
 func (b BookID) String() string {
 	if book, ok := books[b]; ok {
 		return book.Name

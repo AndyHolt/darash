@@ -49,6 +49,21 @@ func TestBookNamesAndAbbrevsAreUnique(t *testing.T) {
 	}
 }
 
+// The store layer uses BookID.String() to build SQL queries against the
+// morphgnt_sblgnt.book column. The ingest job wrote that column from the same
+// books[id].Name field. If the two ever diverge, queries silently return zero
+// rows and the user sees an empty (or 404) response with no obvious cause.
+// This test pins the invariant: every BookID's String() must equal its
+// books[id].Name.
+func TestBookIDStringMatchesName(t *testing.T) {
+	for id, b := range books {
+		if got := id.String(); got != b.Name {
+			t.Errorf("BookID(%d).String() = %q, books[%d].Name = %q (must match for store layer SQL lookups)",
+				int(id), got, int(id), b.Name)
+		}
+	}
+}
+
 func TestBookIDString(t *testing.T) {
 	tests := []struct {
 		id   BookID
