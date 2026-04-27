@@ -1,6 +1,6 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import type { Passage } from "@/texts/morphgnt/morphgnt.types";
+import type { Passage, Word } from "@/texts/morphgnt/morphgnt.types";
 
 const passageQuery = (ref: string) =>
   queryOptions({
@@ -28,8 +28,12 @@ function RouteComponent() {
   return (
     <div>
       {passage.words.map((w) => (
-        <span key={w.word_index}>{w.text} </span>
+        <span key={wordKey(w)}>{w.text} </span>
       ))}
     </div>
   );
+}
+
+function wordKey(w: Word): string {
+  return `${w.book}.${w.chapter}.${w.verse}${w.word_index}`;
 }
