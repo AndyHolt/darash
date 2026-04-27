@@ -78,3 +78,14 @@ variable "db_secret_arn" {
   description = "ARN of the Secrets Manager secret holding the RDS master user credentials (keys: username, password)."
   type        = string
 }
+
+variable "db_resource_id" {
+  description = "Immutable RDS resource ID (db-XXXXXX). Used to scope the rds-db:connect IAM grant on the task role."
+  type        = string
+}
+
+variable "db_app_username" {
+  description = "Postgres role the backend will use once IAM database authentication is enabled. The task role is granted rds-db:connect for this user."
+  type        = string
+  default     = "darash_app"
+}

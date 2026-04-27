@@ -66,6 +66,39 @@ resource "aws_iam_role_policy" "task_execution_secrets" {
   })
 }
 
+# --- Task role --------------------------------------------------------------
+
+# Distinct from the execution role: this is the identity the running container
+# assumes (via the ECS task metadata endpoint) for AWS API calls — currently
+# used to mint RDS IAM auth tokens via rds-db:connect.
+
+resource "aws_iam_role" "task" {
+  name               = "${local.name}-task"
+  assume_role_policy = data.aws_iam_policy_document.task_execution_assume.json
+
+  tags = {
+    Name = "${local.name}-task"
+  }
+}
+
+resource "aws_iam_role_policy" "task_rds_connect" {
+  name = "${local.name}-rds-connect"
+  role = aws_iam_role.task.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "rds-db:connect"
+        Resource = "arn:aws:rds-db:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:dbuser:${var.db_resource_id}/${var.db_app_username}"
+      },
+    ]
+  })
+}
+
+data "aws_caller_identity" "current" {}
+
 # --- Task definition --------------------------------------------------------
 
 resource "aws_ecs_task_definition" "this" {
@@ -75,6 +108,7 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = var.cpu
   memory                   = var.memory
   execution_role_arn       = aws_iam_role.task_execution.arn
+  task_role_arn            = aws_iam_role.task.arn
 
   container_definitions = jsonencode([
     {

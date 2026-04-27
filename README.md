@@ -97,6 +97,47 @@ the CloudFront distribution:
    - Target: the CloudFront distribution domain name from step 1
    - Proxy status: **DNS only** (grey cloud)
 
+### Bootstrap the backend IAM-auth DB user
+
+The backend authenticates to RDS via IAM database authentication: each new
+pool connection mints a short-lived token using the ECS task role, which is
+granted `rds-db:connect`. This avoids the long-lived password drifting out
+of sync after AWS rotates the master secret. The Terraform side (enabling
+`iam_database_authentication_enabled` on RDS and adding the task role) is
+managed automatically; the Postgres role itself has to be created once
+manually because RDS-managed users cannot be defined in Terraform.
+
+When to run: once per environment, after the Terraform changes are applied
+and before `DB_IAM_AUTH=true` is flipped on the backend container.
+
+Connect to the RDS instance as the master user (`darash`) — same access
+pattern as the `db-query` GitHub Actions workflow: temporarily authorise
+your IP on the RDS security group, fetch the master credentials from
+Secrets Manager, run psql, then revoke the SG rule. Then run:
+
+```sql
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'darash_app') THEN
+    CREATE ROLE darash_app LOGIN;
+  END IF;
+END $$;
+
+GRANT rds_iam TO darash_app;
+GRANT CONNECT ON DATABASE darash TO darash_app;
+GRANT USAGE ON SCHEMA public TO darash_app;
+GRANT SELECT ON morphgnt_sblgnt TO darash_app;
+ALTER DEFAULT PRIVILEGES FOR ROLE darash IN SCHEMA public
+  GRANT SELECT ON TABLES TO darash_app;
+```
+
+The `ALTER DEFAULT PRIVILEGES FOR ROLE darash` line is what keeps the grant
+working across re-ingests: ingest connects as the master user `darash` and
+recreates the table, so default privileges have to be set on that role for
+future tables to inherit the SELECT grant automatically.
+
+Verify with `\du darash_app` — the role should show `Member of: {rds_iam}`.
+
 ### Frontend deploy secrets
 
 Add the frontend deploy role ARN and CloudFront distribution ID to GitHub
