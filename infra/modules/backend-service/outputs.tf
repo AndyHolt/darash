@@ -23,6 +23,11 @@ output "task_execution_role_arn" {
   value       = aws_iam_role.task_execution.arn
 }
 
+output "task_role_arn" {
+  description = "ARN of the task role (the identity the running container assumes for AWS API calls)."
+  value       = aws_iam_role.task.arn
+}
+
 output "log_group_name" {
   description = "CloudWatch log group receiving task logs."
   value       = aws_cloudwatch_log_group.tasks.name
