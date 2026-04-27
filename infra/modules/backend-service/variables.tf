@@ -74,11 +74,6 @@ variable "db_name" {
   type        = string
 }
 
-variable "db_secret_arn" {
-  description = "ARN of the Secrets Manager secret holding the RDS master user credentials (keys: username, password)."
-  type        = string
-}
-
 variable "db_resource_id" {
   description = "Immutable RDS resource ID (db-XXXXXX). Used to scope the rds-db:connect IAM grant on the task role."
   type        = string

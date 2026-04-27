@@ -48,24 +48,6 @@ resource "aws_iam_role_policy_attachment" "task_execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_iam_role_policy" "task_execution_secrets" {
-  name = "${local.name}-secrets"
-  role = aws_iam_role.task_execution.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue",
-        ]
-        Resource = var.db_secret_arn
-      },
-    ]
-  })
-}
-
 # --- Task role --------------------------------------------------------------
 
 # Distinct from the execution role: this is the identity the running container
@@ -138,15 +120,13 @@ resource "aws_ecs_task_definition" "this" {
           name  = "DB_NAME"
           value = var.db_name
         },
-      ]
-      secrets = [
         {
-          name      = "DB_USER"
-          valueFrom = "${var.db_secret_arn}:username::"
+          name  = "DB_USER"
+          value = var.db_app_username
         },
         {
-          name      = "DB_PASSWORD"
-          valueFrom = "${var.db_secret_arn}:password::"
+          name  = "DB_IAM_AUTH"
+          value = "true"
         },
       ]
       logConfiguration = {
