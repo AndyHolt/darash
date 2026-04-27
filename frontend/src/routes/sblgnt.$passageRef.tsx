@@ -25,10 +25,14 @@ function RouteComponent() {
   const { data: passage } = useSuspenseQuery(passageQuery(passageRef));
 
   return (
-    <div>
-      {passage.words.map((w) => (
-        <span key={wordKey(w)}>{w.text} </span>
-      ))}
+    <div className="my-2 mx-4 flex flex-row justify-center">
+      <div className="max-w-lg">
+        <div>
+          {passage.words.map((w) => (
+            <span key={wordKey(w)}>{w.text} </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
