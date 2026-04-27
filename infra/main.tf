@@ -112,7 +112,6 @@ module "backend_service" {
   db_host                   = module.postgres.address
   db_port                   = module.postgres.port
   db_name                   = module.postgres.db_name
-  db_secret_arn             = module.postgres.master_user_secret_arn
   db_resource_id            = module.postgres.resource_id
 }
 
