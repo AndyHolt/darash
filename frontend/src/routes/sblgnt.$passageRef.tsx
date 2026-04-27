@@ -1,5 +1,6 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Fragment } from "react";
 import type { Passage, Word } from "@/texts/morphgnt/morphgnt.types";
 
 const passageQuery = (ref: string) =>
@@ -29,7 +30,15 @@ function RouteComponent() {
       <div className="max-w-lg">
         <div className="font-greek text-lg">
           {passage.words.map((w) => (
-            <span key={wordKey(w)}>{w.text} </span>
+            <Fragment key={wordKey(w)}>
+              {w.verse === 1 && w.word_index === 1 && (
+                <span className="mr-1 text-primary font-bold font-sans text-base">{w.chapter}</span>
+              )}
+              {w.word_index === 1 && w.verse !== 1 && (
+                <sup className="mr-1 text-muted-foreground font-sans text-xs">{w.verse}</sup>
+              )}
+              <span>{w.text} </span>
+            </Fragment>
           ))}
         </div>
       </div>
