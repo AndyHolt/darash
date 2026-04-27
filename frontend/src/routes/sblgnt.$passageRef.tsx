@@ -27,9 +27,19 @@ function RouteComponent() {
   return (
     <div className="my-2 mx-4 flex flex-row justify-center">
       <div className="max-w-lg">
-        <div className="font-greek text-lg">
+        <div>
           {passage.words.map((w) => (
-            <span key={wordKey(w)}>{w.text} </span>
+            <>
+              {w.verse === 1 && w.word_index === 1 && (
+                <span className="mr-1 text-primary font-bold">{w.chapter}</span>
+              )}
+              {w.word_index === 1 && w.verse !== 1 && (
+                <sup className="mr-1 text-muted-foreground">{w.verse}</sup>
+              )}
+              <span key={wordKey(w)} className="font-greek text-lg">
+                {w.text}{" "}
+              </span>
+            </>
           ))}
         </div>
       </div>
