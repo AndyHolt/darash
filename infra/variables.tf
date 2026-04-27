@@ -17,9 +17,15 @@ variable "db_name" {
 }
 
 variable "db_username" {
-  description = "Master username for the RDS Postgres instance. The password is managed by RDS via Secrets Manager."
+  description = "Master username for the RDS Postgres instance. Used by ingest; the backend connects as db_app_username instead."
   type        = string
   default     = "darash"
+}
+
+variable "db_app_username" {
+  description = "Read-only application user the backend connects as. Created manually post-apply (see README)."
+  type        = string
+  default     = "darash_app"
 }
 
 variable "domain_name" {

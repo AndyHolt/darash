@@ -9,7 +9,12 @@ variable "db_name" {
 }
 
 variable "username" {
-  description = "Master username for the instance. Password is managed by RDS via Secrets Manager."
+  description = "Master username for the instance. Used by ingest; the backend connects as app_username instead."
+  type        = string
+}
+
+variable "app_username" {
+  description = "Read-only application user. Created manually post-apply (see README); password stored in Secrets Manager."
   type        = string
 }
 

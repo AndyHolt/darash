@@ -54,6 +54,52 @@ And for the backend deploy role:
 cd infra && terraform output -raw backend_deploy_role_arn | gh secret set AWS_BACKEND_DEPLOY_ROLE_ARN
 ```
 
+### Database app user
+
+The backend connects to Postgres as a read-only `darash_app` role rather than
+the master user. Terraform provisions a Secrets Manager secret with the role's
+generated password, but the role itself must be created manually inside
+Postgres after the first `infra/` apply (and re-created if the RDS instance is
+ever recreated).
+
+```bash
+cd infra
+DB_HOST=$(terraform output -raw db_address)
+DB_PORT=$(terraform output -raw db_port)
+DB_NAME=$(terraform output -raw db_name)
+MASTER_SECRET=$(terraform output -raw db_master_user_secret_arn)
+APP_SECRET=$(terraform output -raw db_app_user_secret_arn)
+
+MASTER_JSON=$(aws secretsmanager get-secret-value --secret-id "$MASTER_SECRET" --query SecretString --output text)
+APP_JSON=$(aws secretsmanager get-secret-value --secret-id "$APP_SECRET" --query SecretString --output text)
+
+MASTER_USER=$(echo "$MASTER_JSON" | jq -r .username)
+APP_USER=$(echo "$APP_JSON" | jq -r .username)
+APP_PASSWORD=$(echo "$APP_JSON" | jq -r .password)
+
+PGPASSWORD=$(echo "$MASTER_JSON" | jq -r .password) \
+  psql "host=$DB_HOST port=$DB_PORT dbname=$DB_NAME user=$MASTER_USER sslmode=require" <<SQL
+CREATE USER ${APP_USER} WITH PASSWORD '${APP_PASSWORD}';
+GRANT CONNECT ON DATABASE ${DB_NAME} TO ${APP_USER};
+GRANT USAGE ON SCHEMA public TO ${APP_USER};
+GRANT SELECT ON morphgnt_sblgnt TO ${APP_USER};
+SQL
+```
+
+Re-run the same block (substituting `CREATE USER` → `ALTER USER`) if the app
+secret is ever rotated. After running, force a new ECS deployment so backend
+tasks pick up the new credentials:
+
+```bash
+aws ecs update-service --region eu-west-1 \
+  --cluster darash-backend --service darash-backend \
+  --force-new-deployment
+```
+
+You'll need temporary security-group ingress to RDS from your IP for `psql` to
+reach it — same dance the ingest workflow does, or open it manually in the
+console for the duration of the setup.
+
 ### Backend DNS (Cloudflare)
 
 The backend runs behind an internet-facing ALB, but DNS for `darashbible.com`

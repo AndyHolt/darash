@@ -75,6 +75,6 @@ variable "db_name" {
 }
 
 variable "db_secret_arn" {
-  description = "ARN of the Secrets Manager secret holding the RDS master user credentials (keys: username, password)."
+  description = "ARN of the Secrets Manager secret holding the DB credentials the backend connects with (keys: username, password). Expected to be the read-only app user, not the master."
   type        = string
 }

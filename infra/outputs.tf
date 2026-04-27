@@ -19,8 +19,13 @@ output "db_name" {
 }
 
 output "db_master_user_secret_arn" {
-  description = "ARN of the Secrets Manager secret holding the RDS master user credentials."
+  description = "ARN of the Secrets Manager secret holding the RDS master user credentials. Used by the ingest workflow."
   value       = module.postgres.master_user_secret_arn
+}
+
+output "db_app_user_secret_arn" {
+  description = "ARN of the Secrets Manager secret holding the read-only app user credentials. Used by the backend."
+  value       = module.postgres.app_user_secret_arn
 }
 
 output "db_security_group_id" {

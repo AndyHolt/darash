@@ -25,5 +25,15 @@ output "db_name" {
 
 output "master_user_secret_arn" {
   description = "ARN of the Secrets Manager secret holding the master user credentials."
-  value       = aws_db_instance.this.master_user_secret[0].secret_arn
+  value       = aws_secretsmanager_secret.master.arn
+}
+
+output "app_user_secret_arn" {
+  description = "ARN of the Secrets Manager secret holding the read-only app user credentials."
+  value       = aws_secretsmanager_secret.app.arn
+}
+
+output "app_username" {
+  description = "Name of the read-only app Postgres role."
+  value       = var.app_username
 }

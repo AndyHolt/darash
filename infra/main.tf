@@ -14,6 +14,7 @@ module "postgres" {
   identifier             = var.project
   db_name                = var.db_name
   username               = var.db_username
+  app_username           = var.db_app_username
   db_subnet_group_name   = module.aws_interface.db_subnet_group_name
   vpc_security_group_ids = module.aws_interface.vpc_security_group_ids
 
@@ -112,7 +113,7 @@ module "backend_service" {
   db_host                   = module.postgres.address
   db_port                   = module.postgres.port
   db_name                   = module.postgres.db_name
-  db_secret_arn             = module.postgres.master_user_secret_arn
+  db_secret_arn             = module.postgres.app_user_secret_arn
 }
 
 locals {
