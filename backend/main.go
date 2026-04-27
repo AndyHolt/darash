@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -18,13 +19,24 @@ func main() {
 		sslMode = "verify-full"
 	}
 
+	iamAuth, _ := strconv.ParseBool(os.Getenv("DB_IAM_AUTH"))
+
+	region := os.Getenv("AWS_REGION")
+	if region == "" {
+		region = "eu-west-1"
+	}
+
 	connConfig := ConnectionConfig{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		Database: os.Getenv("DB_NAME"),
 		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
 		SSLMode:  sslMode,
+		IAMAuth:  iamAuth,
+		Region:   region,
+	}
+	if !iamAuth {
+		connConfig.Password = os.Getenv("DB_PASSWORD")
 	}
 
 	store, err := NewPgStore(context.Background(), connConfig)
