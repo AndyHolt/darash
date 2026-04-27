@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as CountRouteImport } from './routes/count'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SblgntPassageRefRouteImport } from './routes/sblgnt.$passageRef'
 
 const CountRoute = CountRouteImport.update({
   id: '/count',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SblgntPassageRefRoute = SblgntPassageRefRouteImport.update({
+  id: '/sblgnt/$passageRef',
+  path: '/sblgnt/$passageRef',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/count': typeof CountRoute
+  '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/count': typeof CountRoute
+  '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/count': typeof CountRoute
+  '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/count'
+  fullPaths: '/' | '/about' | '/count' | '/sblgnt/$passageRef'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/count'
-  id: '__root__' | '/' | '/about' | '/count'
+  to: '/' | '/about' | '/count' | '/sblgnt/$passageRef'
+  id: '__root__' | '/' | '/about' | '/count' | '/sblgnt/$passageRef'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   CountRoute: typeof CountRoute
+  SblgntPassageRefRoute: typeof SblgntPassageRefRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sblgnt/$passageRef': {
+      id: '/sblgnt/$passageRef'
+      path: '/sblgnt/$passageRef'
+      fullPath: '/sblgnt/$passageRef'
+      preLoaderRoute: typeof SblgntPassageRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   CountRoute: CountRoute,
+  SblgntPassageRefRoute: SblgntPassageRefRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
