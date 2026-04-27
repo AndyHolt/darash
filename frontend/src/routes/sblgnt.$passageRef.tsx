@@ -34,5 +34,5 @@ function RouteComponent() {
 }
 
 function wordKey(w: Word): string {
-  return `${w.book}.${w.chapter}.${w.verse}${w.word_index}`;
+  return `${w.book}.${w.chapter}.${w.verse}.${w.word_index}`;
 }
