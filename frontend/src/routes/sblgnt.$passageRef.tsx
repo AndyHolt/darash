@@ -27,7 +27,7 @@ function RouteComponent() {
   return (
     <div className="my-2 mx-4 flex flex-row justify-center">
       <div className="max-w-lg">
-        <div>
+        <div className="font-greek text-lg">
           {passage.words.map((w) => (
             <span key={wordKey(w)}>{w.text} </span>
           ))}
