@@ -160,10 +160,13 @@ locals {
         Resource = "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/${var.project}-backend/${var.project}-backend"
       },
       {
-        Sid      = "PassExecutionRole"
-        Effect   = "Allow"
-        Action   = "iam:PassRole"
-        Resource = module.backend_service.task_execution_role_arn
+        Sid    = "PassTaskRoles"
+        Effect = "Allow"
+        Action = "iam:PassRole"
+        Resource = [
+          module.backend_service.task_execution_role_arn,
+          module.backend_service.task_role_arn,
+        ]
       },
     ]
   })
