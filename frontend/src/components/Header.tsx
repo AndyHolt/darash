@@ -12,6 +12,7 @@ export default function Header() {
           <h1 className="font-display font-semibold text-xl text-primary select-none">Darash</h1>
         </Link>
         <div className="flex gap-1">
+          <LinkButton to="/sblgnt/matt.1.1-matt.1.20">Read</LinkButton>
           <LinkButton to="/about">About</LinkButton>
           <LinkButton to="/count">Count</LinkButton>
           <ModeToggle />
