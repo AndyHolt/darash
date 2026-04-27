@@ -15,7 +15,7 @@ const passageQuery = (ref: string) =>
 export const Route = createFileRoute("/sblgnt/$passageRef")({
   loader: ({ context: { queryClient }, params }) =>
     queryClient.ensureQueryData(passageQuery(params.passageRef)),
-  pendingComponent: () => <div>oading...</div>,
+  pendingComponent: () => <div>Loading...</div>,
   errorComponent: ({ error }) => <div>Error: {error.message}</div>,
   component: RouteComponent,
 });
