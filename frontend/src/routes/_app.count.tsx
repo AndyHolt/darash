@@ -14,7 +14,7 @@ const countQueryOptions = queryOptions({
     }),
 });
 
-export const Route = createFileRoute("/count")({
+export const Route = createFileRoute("/_app/count")({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(countQueryOptions),
   component: () => {
     const {
