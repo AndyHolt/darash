@@ -109,6 +109,7 @@ module "backend_service" {
   subnet_ids                = module.aws_interface.subnet_ids
   backend_security_group_id = module.aws_interface.backend_security_group_id
   certificate_arn           = data.aws_acm_certificate.api.arn
+  container_image           = "${module.backend_ecr.repository_url}:latest"
   db_host                   = module.postgres.address
   db_port                   = module.postgres.port
   db_name                   = module.postgres.db_name

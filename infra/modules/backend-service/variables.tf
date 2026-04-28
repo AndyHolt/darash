@@ -24,9 +24,8 @@ variable "certificate_arn" {
 }
 
 variable "container_image" {
-  description = "Container image for the placeholder task. Replace with the ECR image URI once the real backend is published."
+  description = "Container image for the task. Typically the project ECR repository's :latest tag — CI pushes both :latest and a digest-pinned tag on every deploy, and registers task-def revisions using the digest. Terraform-managed revisions (env var / cpu / memory changes) reference :latest so they pull the most recent CI build at task launch instead of falling back to a placeholder."
   type        = string
-  default     = "public.ecr.aws/nginx/nginx:stable"
 }
 
 variable "container_port" {
