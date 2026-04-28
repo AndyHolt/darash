@@ -71,16 +71,19 @@ export type NTBook =
 export type Book = OTBook | NTBook;
 
 export interface VerseReference {
-  kind: "verse";
   book: Book;
   chapter: number;
   verse: number;
 }
 
-export interface RangeReference {
-  kind: "range";
-  start: { book: Book; chapter: number; verse: number };
-  end: { book: Book; chapter: number; verse: number };
+export interface TaggedVerseReference extends VerseReference {
+  kind: "verse";
 }
 
-export type Reference = VerseReference | RangeReference;
+export interface RangeReference {
+  kind: "range";
+  start: VerseReference;
+  end: VerseReference;
+}
+
+export type Reference = TaggedVerseReference | RangeReference;
