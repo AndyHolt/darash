@@ -9,104 +9,161 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as CountRouteImport } from './routes/count'
-import { Route as AboutRouteImport } from './routes/about'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as SblgntRouteImport } from './routes/sblgnt'
+import { Route as AppRouteImport } from './routes/_app'
+import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as SblgntPassageRefRouteImport } from './routes/sblgnt.$passageRef'
+import { Route as AppCountRouteImport } from './routes/_app.count'
+import { Route as AppAboutRouteImport } from './routes/_app.about'
 
-const CountRoute = CountRouteImport.update({
-  id: '/count',
-  path: '/count',
+const SblgntRoute = SblgntRouteImport.update({
+  id: '/sblgnt',
+  path: '/sblgnt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
+const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AppRoute,
 } as any)
 const SblgntPassageRefRoute = SblgntPassageRefRouteImport.update({
-  id: '/sblgnt/$passageRef',
-  path: '/sblgnt/$passageRef',
-  getParentRoute: () => rootRouteImport,
+  id: '/$passageRef',
+  path: '/$passageRef',
+  getParentRoute: () => SblgntRoute,
+} as any)
+const AppCountRoute = AppCountRouteImport.update({
+  id: '/count',
+  path: '/count',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAboutRoute = AppAboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/count': typeof CountRoute
+  '/': typeof AppIndexRoute
+  '/sblgnt': typeof SblgntRouteWithChildren
+  '/about': typeof AppAboutRoute
+  '/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/count': typeof CountRoute
+  '/sblgnt': typeof SblgntRouteWithChildren
+  '/about': typeof AppAboutRoute
+  '/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/': typeof AppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/count': typeof CountRoute
+  '/_app': typeof AppRouteWithChildren
+  '/sblgnt': typeof SblgntRouteWithChildren
+  '/_app/about': typeof AppAboutRoute
+  '/_app/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/_app/': typeof AppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/count' | '/sblgnt/$passageRef'
+  fullPaths: '/' | '/sblgnt' | '/about' | '/count' | '/sblgnt/$passageRef'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/count' | '/sblgnt/$passageRef'
-  id: '__root__' | '/' | '/about' | '/count' | '/sblgnt/$passageRef'
+  to: '/sblgnt' | '/about' | '/count' | '/sblgnt/$passageRef' | '/'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/sblgnt'
+    | '/_app/about'
+    | '/_app/count'
+    | '/sblgnt/$passageRef'
+    | '/_app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  CountRoute: typeof CountRoute
-  SblgntPassageRefRoute: typeof SblgntPassageRefRoute
+  AppRoute: typeof AppRouteWithChildren
+  SblgntRoute: typeof SblgntRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/count': {
-      id: '/count'
-      path: '/count'
-      fullPath: '/count'
-      preLoaderRoute: typeof CountRouteImport
+    '/sblgnt': {
+      id: '/sblgnt'
+      path: '/sblgnt'
+      fullPath: '/sblgnt'
+      preLoaderRoute: typeof SblgntRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
+    '/_app/': {
+      id: '/_app/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
     }
     '/sblgnt/$passageRef': {
       id: '/sblgnt/$passageRef'
-      path: '/sblgnt/$passageRef'
+      path: '/$passageRef'
       fullPath: '/sblgnt/$passageRef'
       preLoaderRoute: typeof SblgntPassageRefRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SblgntRoute
+    }
+    '/_app/count': {
+      id: '/_app/count'
+      path: '/count'
+      fullPath: '/count'
+      preLoaderRoute: typeof AppCountRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/about': {
+      id: '/_app/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AppAboutRouteImport
+      parentRoute: typeof AppRoute
     }
   }
 }
 
-const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
-  CountRoute: CountRoute,
+interface AppRouteChildren {
+  AppAboutRoute: typeof AppAboutRoute
+  AppCountRoute: typeof AppCountRoute
+  AppIndexRoute: typeof AppIndexRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAboutRoute: AppAboutRoute,
+  AppCountRoute: AppCountRoute,
+  AppIndexRoute: AppIndexRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
+interface SblgntRouteChildren {
+  SblgntPassageRefRoute: typeof SblgntPassageRefRoute
+}
+
+const SblgntRouteChildren: SblgntRouteChildren = {
   SblgntPassageRefRoute: SblgntPassageRefRoute,
+}
+
+const SblgntRouteWithChildren =
+  SblgntRoute._addFileChildren(SblgntRouteChildren)
+
+const rootRouteChildren: RootRouteChildren = {
+  AppRoute: AppRouteWithChildren,
+  SblgntRoute: SblgntRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
