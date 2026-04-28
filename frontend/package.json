@@ -34,7 +34,8 @@
     "globals": "^17.4.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
-    "vite": "^8.0.4"
+    "vite": "^8.0.4",
+    "vitest": "^4.1.5"
   },
   "name": "darash-frontend",
   "private": true,
@@ -43,7 +44,9 @@
     "dev": "vite",
     "check": "biome check .",
     "typecheck": "tsc -b",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "type": "module",
   "version": "0.0.0"

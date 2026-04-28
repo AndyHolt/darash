@@ -10,7 +10,7 @@ export
 .PHONY: pre-commit prek \
 	ingest-run ingest-tests \
 	backend-up backend-down backend-dev backend-tests \
-	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-preview \
+	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-tests frontend-preview \
 	db-up db-down db-psql \
 	_require-env
 
@@ -64,6 +64,9 @@ frontend-check:
 
 frontend-typecheck:
 	cd frontend && pnpm typecheck
+
+frontend-tests:
+	cd frontend && pnpm test
 
 frontend-preview:
 	cd frontend && pnpm preview
