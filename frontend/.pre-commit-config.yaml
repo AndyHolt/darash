@@ -5,7 +5,7 @@ repos:
         name: biome check
         language: system
         entry: pnpm biome check --write
-        types_or: [ts, tsx, json]
+        types_or: [ts, tsx, json, css]
 
       - id: tsc
         name: tsc typecheck
