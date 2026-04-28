@@ -1,17 +1,7 @@
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment } from "react";
-import type { Passage, Word } from "@/texts/morphgnt";
-
-const passageQuery = (ref: string) =>
-  queryOptions({
-    queryKey: ["morphgntPassage", ref],
-    queryFn: ({ signal }) =>
-      fetch(`/api/morphgnt/passage/${ref}`, { signal }).then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json() as Promise<Passage>;
-      }),
-  });
+import { passageQuery, type Word } from "@/texts/morphgnt";
 
 export const Route = createFileRoute("/sblgnt/$passageRef")({
   loader: ({ context: { queryClient }, params }) =>
