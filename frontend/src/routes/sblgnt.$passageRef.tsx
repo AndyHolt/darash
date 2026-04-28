@@ -1,7 +1,7 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment } from "react";
-import type { Passage, Word } from "@/texts/morphgnt/morphgnt.types";
+import type { Passage, Word } from "@/texts/morphgnt";
 
 const passageQuery = (ref: string) =>
   queryOptions({
