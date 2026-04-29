@@ -42,7 +42,7 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "dev": "vite",
-    "check": "biome check .",
+    "check": "biome check . --error-on-warnings",
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "test": "vitest run",

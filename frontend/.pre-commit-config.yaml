@@ -4,7 +4,7 @@ repos:
       - id: biome-check
         name: biome check
         language: system
-        entry: pnpm biome check --write
+        entry: pnpm biome check --write --error-on-warnings
         types_or: [ts, tsx, json, css]
 
       - id: tsc
