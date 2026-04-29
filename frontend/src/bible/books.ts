@@ -1,4 +1,4 @@
-export interface BookInfo {
+interface BookInfoShape {
   name: string;
   abbrev: string;
   verses: readonly number[];
@@ -260,7 +260,7 @@ export const OT_BOOKS = [
     abbrev: "Mal",
     verses: [14, 17, 24],
   },
-] as const satisfies readonly BookInfo[];
+] as const satisfies readonly BookInfoShape[];
 
 export const NT_BOOKS = [
   {
@@ -407,14 +407,16 @@ export const NT_BOOKS = [
     abbrev: "Rev",
     verses: [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21],
   },
-] as const satisfies readonly BookInfo[];
+] as const satisfies readonly BookInfoShape[];
 
-export const BOOKS = [...OT_BOOKS, ...NT_BOOKS] as const satisfies readonly BookInfo[];
+export const BOOKS = [...OT_BOOKS, ...NT_BOOKS] as const satisfies readonly BookInfoShape[];
+
+export type BookInfo = (typeof BOOKS)[number];
 
 export type OTBook = (typeof OT_BOOKS)[number]["name"];
 
 export type NTBook = (typeof NT_BOOKS)[number]["name"];
 
-export type Book = OTBook | NTBook;
+export type Book = BookInfo["name"];
 
 export type Testament = "Old Testament" | "New Testament";

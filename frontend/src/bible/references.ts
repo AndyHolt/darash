@@ -1,4 +1,4 @@
-import type { Book } from "./books";
+import { BOOKS, type Book } from "./books";
 
 export interface VerseReference {
   book: Book;
@@ -38,6 +38,32 @@ export function formatReference(ref: Reference): string {
       return formatVerseReference(ref);
     case "range":
       return formatRangeReference(ref);
+    default: {
+      const exhaustive: never = ref;
+      throw new Error("Unexpected reference type:", exhaustive);
+    }
+  }
+}
+
+export function verseUrlTag(ref: VerseReference): string {
+  const bookInfo = BOOKS.find((b) => b.name === ref.book);
+  if (!bookInfo) {
+    throw new Error(`Unknown book: ${ref.book}`);
+  }
+  const bookAbbrev = bookInfo.abbrev.toLowerCase();
+  return `${bookAbbrev}.${ref.chapter}.${ref.verse}`;
+}
+
+export function rangeUrlTag(ref: RangeReference): string {
+  return `${verseUrlTag(ref.start)}-${verseUrlTag(ref.end)}`;
+}
+
+export function referenceUrlTag(ref: Reference): string {
+  switch (ref.kind) {
+    case "verse":
+      return verseUrlTag(ref);
+    case "range":
+      return rangeUrlTag(ref);
     default: {
       const exhaustive: never = ref;
       throw new Error("Unexpected reference type:", exhaustive);
