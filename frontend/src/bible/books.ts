@@ -416,3 +416,5 @@ export type OTBook = (typeof OT_BOOKS)[number]["name"];
 export type NTBook = (typeof NT_BOOKS)[number]["name"];
 
 export type Book = OTBook | NTBook;
+
+export type Testament = "Old Testament" | "New Testament";
