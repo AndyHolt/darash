@@ -13,7 +13,7 @@ function createRoute(book: Book, chapter: number, verse: number) {
 
 export function VersePicker({ book, chapter }: VersePickerProps) {
   const bookConfig = BOOKS.find((b) => b.name === book);
-  const numVerses = bookConfig?.verses[chapter] ?? 0;
+  const numVerses = bookConfig?.verses[chapter - 1] ?? 0;
 
   const verses = Array.from({ length: numVerses }, (_, i) => i + 1);
 
