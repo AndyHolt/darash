@@ -11,13 +11,13 @@ export function BookPicker({ testament, pickBook }: BookPickerProps) {
   const books = testament === "Old Testament" ? OT_BOOKS : NT_BOOKS;
 
   return (
-    <div className="grid grid-flow-col grid-rows-9 gap-1">
+    <div className="columns-2 md:columns-3 gap-1">
       {books.map((b) => (
         <Button
           key={b.name}
           variant="ghost"
           size="sm"
-          className="justify-start"
+          className="mb-1 flex w-full justify-start break-inside-avoid"
           onClick={() => pickBook(b)}
         >
           {b.name}
