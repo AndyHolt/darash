@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { Book, BookInfo } from "@/bible/books";
+import type { BookInfo } from "@/bible/books";
 import { Button } from "@/components/ui/button";
 
 export interface VersePickerProps {
@@ -7,8 +7,8 @@ export interface VersePickerProps {
   chapter: number;
 }
 
-function createRoute(book: Book, chapter: number, verse: number) {
-  return `/sblgnt/${book}.${chapter}.${verse}`;
+function createRoute(book: BookInfo, chapter: number, verse: number) {
+  return `/sblgnt/${book.abbrev.toLowerCase()}.${chapter}.${verse}`;
 }
 
 export function VersePicker({ book, chapter }: VersePickerProps) {
@@ -18,7 +18,7 @@ export function VersePicker({ book, chapter }: VersePickerProps) {
     <div className="grid grid-cols-5 gap-1">
       {verses.map((n) => (
         <Button key={n} variant="ghost" asChild>
-          <Link to={createRoute(book.name as Book, chapter, n)}>{n}</Link>
+          <Link to={createRoute(book, chapter, n)}>{n}</Link>
         </Button>
       ))}
     </div>
