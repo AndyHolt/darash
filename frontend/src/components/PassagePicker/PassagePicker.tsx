@@ -78,6 +78,21 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     }
   }
 
+  function renderStepDescription() {
+    switch (step.step) {
+      case "book":
+        return "Select book";
+      case "chapter":
+        return "Select chapter";
+      case "verse":
+        return "Select verse";
+      default: {
+        const _exhaustive: never = step;
+        throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
+      }
+    }
+  }
+
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -88,7 +103,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       <PopoverContent className="w-auto min-w-72 p-2">
         <PopoverHeader>
           <PopoverTitle>Choose passage</PopoverTitle>
-          <PopoverDescription>Select first verse</PopoverDescription>
+          <PopoverDescription>{renderStepDescription()}</PopoverDescription>
         </PopoverHeader>
         {renderStep()}
       </PopoverContent>
