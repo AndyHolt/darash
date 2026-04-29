@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import type { NTBook } from "@/bible/books";
 import { formatReference } from "@/bible/references";
+import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -28,9 +29,9 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <span className="text-sm text-muted-foreground">
+        <Button variant="outline">
           {passage ? formatReference(passage.reference) : "Select passage"}
-        </span>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-72 p-2">
         <PopoverHeader>
