@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { chaptersForBook, NT_BOOKS, OT_BOOKS, versesForChapter } from "./books";
+import { chaptersForBook, lookupBookByName, versesForChapter } from "./books";
 
-const john = NT_BOOKS.find((b) => b.name === "John")!;
-const thirdJohn = NT_BOOKS.find((b) => b.name === "3 John")!;
-const psalms = OT_BOOKS.find((b) => b.name === "Psalms")!;
+const john = lookupBookByName("John");
+const thirdJohn = lookupBookByName("3 John");
+const psalms = lookupBookByName("Psalms");
 
 describe("chaptersForBook", () => {
   test("returns 1..N for an N-chapter book", () => {

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { NT_BOOKS } from "@/bible/books";
+import { lookupBookByName } from "@/bible/books";
 import { initialStep, type Step, type StepEvent, stepReducer } from "./state";
 
-const john = NT_BOOKS.find((b) => b.name === "John")!;
-const mark = NT_BOOKS.find((b) => b.name === "Mark")!;
+const john = lookupBookByName("John");
+const mark = lookupBookByName("Mark");
 
 const bookState: Step = initialStep;
 const chapterState: Step = { step: "chapter", book: john };
