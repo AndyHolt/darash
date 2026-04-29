@@ -79,16 +79,16 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
         return (
           <div className="grid grid-cols-[1fr_auto_1fr] items-center">
             <BackButton onClick={() => dispatch({ type: "back" })} />
-            <h1>{step.book.name}</h1>
+            <h2>{step.book.name}</h2>
           </div>
         );
       case "verse":
         return (
           <div className="grid grid-cols-[1fr_auto_1fr] items-center">
             <BackButton onClick={() => dispatch({ type: "back" })} />
-            <h1>
+            <h2>
               {step.book.name} {step.chapter}
-            </h1>
+            </h2>
           </div>
         );
       default: {
