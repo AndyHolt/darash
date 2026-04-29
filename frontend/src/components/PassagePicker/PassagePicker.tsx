@@ -71,26 +71,23 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     }
   }
 
+  function stepControl(title: string) {
+    return (
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+        <BackButton onClick={() => dispatch({ type: "back" })} />
+        <h2>{title}</h2>
+      </div>
+    );
+  }
+
   function renderStepControl() {
     switch (step.step) {
       case "book":
         return null;
       case "chapter":
-        return (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-            <BackButton onClick={() => dispatch({ type: "back" })} />
-            <h2>{step.book.name}</h2>
-          </div>
-        );
+        return stepControl(step.book.name);
       case "verse":
-        return (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-            <BackButton onClick={() => dispatch({ type: "back" })} />
-            <h2>
-              {step.book.name} {step.chapter}
-            </h2>
-          </div>
-        );
+        return stepControl(`${step.book.name} ${step.chapter}`);
       default: {
         const _exhaustive: never = step;
         throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
