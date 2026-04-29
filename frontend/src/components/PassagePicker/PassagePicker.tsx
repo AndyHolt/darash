@@ -16,20 +16,65 @@ import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
 import { VersePicker } from "./VersePicker";
 
+interface BookStep {
+  step: "book";
+}
+
+interface ChapterStep {
+  step: "chapter";
+  book: BookInfo;
+}
+
+interface VerseStep {
+  step: "verse";
+  book: BookInfo;
+  chapter: number;
+}
+
+type Step = BookStep | ChapterStep | VerseStep;
+
 export interface PassagePickerProps {
   passageRef: string;
 }
 
 export function PassagePicker({ passageRef }: PassagePickerProps) {
   const { data: passage } = useQuery(passageQuery(passageRef));
-  // TODO use book config for state, to avoid look of config in both chapter and verse components
-  const [book, setBook] = useState<BookInfo>();
-  const [chapter, setChapter] = useState<number>();
+  const [step, setStep] = useState<Step>({ step: "book" });
 
   function handleOpenChange(open: boolean) {
     if (!open) {
-      setBook(undefined);
-      setChapter(undefined);
+      setStep({ step: "book" } as const satisfies BookStep);
+    }
+  }
+
+  function setBook(book: BookInfo) {
+    setStep({
+      ...step,
+      step: "chapter",
+      book: book,
+    } as const satisfies ChapterStep);
+  }
+
+  function setChapter(chapter: number) {
+    setStep({
+      step: "verse",
+      book: (step as ChapterStep).book,
+      chapter: chapter,
+    } as const satisfies VerseStep);
+  }
+
+  function renderStep() {
+    switch (step.step) {
+      case "book":
+        return <BookPicker testament="New Testament" pickBook={setBook} />;
+      case "chapter":
+        return <ChapterPicker book={step.book} pickChapter={setChapter} />;
+      case "verse":
+        return <VersePicker book={step.book} chapter={step.chapter} />;
+      default: {
+        const _exhaustive: never = step;
+        throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
+      }
     }
   }
 
@@ -45,13 +90,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
           <PopoverTitle>Choose passage</PopoverTitle>
           <PopoverDescription>Select first verse</PopoverDescription>
         </PopoverHeader>
-        {book ? (
-          <span>{book.name}</span>
-        ) : (
-          <BookPicker testament="New Testament" pickBook={setBook} />
-        )}
-        {book && !chapter && <ChapterPicker book={book} pickChapter={setChapter} />}
-        {book && chapter && <VersePicker book={book} chapter={chapter} />}
+        {renderStep()}
       </PopoverContent>
     </Popover>
   );
