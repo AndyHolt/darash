@@ -26,8 +26,15 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
   const [book, setBook] = useState<BookInfo>();
   const [chapter, setChapter] = useState<number>();
 
+  function handleOpenChange(open: boolean) {
+    if (!open) {
+      setBook(undefined);
+      setChapter(undefined);
+    }
+  }
+
   return (
-    <Popover>
+    <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline">
           {passage ? formatReference(passage.reference) : "Select passage"}
