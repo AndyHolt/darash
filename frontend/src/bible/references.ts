@@ -1,4 +1,4 @@
-import type { Book } from "./books";
+import { type Book, lookupBookByAbbrev, lookupBookByName } from "./books";
 
 export interface VerseReference {
   book: Book;
@@ -43,4 +43,63 @@ export function formatReference(ref: Reference): string {
       throw new Error("Unexpected reference type:", exhaustive);
     }
   }
+}
+
+export function verseUrlTag(ref: VerseReference): string {
+  const bookInfo = lookupBookByName(ref.book);
+  return `${bookInfo.abbrev.toLowerCase()}.${ref.chapter}.${ref.verse}`;
+}
+
+export function rangeUrlTag(ref: RangeReference): string {
+  return `${verseUrlTag(ref.start)}-${verseUrlTag(ref.end)}`;
+}
+
+export function referenceUrlTag(ref: Reference): string {
+  switch (ref.kind) {
+    case "verse":
+      return verseUrlTag(ref);
+    case "range":
+      return rangeUrlTag(ref);
+    default: {
+      const exhaustive: never = ref;
+      throw new Error("Unexpected reference type:", exhaustive);
+    }
+  }
+}
+
+export function parseVerseUrlTag(tag: string): VerseReference {
+  const parts = tag.split(".");
+  if (parts.length !== 3) {
+    throw new Error(`Invalid verse url tag: ${tag}`);
+  }
+  const [abbrev, chapterStr, verseStr] = parts;
+  const bookInfo = lookupBookByAbbrev(abbrev);
+  if (!bookInfo) {
+    throw new Error(`Unknown book abbreviation: ${abbrev}`);
+  }
+  const chapter = Number.parseInt(chapterStr, 10);
+  const verse = Number.parseInt(verseStr, 10);
+  if (Number.isNaN(chapter) || Number.isNaN(verse)) {
+    throw new Error(`Invalid chapter or verse in url tag: ${tag}`);
+  }
+  return { book: bookInfo.name, chapter, verse };
+}
+
+export function parseRangeUrlTag(tag: string): RangeReference {
+  const parts = tag.split("-");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid range url tag: ${tag}`);
+  }
+  return {
+    kind: "range",
+    start: parseVerseUrlTag(parts[0]),
+    end: parseVerseUrlTag(parts[1]),
+  };
+}
+
+export function parseReferenceUrlTag(tag: string): Reference {
+  if (tag.includes("-")) {
+    return parseRangeUrlTag(tag);
+  }
+  return { kind: "verse", ...parseVerseUrlTag(tag) };
 }

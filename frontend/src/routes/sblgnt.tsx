@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import Header from "@/components/Header";
-import { PassagePicker } from "@/components/PassagePicker";
+import { PassagePicker } from "@/components/PassagePicker/PassagePicker";
 
 export const Route = createFileRoute("/sblgnt")({
   component: SblgntLayout,

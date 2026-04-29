@@ -1,4 +1,4 @@
-export interface BookInfo {
+interface BookInfoShape {
   name: string;
   abbrev: string;
   verses: readonly number[];
@@ -260,7 +260,7 @@ export const OT_BOOKS = [
     abbrev: "Mal",
     verses: [14, 17, 24],
   },
-] as const satisfies readonly BookInfo[];
+] as const satisfies readonly BookInfoShape[];
 
 export const NT_BOOKS = [
   {
@@ -407,10 +407,45 @@ export const NT_BOOKS = [
     abbrev: "Rev",
     verses: [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21],
   },
-] as const satisfies readonly BookInfo[];
+] as const satisfies readonly BookInfoShape[];
+
+export const BOOKS = [...OT_BOOKS, ...NT_BOOKS] as const satisfies readonly BookInfoShape[];
+
+export type BookInfo = (typeof BOOKS)[number];
 
 export type OTBook = (typeof OT_BOOKS)[number]["name"];
 
 export type NTBook = (typeof NT_BOOKS)[number]["name"];
 
-export type Book = OTBook | NTBook;
+export type Book = BookInfo["name"];
+
+export type BookAbbrev = BookInfo["abbrev"];
+
+export type Testament = "Old Testament" | "New Testament";
+
+const bookByName: ReadonlyMap<Book, BookInfo> = new Map(BOOKS.map((b) => [b.name, b]));
+
+const bookByLowerAbbrev: ReadonlyMap<Lowercase<BookAbbrev>, BookInfo> = new Map(
+  BOOKS.map((b) => [b.abbrev.toLowerCase() as Lowercase<BookAbbrev>, b]),
+);
+
+export function lookupBookByName(name: Book): BookInfo {
+  const book = bookByName.get(name);
+  if (!book) {
+    throw new Error(`Unknown book: ${name}`);
+  }
+  return book;
+}
+
+export function lookupBookByAbbrev(abbrev: string): BookInfo | undefined {
+  return bookByLowerAbbrev.get(abbrev.toLowerCase() as Lowercase<BookAbbrev>);
+}
+
+export function chaptersForBook(book: BookInfo): number[] {
+  return Array.from({ length: book.verses.length }, (_, i) => i + 1);
+}
+
+export function versesForChapter(book: BookInfo, chapter: number): number[] {
+  const count = book.verses[chapter - 1] ?? 0;
+  return Array.from({ length: count }, (_, i) => i + 1);
+}
