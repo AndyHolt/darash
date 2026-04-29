@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { passageQuery } from "@/texts/morphgnt";
+import { BackButton } from "./BackButton";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
 import { VersePicker } from "./VersePicker";
@@ -93,6 +94,56 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     }
   }
 
+  function handleBack() {
+    switch (step.step) {
+      case "book":
+        console.warn("Back button pressed on book step");
+        return;
+      case "chapter":
+        setStep({
+          step: "book",
+        } as const satisfies BookStep);
+        return;
+      case "verse":
+        setStep({
+          step: "chapter",
+          book: step.book,
+        } as const satisfies ChapterStep);
+        return;
+      default: {
+        const _exhaustive: never = step;
+        throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
+      }
+    }
+  }
+
+  function renderStepControl() {
+    switch (step.step) {
+      case "book":
+        return null;
+      case "chapter":
+        return (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+            <BackButton onClick={() => handleBack()} />
+            <h1>{step.book.name}</h1>
+          </div>
+        );
+      case "verse":
+        return (
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center">
+            <BackButton onClick={() => handleBack()} />
+            <h1>
+              {step.book.name} {step.chapter}
+            </h1>
+          </div>
+        );
+      default: {
+        const _exhaustive: never = step;
+        throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
+      }
+    }
+  }
+
   return (
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
@@ -105,6 +156,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
           <PopoverTitle>Choose passage</PopoverTitle>
           <PopoverDescription>{renderStepDescription()}</PopoverDescription>
         </PopoverHeader>
+        {renderStepControl()}
         {renderStep()}
       </PopoverContent>
     </Popover>
