@@ -409,6 +409,8 @@ export const NT_BOOKS = [
   },
 ] as const satisfies readonly BookInfo[];
 
+export const BOOKS = [...OT_BOOKS, ...NT_BOOKS] as const satisfies readonly BookInfo[];
+
 export type OTBook = (typeof OT_BOOKS)[number]["name"];
 
 export type NTBook = (typeof NT_BOOKS)[number]["name"];
