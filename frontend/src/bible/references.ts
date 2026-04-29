@@ -1,4 +1,22 @@
-import type { RangeReference, Reference, VerseReference } from "./bible.types";
+import type { Book } from "./books";
+
+export interface VerseReference {
+  book: Book;
+  chapter: number;
+  verse: number;
+}
+
+export interface TaggedVerseReference extends VerseReference {
+  kind: "verse";
+}
+
+export interface RangeReference {
+  kind: "range";
+  start: VerseReference;
+  end: VerseReference;
+}
+
+export type Reference = TaggedVerseReference | RangeReference;
 
 export function formatVerseReference(ref: VerseReference): string {
   return `${ref.book} ${ref.chapter}:${ref.verse}`;

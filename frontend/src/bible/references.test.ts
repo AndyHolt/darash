@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
-import type { RangeReference, TaggedVerseReference, VerseReference } from "./bible.types";
-import { formatRangeReference, formatReference, formatVerseReference } from "./references";
+import {
+  formatRangeReference,
+  formatReference,
+  formatVerseReference,
+  type RangeReference,
+  type TaggedVerseReference,
+  type VerseReference,
+} from "./references";
 
 describe("formatVerseReference", () => {
   test("single-word book name", () => {
