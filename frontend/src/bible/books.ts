@@ -419,7 +419,27 @@ export type NTBook = (typeof NT_BOOKS)[number]["name"];
 
 export type Book = BookInfo["name"];
 
+export type BookAbbrev = BookInfo["abbrev"];
+
 export type Testament = "Old Testament" | "New Testament";
+
+const bookByName: ReadonlyMap<Book, BookInfo> = new Map(BOOKS.map((b) => [b.name, b]));
+
+const bookByLowerAbbrev: ReadonlyMap<Lowercase<BookAbbrev>, BookInfo> = new Map(
+  BOOKS.map((b) => [b.abbrev.toLowerCase() as Lowercase<BookAbbrev>, b]),
+);
+
+export function lookupBookByName(name: Book): BookInfo {
+  const book = bookByName.get(name);
+  if (!book) {
+    throw new Error(`Unknown book: ${name}`);
+  }
+  return book;
+}
+
+export function lookupBookByAbbrev(abbrev: string): BookInfo | undefined {
+  return bookByLowerAbbrev.get(abbrev.toLowerCase() as Lowercase<BookAbbrev>);
+}
 
 export function chaptersForBook(book: BookInfo): number[] {
   return Array.from({ length: book.verses.length }, (_, i) => i + 1);

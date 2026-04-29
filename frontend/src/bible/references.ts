@@ -1,4 +1,4 @@
-import { BOOKS, type Book } from "./books";
+import { type Book, lookupBookByAbbrev, lookupBookByName } from "./books";
 
 export interface VerseReference {
   book: Book;
@@ -46,12 +46,8 @@ export function formatReference(ref: Reference): string {
 }
 
 export function verseUrlTag(ref: VerseReference): string {
-  const bookInfo = BOOKS.find((b) => b.name === ref.book);
-  if (!bookInfo) {
-    throw new Error(`Unknown book: ${ref.book}`);
-  }
-  const bookAbbrev = bookInfo.abbrev.toLowerCase();
-  return `${bookAbbrev}.${ref.chapter}.${ref.verse}`;
+  const bookInfo = lookupBookByName(ref.book);
+  return `${bookInfo.abbrev.toLowerCase()}.${ref.chapter}.${ref.verse}`;
 }
 
 export function rangeUrlTag(ref: RangeReference): string {
@@ -77,7 +73,7 @@ export function parseVerseUrlTag(tag: string): VerseReference {
     throw new Error(`Invalid verse url tag: ${tag}`);
   }
   const [abbrev, chapterStr, verseStr] = parts;
-  const bookInfo = BOOKS.find((b) => b.abbrev.toLowerCase() === abbrev.toLowerCase());
+  const bookInfo = lookupBookByAbbrev(abbrev);
   if (!bookInfo) {
     throw new Error(`Unknown book abbreviation: ${abbrev}`);
   }
