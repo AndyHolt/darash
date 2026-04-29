@@ -12,8 +12,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { passageQuery } from "@/texts/morphgnt";
+import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
-import { NTBookPicker } from "./NTBookPicker";
 import { VersePicker } from "./VersePicker";
 
 export interface PassagePickerProps {
@@ -38,7 +38,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
           <PopoverTitle>Choose passage</PopoverTitle>
           <PopoverDescription>Select first verse</PopoverDescription>
         </PopoverHeader>
-        {book ? <span>{book}</span> : <NTBookPicker pickBook={setBook} />}
+        {book ? <span>{book}</span> : <BookPicker pickBook={setBook} />}
         {book && !chapter && <ChapterPicker book={book} pickChapter={setChapter} />}
         {book && chapter && <VersePicker book={book} chapter={chapter} />}
       </PopoverContent>

@@ -2,11 +2,11 @@ import type { NTBook } from "@/bible/books";
 import { NT_BOOKS } from "@/bible/books";
 import { Button } from "@/components/ui/button";
 
-export interface NTBookPickerProps {
+export interface BookPickerProps {
   pickBook: (book: NTBook) => void;
 }
 
-export function NTBookPicker({ pickBook }: NTBookPickerProps) {
+export function BookPicker({ pickBook }: BookPickerProps) {
   return (
     <div className="grid grid-flow-col grid-rows-9 gap-1">
       {NT_BOOKS.map((b) => (
