@@ -16,6 +16,7 @@ export const initialStep: Step = { step: "book" };
 export function stepReducer(state: Step, event: StepEvent): Step {
   switch (event.type) {
     case "pickBook":
+      if (state.step !== "book") return state;
       return { step: "chapter", book: event.book };
     case "pickChapter":
       if (state.step !== "chapter") return state;
