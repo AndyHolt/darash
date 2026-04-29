@@ -1,4 +1,5 @@
-import type { NTBook, Reference } from "@/bible/bible.types";
+import type { NTBook } from "@/bible/books";
+import type { Reference } from "@/bible/references";
 
 export type PartOfSpeech =
   | "adjective"

@@ -408,3 +408,9 @@ export const NT_BOOKS = [
     verses: [20, 29, 22, 11, 14, 17, 17, 13, 21, 11, 19, 17, 18, 20, 8, 21, 18, 24, 21, 15, 27, 21],
   },
 ] as const satisfies readonly BookInfo[];
+
+export type OTBook = (typeof OT_BOOKS)[number]["name"];
+
+export type NTBook = (typeof NT_BOOKS)[number]["name"];
+
+export type Book = OTBook | NTBook;
