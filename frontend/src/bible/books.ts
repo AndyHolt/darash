@@ -420,3 +420,12 @@ export type NTBook = (typeof NT_BOOKS)[number]["name"];
 export type Book = BookInfo["name"];
 
 export type Testament = "Old Testament" | "New Testament";
+
+export function chaptersForBook(book: BookInfo): number[] {
+  return Array.from({ length: book.verses.length }, (_, i) => i + 1);
+}
+
+export function versesForChapter(book: BookInfo, chapter: number): number[] {
+  const count = book.verses[chapter - 1] ?? 0;
+  return Array.from({ length: count }, (_, i) => i + 1);
+}

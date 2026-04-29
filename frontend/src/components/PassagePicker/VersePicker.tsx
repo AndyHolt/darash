@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { BookInfo } from "@/bible/books";
+import { type BookInfo, versesForChapter } from "@/bible/books";
 import { referenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
 import { PopoverClose } from "@/components/ui/popover";
@@ -10,7 +10,7 @@ export interface VersePickerProps {
 }
 
 export function VersePicker({ book, chapter }: VersePickerProps) {
-  const verses = Array.from({ length: book.verses[chapter - 1] }, (_, i) => i + 1);
+  const verses = versesForChapter(book, chapter);
 
   return (
     <div className="grid grid-cols-5 gap-1">

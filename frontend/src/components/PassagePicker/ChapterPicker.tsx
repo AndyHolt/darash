@@ -1,4 +1,4 @@
-import type { BookInfo } from "@/bible/books";
+import { type BookInfo, chaptersForBook } from "@/bible/books";
 import { Button } from "@/components/ui/button";
 
 export interface ChapterPickerProps {
@@ -7,7 +7,7 @@ export interface ChapterPickerProps {
 }
 
 export function ChapterPicker({ book, pickChapter }: ChapterPickerProps) {
-  const chapters = Array.from({ length: book.verses.length }, (_, i) => i + 1);
+  const chapters = chaptersForBook(book);
 
   return (
     <div className="grid grid-cols-5 gap-1">
