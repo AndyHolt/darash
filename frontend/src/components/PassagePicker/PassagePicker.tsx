@@ -105,7 +105,12 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       <div className="grid grid-cols-[1fr_auto_1fr] items-center">
         <BackButton onClick={() => dispatch({ type: "back" })} />
         {onTitleClick ? (
-          <Button variant="ghost" size="sm" onClick={onTitleClick}>
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`${title} (change chapter)`}
+            onClick={onTitleClick}
+          >
             <h2 className="text-sm font-normal">{title}</h2>
             <ChevronDown />
           </Button>
