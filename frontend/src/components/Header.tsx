@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { ModeToggle } from "@/components/color-theme/ModeToggle";
 import DarashIcon from "@/components/DarashIcon";
-import LinkButton from "@/components/LinkButton";
 
 export default function Header({ children }: { children?: ReactNode }) {
   return (
@@ -12,13 +11,8 @@ export default function Header({ children }: { children?: ReactNode }) {
           <DarashIcon className="h-6 w-6 text-primary" />
           <h1 className="font-display font-semibold text-xl text-primary select-none">Darash</h1>
         </Link>
-        <div className="flex gap-1 items-center">
-          {children}
-          <LinkButton to="/sblgnt/matt.1.1-matt.1.20">Read</LinkButton>
-          <LinkButton to="/about">About</LinkButton>
-          <LinkButton to="/count">Count</LinkButton>
-          <ModeToggle />
-        </div>
+        {children}
+        <ModeToggle />
       </div>
       <hr />
     </>
