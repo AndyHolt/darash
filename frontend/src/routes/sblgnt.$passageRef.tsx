@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Fragment } from "react";
+import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
 import { passageQuery, type Word } from "@/texts/morphgnt";
 
 export const Route = createFileRoute("/sblgnt/$passageRef")({
@@ -16,7 +17,7 @@ function RouteComponent() {
   const { data: passage } = useSuspenseQuery(passageQuery(passageRef));
 
   return (
-    <div className="my-2 mx-4 flex flex-row justify-center">
+    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16">
       <div className="max-w-lg">
         <div className="font-greek text-lg">
           {passage.words.map((w) => (
@@ -32,6 +33,11 @@ function RouteComponent() {
           ))}
         </div>
       </div>
+      <aside className="max-w-sm bg-sidebar color-sidebar-foreground py-2 px-4 border border-border rounded-md">
+        {passage.words.map((w) => (
+          <ParsingCard key={`${w.book}.${w.chapter}.${w.verse}.${w.word_index}`} word={w} />
+        ))}
+      </aside>
     </div>
   );
 }
