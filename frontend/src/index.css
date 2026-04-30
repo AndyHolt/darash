@@ -182,4 +182,13 @@
   html {
     @apply font-sans;
   }
+  /* Match GFS Neohellenic's optical size to Geist when mixed inline.
+     Greek typefaces reserve em-box space above the cap-height for polytonic
+     diacritics, so glyphs render smaller than a Latin UI sans at the same
+     font-size. The numeric ratio is target x-height ÷ font-size — chosen
+     to align with Geist's x-height. (`from-font` doesn't work here because
+     GFS Neohellenic doesn't expose its x-height in its OS/2 table.) */
+  .font-greek {
+    font-size-adjust: 0.52;
+  }
 }
