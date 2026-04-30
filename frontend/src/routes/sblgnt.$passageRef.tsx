@@ -33,9 +33,9 @@ function RouteComponent() {
           ))}
         </div>
       </div>
-      <aside className="hidden md:inline max-w-sm bg-sidebar color-sidebar-foreground py-2 px-4 border border-border rounded-md">
+      <aside className="hidden md:block max-w-sm bg-sidebar text-sidebar-foreground py-2 px-4 border border-border rounded-md">
         {passage.words.map((w) => (
-          <ParsingCard key={`${w.book}.${w.chapter}.${w.verse}.${w.word_index}`} word={w} />
+          <ParsingCard key={wordKey(w)} word={w} />
         ))}
       </aside>
     </div>
