@@ -105,10 +105,10 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
         <BackButton onClick={() => dispatch({ type: "back" })} />
         {onTitleClick ? (
           <Button variant="ghost" size="sm" onClick={onTitleClick}>
-            <h2>{title}</h2>
+            <h2 className="text-sm font-normal">{title}</h2>
           </Button>
         ) : (
-          <h2>{title}</h2>
+          <h2 className="text-sm font-normal">{title}</h2>
         )}
       </div>
     );
