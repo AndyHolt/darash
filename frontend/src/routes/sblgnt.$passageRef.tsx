@@ -39,8 +39,9 @@ function RouteComponent() {
                 {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
                 <span
+                  data-focused={focusedId === id ? "true" : undefined}
                   data-pinned={pinnedId === id ? "true" : undefined}
-                  className="cursor-pointer rounded-sm hover:bg-muted data-[pinned=true]:bg-accent"
+                  className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[pinned=true]:bg-accent data-[focused=true]:text-primary data-[pinned=true]:text-primary"
                   onMouseEnter={() => setHoveredId(id)}
                   onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
                   onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
@@ -56,7 +57,15 @@ function RouteComponent() {
         {passage.words.map((w) => {
           const id = wordKey(w);
           return (
-            <ParsingCard key={id} word={w} focused={focusedId === id} pinned={pinnedId === id} />
+            <ParsingCard
+              key={id}
+              word={w}
+              focused={focusedId === id}
+              pinned={pinnedId === id}
+              onMouseEnter={() => setHoveredId(id)}
+              onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+              onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+            />
           );
         })}
       </aside>

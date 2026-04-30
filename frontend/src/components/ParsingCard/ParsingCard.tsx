@@ -7,9 +7,19 @@ export interface ParsingCardProps {
   word: Word;
   focused?: boolean;
   pinned?: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onClick?: () => void;
 }
 
-export function ParsingCard({ word, focused, pinned }: ParsingCardProps) {
+export function ParsingCard({
+  word,
+  focused,
+  pinned,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+}: ParsingCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -24,7 +34,10 @@ export function ParsingCard({ word, focused, pinned }: ParsingCardProps) {
       variant="outline"
       size="xs"
       data-focused={focused ? "true" : undefined}
-      className="my-2 transition-shadow data-[focused=true]:ring-2 data-[focused=true]:ring-primary"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+      className="my-2 cursor-pointer transition-shadow data-[focused=true]:ring-2 data-[focused=true]:ring-primary"
     >
       <ItemContent>
         <ItemTitle className="font-greek">{word.text_word}</ItemTitle>
