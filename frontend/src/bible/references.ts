@@ -32,6 +32,30 @@ export function formatRangeReference(ref: RangeReference): string {
   return `${ref.start.book} ${ref.start.chapter}:${ref.start.verse}–${ref.end.verse}`;
 }
 
+/**
+ * Build a {@link Reference} from a start/end verse pair, collapsing to a
+ * {@link TaggedVerseReference} when the two endpoints are the same verse.
+ *
+ * The collapse keeps URLs and display strings canonical: a passage with
+ * matching start and end is just a verse, not a degenerate range like
+ * `john.3.16-john.3.16`.
+ *
+ * Scope is deliberately structural: the function does not validate that
+ * `start` precedes `end` in canon order. A "backwards" pair (e.g. start
+ * John 3:16, end John 3:10) is returned verbatim as a range. This is by
+ * design — the picker UI enforces ordering at input time via disabled
+ * controls, so the structural builder stays free of policy. Callers that
+ * accept untrusted endpoints (parsing user input, URL params edited by
+ * hand, etc.) are responsible for their own ordering check before
+ * calling this function.
+ */
+export function passageReference(start: VerseReference, end: VerseReference): Reference {
+  if (start.book === end.book && start.chapter === end.chapter && start.verse === end.verse) {
+    return { kind: "verse", ...start };
+  }
+  return { kind: "range", start, end };
+}
+
 export function formatReference(ref: Reference): string {
   switch (ref.kind) {
     case "verse":

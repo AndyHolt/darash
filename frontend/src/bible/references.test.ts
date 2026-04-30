@@ -5,6 +5,7 @@ import {
   formatReference,
   formatVerseReference,
   parseReferenceUrlTag,
+  passageReference,
   type RangeReference,
   type Reference,
   rangeUrlTag,
@@ -252,5 +253,98 @@ describe("parseReferenceUrlTag", () => {
 
   test("throws on non-numeric chapter or verse", () => {
     expect(() => parseReferenceUrlTag("john.three.16")).toThrow(/invalid chapter or verse/i);
+  });
+});
+
+describe("passageReference", () => {
+  test("collapses to a verse reference when start equals end", () => {
+    const v: VerseReference = { book: "John", chapter: 3, verse: 16 };
+    expect(passageReference(v, v)).toEqual({
+      kind: "verse",
+      book: "John",
+      chapter: 3,
+      verse: 16,
+    });
+  });
+
+  test("collapses on value equality, not reference equality", () => {
+    const start: VerseReference = { book: "John", chapter: 3, verse: 16 };
+    const end: VerseReference = { book: "John", chapter: 3, verse: 16 };
+    expect(passageReference(start, end)).toEqual({
+      kind: "verse",
+      book: "John",
+      chapter: 3,
+      verse: 16,
+    });
+  });
+
+  test("range within a chapter", () => {
+    expect(
+      passageReference(
+        { book: "John", chapter: 3, verse: 16 },
+        { book: "John", chapter: 3, verse: 18 },
+      ),
+    ).toEqual({
+      kind: "range",
+      start: { book: "John", chapter: 3, verse: 16 },
+      end: { book: "John", chapter: 3, verse: 18 },
+    });
+  });
+
+  test("range across chapters in the same book", () => {
+    expect(
+      passageReference(
+        { book: "John", chapter: 3, verse: 16 },
+        { book: "John", chapter: 4, verse: 2 },
+      ),
+    ).toEqual({
+      kind: "range",
+      start: { book: "John", chapter: 3, verse: 16 },
+      end: { book: "John", chapter: 4, verse: 2 },
+    });
+  });
+
+  test("range across books", () => {
+    expect(
+      passageReference(
+        { book: "Matthew", chapter: 28, verse: 20 },
+        { book: "Mark", chapter: 1, verse: 1 },
+      ),
+    ).toEqual({
+      kind: "range",
+      start: { book: "Matthew", chapter: 28, verse: 20 },
+      end: { book: "Mark", chapter: 1, verse: 1 },
+    });
+  });
+
+  test("does not collapse when chapter or verse differs by one", () => {
+    expect(
+      passageReference(
+        { book: "John", chapter: 3, verse: 16 },
+        { book: "John", chapter: 3, verse: 17 },
+      ).kind,
+    ).toBe("range");
+    expect(
+      passageReference(
+        { book: "John", chapter: 3, verse: 16 },
+        { book: "John", chapter: 4, verse: 16 },
+      ).kind,
+    ).toBe("range");
+  });
+
+  test("passes backwards endpoints through verbatim (ordering is the caller's concern)", () => {
+    // Pins the structural-pass-through contract documented on passageReference.
+    // If you add validation or normalization, the docstring's "scope is structural"
+    // claim is no longer true — update both.
+    expect(
+      passageReference(
+        { book: "John", chapter: 3, verse: 16 },
+        { book: "John", chapter: 3, verse: 10 },
+      ),
+    ).toEqual({
+      kind: "range",
+      start: { book: "John", chapter: 3, verse: 16 },
+      end: { book: "John", chapter: 3, verse: 10 },
+    });
   });
 });
