@@ -123,7 +123,7 @@ function formatCode(word: Word): string {
 
     default: {
       const exhaustive: never = word.part_of_speech;
-      throw new Error("Unexpected part of speech:", exhaustive);
+      throw new Error(`Unexpected part of speech: ${exhaustive}`);
     }
   }
 }
