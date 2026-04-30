@@ -1,6 +1,6 @@
 import { type BookInfo, chaptersForBook } from "@/bible/books";
 import { Button } from "@/components/ui/button";
-import { chapterIsDisabled } from "./chapterDisabled";
+import { chapterIsDisabled } from "./disabled";
 
 export interface ChapterPickerProps {
   book: BookInfo;

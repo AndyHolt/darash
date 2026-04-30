@@ -3,6 +3,7 @@ import { type BookInfo, versesForChapter } from "@/bible/books";
 import { passageReference, referenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
 import { PopoverClose } from "@/components/ui/popover";
+import { endVerseIsDisabled } from "./disabled";
 
 export interface EndVersePickerProps {
   book: BookInfo;
@@ -23,7 +24,13 @@ export function EndVersePicker({
   return (
     <div className="grid grid-cols-5 gap-1">
       {verses.map((n) => {
-        const disabled = sameChapter && n < startVerse;
+        if (endVerseIsDisabled(n, startVerse, sameChapter)) {
+          return (
+            <Button key={n} variant="ghost" size="sm" disabled>
+              {n}
+            </Button>
+          );
+        }
         const isStart = sameChapter && n === startVerse;
         const passageRef = referenceUrlTag(
           passageReference(
@@ -31,13 +38,6 @@ export function EndVersePicker({
             { book: book.name, chapter: endChapter, verse: n },
           ),
         );
-        if (disabled) {
-          return (
-            <Button key={n} variant="ghost" size="sm" disabled>
-              {n}
-            </Button>
-          );
-        }
         return (
           <PopoverClose key={n} asChild>
             <Button variant={isStart ? "secondary" : "ghost"} size="sm" asChild>
