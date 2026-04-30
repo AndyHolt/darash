@@ -62,3 +62,7 @@ export interface Passage {
   reference: Reference;
   words: Word[];
 }
+
+export function wordKey(w: Word): string {
+  return `${w.book}.${w.chapter}.${w.verse}.${w.word_index}`;
+}
