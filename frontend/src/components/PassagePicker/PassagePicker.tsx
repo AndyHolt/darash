@@ -147,6 +147,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       <PopoverTrigger asChild>
         <Button variant="outline">
           {passage ? formatReference(passage.reference) : "Select passage"}
+          <ChevronDown />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-72 p-2">
