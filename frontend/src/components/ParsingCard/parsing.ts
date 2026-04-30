@@ -131,6 +131,5 @@ function formatCode(word: Word): string {
 export function formatParsing(word: Word): string {
   const label = formatLabel(word);
   const code = formatCode(word);
-  const head = code ? `${label}: ${code}` : label;
-  return `${head} from ${word.lemma}`;
+  return code ? `${label}: ${code}` : label;
 }

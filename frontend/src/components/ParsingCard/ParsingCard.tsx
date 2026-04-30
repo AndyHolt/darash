@@ -10,8 +10,11 @@ export function ParsingCard({ word }: ParsingCardProps) {
   return (
     <Item variant="outline" className="my-2" size="xs">
       <ItemContent>
-        <ItemTitle>{word.text_word}</ItemTitle>
-        <ItemDescription>{formatParsing(word)}</ItemDescription>
+        <ItemTitle className="font-greek">{word.text_word}</ItemTitle>
+        <ItemDescription>
+          {formatParsing(word)} <span className="italic">from</span>{" "}
+          <span className="font-greek">{word.lemma}</span>
+        </ItemDescription>
       </ItemContent>
     </Item>
   );

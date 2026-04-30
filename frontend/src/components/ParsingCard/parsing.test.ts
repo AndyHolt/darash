@@ -29,7 +29,7 @@ describe("formatParsing — adjectives", () => {
           lemma: "ἀγαθός",
         }),
       ),
-    ).toBe("Adjective: NMS from ἀγαθός");
+    ).toBe("Adjective: NMS");
   });
 
   test("with comparative degree", () => {
@@ -44,7 +44,7 @@ describe("formatParsing — adjectives", () => {
           lemma: "μέγας",
         }),
       ),
-    ).toBe("Adjective: GFP Comp from μέγας");
+    ).toBe("Adjective: GFP Comp");
   });
 });
 
@@ -62,7 +62,7 @@ describe("formatParsing — verbs", () => {
           lemma: "λύω",
         }),
       ),
-    ).toBe("Finite verb: Aor Act Ind 3S from λύω");
+    ).toBe("Finite verb: Aor Act Ind 3S");
   });
 
   test("present passive imperative 2P", () => {
@@ -78,7 +78,7 @@ describe("formatParsing — verbs", () => {
           lemma: "λύω",
         }),
       ),
-    ).toBe("Finite verb: Pres Pass Impv 2P from λύω");
+    ).toBe("Finite verb: Pres Pass Impv 2P");
   });
 
   test("participle", () => {
@@ -95,7 +95,7 @@ describe("formatParsing — verbs", () => {
           lemma: "λύω",
         }),
       ),
-    ).toBe("Participle: Aor Act Ptc NMS from λύω");
+    ).toBe("Participle: Aor Act Ptc NMS");
   });
 
   test("infinitive", () => {
@@ -109,7 +109,7 @@ describe("formatParsing — verbs", () => {
           lemma: "λύω",
         }),
       ),
-    ).toBe("Infinitive: Aor Act Inf from λύω");
+    ).toBe("Infinitive: Aor Act Inf");
   });
 });
 
@@ -125,12 +125,12 @@ describe("formatParsing — other parts of speech", () => {
           lemma: "τέκνον",
         }),
       ),
-    ).toBe("Noun: DNP from τέκνον");
+    ).toBe("Noun: DNP");
   });
 
-  test("indeclinable shows label and lemma only", () => {
+  test("indeclinable shows label only", () => {
     expect(formatParsing(word({ part_of_speech: "conjunction", lemma: "καί" }))).toBe(
-      "Conjunction from καί",
+      "Conjunction",
     );
   });
 });

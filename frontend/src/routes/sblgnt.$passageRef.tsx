@@ -19,7 +19,7 @@ function RouteComponent() {
   return (
     <div className="my-2 mx-4 flex flex-row justify-center gap-x-16">
       <div className="max-w-lg">
-        <div className="font-greek text-lg">
+        <div className="font-greek leading-7">
           {passage.words.map((w) => (
             <Fragment key={wordKey(w)}>
               {w.verse === 1 && w.word_index === 1 && (
