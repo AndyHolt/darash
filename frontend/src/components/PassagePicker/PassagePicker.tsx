@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 import { useReducer } from "react";
 import { formatReference } from "@/bible/references";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       case "startVerse":
         return "Select start verse";
       case "endVerse":
-        return "Select end verse";
+        return "Select end verse, or click chapter to change";
       case "endChapter":
         return "Select end chapter";
       default: {
@@ -106,6 +107,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
         {onTitleClick ? (
           <Button variant="ghost" size="sm" onClick={onTitleClick}>
             <h2 className="text-sm font-normal">{title}</h2>
+            <ChevronDown />
           </Button>
         ) : (
           <h2 className="text-sm font-normal">{title}</h2>
