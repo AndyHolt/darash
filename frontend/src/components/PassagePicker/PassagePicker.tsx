@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown } from "lucide-react";
 import { useReducer } from "react";
 import { formatReference } from "@/bible/references";
 import { Button } from "@/components/ui/button";
@@ -14,8 +15,9 @@ import { passageQuery } from "@/texts/morphgnt";
 import { BackButton } from "./BackButton";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
+import { EndVersePicker } from "./EndVersePicker";
+import { StartVersePicker } from "./StartVersePicker";
 import { initialStep, type Step, stepReducer } from "./state";
-import { VersePicker } from "./VersePicker";
 
 export interface PassagePickerProps {
   passageRef: string;
@@ -40,15 +42,38 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
             pickBook={(book) => dispatch({ type: "pickBook", book })}
           />
         );
-      case "chapter":
+      case "startChapter":
         return (
           <ChapterPicker
             book={step.book}
-            pickChapter={(chapter) => dispatch({ type: "pickChapter", chapter })}
+            pickChapter={(chapter) => dispatch({ type: "pickStartChapter", chapter })}
           />
         );
-      case "verse":
-        return <VersePicker book={step.book} chapter={step.chapter} />;
+      case "startVerse":
+        return (
+          <StartVersePicker
+            book={step.book}
+            chapter={step.startChapter}
+            pickVerse={(verse) => dispatch({ type: "pickStartVerse", verse })}
+          />
+        );
+      case "endVerse":
+        return (
+          <EndVersePicker
+            book={step.book}
+            startChapter={step.startChapter}
+            startVerse={step.startVerse}
+            endChapter={step.endChapter}
+          />
+        );
+      case "endChapter":
+        return (
+          <ChapterPicker
+            book={step.book}
+            pickChapter={(chapter) => dispatch({ type: "pickEndChapter", chapter })}
+            disabledBefore={step.startChapter}
+          />
+        );
       default: {
         const _exhaustive: never = step;
         throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
@@ -60,10 +85,14 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     switch (step.step) {
       case "book":
         return "Select book";
-      case "chapter":
+      case "startChapter":
         return "Select chapter";
-      case "verse":
-        return "Select verse";
+      case "startVerse":
+        return "Select start verse";
+      case "endVerse":
+        return "Select end verse, or click chapter to change";
+      case "endChapter":
+        return "Select end chapter";
       default: {
         const _exhaustive: never = step;
         throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
@@ -71,11 +100,23 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     }
   }
 
-  function stepControl(title: string) {
+  function stepControl(title: string, onTitleClick?: () => void) {
     return (
       <div className="grid grid-cols-[1fr_auto_1fr] items-center">
         <BackButton onClick={() => dispatch({ type: "back" })} />
-        <h2>{title}</h2>
+        {onTitleClick ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`${title} (change chapter)`}
+            onClick={onTitleClick}
+          >
+            <h2 className="text-sm font-normal">{title}</h2>
+            <ChevronDown />
+          </Button>
+        ) : (
+          <h2 className="text-sm font-normal">{title}</h2>
+        )}
       </div>
     );
   }
@@ -84,10 +125,16 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     switch (step.step) {
       case "book":
         return null;
-      case "chapter":
+      case "startChapter":
         return stepControl(step.book.name);
-      case "verse":
-        return stepControl(`${step.book.name} ${step.chapter}`);
+      case "startVerse":
+        return stepControl(`${step.book.name} ${step.startChapter}`);
+      case "endVerse":
+        return stepControl(`${step.book.name} ${step.endChapter}`, () =>
+          dispatch({ type: "changeEndChapter" }),
+        );
+      case "endChapter":
+        return stepControl(step.book.name);
       default: {
         const _exhaustive: never = step;
         throw new Error(`unhandled step: ${(_exhaustive as Step).step}`);
