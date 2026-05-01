@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
 import { passageQuery, wordKey } from "@/texts/morphgnt";
 
@@ -20,10 +20,11 @@ function RouteComponent() {
   const [pinnedId, setPinnedId] = useState<string | null>(null);
   const focusedId = hoveredId ?? pinnedId;
 
+  const wordRefs = useRef(new Map<string, HTMLSpanElement>());
+
   useEffect(() => {
     if (!pinnedId) return;
-    const el = document.querySelector(`[data-word-id="${pinnedId}"]`);
-    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    wordRefs.current.get(pinnedId)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [pinnedId]);
 
   return (
@@ -45,7 +46,10 @@ function RouteComponent() {
                 {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
                 {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
                 <span
-                  data-word-id={id}
+                  ref={(el) => {
+                    if (el) wordRefs.current.set(id, el);
+                    else wordRefs.current.delete(id);
+                  }}
                   data-focused={focusedId === id ? "true" : undefined}
                   data-pinned={pinnedId === id ? "true" : undefined}
                   className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[focused=true]:text-primary data-[pinned=true]:not-data-[focused=true]:bg-accent"
