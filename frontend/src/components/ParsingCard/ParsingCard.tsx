@@ -37,7 +37,7 @@ export function ParsingCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
-      className="cursor-pointer transition-shadow data-[focused=true]:ring-2 data-[focused=true]:ring-primary"
+      className="cursor-pointer transition-colors data-[focused=true]:bg-sidebar-accent data-[focused=true]:text-sidebar-primary"
     >
       <ItemContent>
         <ItemTitle className="font-greek">{word.text_word}</ItemTitle>
