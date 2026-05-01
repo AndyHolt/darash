@@ -1,6 +1,6 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
-import { type Passage, wordKey } from "@/texts/morphgnt";
+import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
 
 export interface MorphgntPassageProps {
   passage: Passage;
@@ -38,32 +38,19 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
           {passage.words.map((w) => {
             const id = wordKey(w);
             return (
-              <Fragment key={id}>
-                {w.verse === 1 && w.word_index === 1 && (
-                  <span className="mr-1 text-primary font-bold font-sans text-base">
-                    {w.chapter}
-                  </span>
-                )}
-                {w.word_index === 1 && w.verse !== 1 && (
-                  <sup className="mr-1 text-muted-foreground font-sans text-xs">{w.verse}</sup>
-                )}
-                {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
-                {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
-                <span
-                  ref={(el) => {
-                    if (el) wordRefs.current.set(id, el);
-                    else wordRefs.current.delete(id);
-                  }}
-                  data-focused={focusedId === id ? "true" : undefined}
-                  data-pinned={pinnedId === id ? "true" : undefined}
-                  className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[focused=true]:text-primary data-[pinned=true]:not-data-[focused=true]:bg-accent"
-                  onMouseEnter={() => setHoveredId(id)}
-                  onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-                  onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
-                >
-                  {w.text}
-                </span>{" "}
-              </Fragment>
+              <Word
+                key={id}
+                word={w}
+                focused={focusedId === id}
+                pinned={pinnedId === id}
+                registerRef={(el) => {
+                  if (el) wordRefs.current.set(id, el);
+                  else wordRefs.current.delete(id);
+                }}
+                onMouseEnter={() => setHoveredId(id)}
+                onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+                onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+              />
             );
           })}
         </div>
@@ -85,5 +72,49 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
         })}
       </aside>
     </div>
+  );
+}
+
+interface WordProps {
+  word: WordData;
+  focused: boolean;
+  pinned: boolean;
+  registerRef: (el: HTMLSpanElement | null) => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onClick: () => void;
+}
+
+function Word({
+  word,
+  focused,
+  pinned,
+  registerRef,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+}: WordProps) {
+  return (
+    <>
+      {word.verse === 1 && word.word_index === 1 && (
+        <span className="mr-1 text-primary font-bold font-sans text-base">{word.chapter}</span>
+      )}
+      {word.word_index === 1 && word.verse !== 1 && (
+        <sup className="mr-1 text-muted-foreground font-sans text-xs">{word.verse}</sup>
+      )}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
+      <span
+        ref={registerRef}
+        data-focused={focused ? "true" : undefined}
+        data-pinned={pinned ? "true" : undefined}
+        className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[focused=true]:text-primary data-[pinned=true]:not-data-[focused=true]:bg-accent"
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+      >
+        {word.text}
+      </span>{" "}
+    </>
   );
 }
