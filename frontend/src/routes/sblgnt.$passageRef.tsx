@@ -21,7 +21,7 @@ function RouteComponent() {
   const focusedId = hoveredId ?? pinnedId;
 
   return (
-    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16">
+    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
       <div className="max-w-lg">
         <div className="font-greek leading-7">
           {passage.words.map((w) => {
@@ -53,7 +53,7 @@ function RouteComponent() {
           })}
         </div>
       </div>
-      <aside className="hidden md:block max-w-sm bg-sidebar text-sidebar-foreground py-2 px-4 border border-border rounded-md">
+      <aside className="hidden md:block max-w-sm sticky top-2 max-h-dvh overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
         {passage.words.map((w) => {
           const id = wordKey(w);
           return (
