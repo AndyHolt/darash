@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
 
 export interface MorphgntPassageProps {
@@ -12,6 +14,10 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   const focusedId = hoveredId ?? pinnedId;
 
   const wordRefs = useRef(new Map<string, HTMLSpanElement>());
+
+  // Matches Tailwind's md breakpoint. Wide → sidebar with page scroll.
+  // Narrow → vertical resizable split (text on top, parsing cards below).
+  const isWide = useMediaQuery("(min-width: 768px)");
 
   // Reset window scroll when this component mounts. The component is keyed by
   // passageRef in the route, so navigating to a new passage remounts it; window
@@ -31,47 +37,67 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     wordRefs.current.get(pinnedId)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [pinnedId]);
 
-  return (
-    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
-      <div className="max-w-lg">
-        <div className="font-greek leading-7">
-          {passage.words.map((w) => {
-            const id = wordKey(w);
-            return (
-              <Word
-                key={id}
-                word={w}
-                focused={focusedId === id}
-                pinned={pinnedId === id}
-                registerRef={(el) => {
-                  if (el) wordRefs.current.set(id, el);
-                  else wordRefs.current.delete(id);
-                }}
-                onMouseEnter={() => setHoveredId(id)}
-                onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-                onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
-              />
-            );
-          })}
+  const wordList = passage.words.map((w) => {
+    const id = wordKey(w);
+    return (
+      <Word
+        key={id}
+        word={w}
+        focused={focusedId === id}
+        pinned={pinnedId === id}
+        registerRef={(el) => {
+          if (el) wordRefs.current.set(id, el);
+          else wordRefs.current.delete(id);
+        }}
+        onMouseEnter={() => setHoveredId(id)}
+        onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+        onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+      />
+    );
+  });
+
+  const cardList = passage.words.map((w) => {
+    const id = wordKey(w);
+    return (
+      <ParsingCard
+        key={id}
+        word={w}
+        focused={focusedId === id}
+        pinned={pinnedId === id}
+        onMouseEnter={() => setHoveredId(id)}
+        onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+        onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+      />
+    );
+  });
+
+  if (isWide) {
+    return (
+      <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
+        <div className="max-w-lg">
+          <div className="font-greek leading-7">{wordList}</div>
         </div>
+        <aside className="max-w-sm sticky top-2 max-h-dvh overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
+          {cardList}
+        </aside>
       </div>
-      <aside className="hidden md:block max-w-sm sticky top-2 max-h-dvh overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
-        {passage.words.map((w) => {
-          const id = wordKey(w);
-          return (
-            <ParsingCard
-              key={id}
-              word={w}
-              focused={focusedId === id}
-              pinned={pinnedId === id}
-              onMouseEnter={() => setHoveredId(id)}
-              onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-              onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
-            />
-          );
-        })}
-      </aside>
-    </div>
+    );
+  }
+
+  return (
+    <ResizablePanelGroup orientation="vertical" className="h-full">
+      <ResizablePanel defaultSize={60} minSize={20}>
+        <div className="h-full overflow-y-auto px-4 py-2">
+          <div className="font-greek leading-7">{wordList}</div>
+        </div>
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel defaultSize={40} minSize={15}>
+        <div className="h-full overflow-y-auto bg-sidebar text-sidebar-foreground py-2 px-4">
+          {cardList}
+        </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 }
 
