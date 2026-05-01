@@ -48,7 +48,7 @@ function RouteComponent() {
                   data-word-id={id}
                   data-focused={focusedId === id ? "true" : undefined}
                   data-pinned={pinnedId === id ? "true" : undefined}
-                  className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[pinned=true]:bg-accent data-[focused=true]:text-primary data-[pinned=true]:text-primary"
+                  className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[focused=true]:text-primary data-[pinned=true]:not-data-[focused=true]:bg-accent"
                   onMouseEnter={() => setHoveredId(id)}
                   onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
                   onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
