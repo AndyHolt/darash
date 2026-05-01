@@ -1,8 +1,8 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Fragment } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
-import { passageQuery, type Word } from "@/texts/morphgnt";
+import { passageQuery, wordKey } from "@/texts/morphgnt";
 
 export const Route = createFileRoute("/sblgnt/$passageRef")({
   loader: ({ context: { queryClient }, params }) =>
@@ -16,32 +16,70 @@ function RouteComponent() {
   const { passageRef } = Route.useParams();
   const { data: passage } = useSuspenseQuery(passageQuery(passageRef));
 
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const focusedId = hoveredId ?? pinnedId;
+
+  const wordRefs = useRef(new Map<string, HTMLSpanElement>());
+
+  useEffect(() => {
+    if (!pinnedId) return;
+    wordRefs.current.get(pinnedId)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [pinnedId]);
+
   return (
-    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16">
+    <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
       <div className="max-w-lg">
         <div className="font-greek leading-7">
-          {passage.words.map((w) => (
-            <Fragment key={wordKey(w)}>
-              {w.verse === 1 && w.word_index === 1 && (
-                <span className="mr-1 text-primary font-bold font-sans text-base">{w.chapter}</span>
-              )}
-              {w.word_index === 1 && w.verse !== 1 && (
-                <sup className="mr-1 text-muted-foreground font-sans text-xs">{w.verse}</sup>
-              )}
-              <span>{w.text} </span>
-            </Fragment>
-          ))}
+          {passage.words.map((w) => {
+            const id = wordKey(w);
+            return (
+              <Fragment key={id}>
+                {w.verse === 1 && w.word_index === 1 && (
+                  <span className="mr-1 text-primary font-bold font-sans text-base">
+                    {w.chapter}
+                  </span>
+                )}
+                {w.word_index === 1 && w.verse !== 1 && (
+                  <sup className="mr-1 text-muted-foreground font-sans text-xs">{w.verse}</sup>
+                )}
+                {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
+                {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
+                <span
+                  ref={(el) => {
+                    if (el) wordRefs.current.set(id, el);
+                    else wordRefs.current.delete(id);
+                  }}
+                  data-focused={focusedId === id ? "true" : undefined}
+                  data-pinned={pinnedId === id ? "true" : undefined}
+                  className="cursor-pointer rounded-sm data-[focused=true]:bg-muted data-[focused=true]:text-primary data-[pinned=true]:not-data-[focused=true]:bg-accent"
+                  onMouseEnter={() => setHoveredId(id)}
+                  onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+                  onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+                >
+                  {w.text}
+                </span>{" "}
+              </Fragment>
+            );
+          })}
         </div>
       </div>
-      <aside className="hidden md:block max-w-sm bg-sidebar text-sidebar-foreground py-2 px-4 border border-border rounded-md">
-        {passage.words.map((w) => (
-          <ParsingCard key={wordKey(w)} word={w} />
-        ))}
+      <aside className="hidden md:block max-w-sm sticky top-2 max-h-dvh overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
+        {passage.words.map((w) => {
+          const id = wordKey(w);
+          return (
+            <ParsingCard
+              key={id}
+              word={w}
+              focused={focusedId === id}
+              pinned={pinnedId === id}
+              onMouseEnter={() => setHoveredId(id)}
+              onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+              onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+            />
+          );
+        })}
       </aside>
     </div>
   );
-}
-
-function wordKey(w: Word): string {
-  return `${w.book}.${w.chapter}.${w.verse}.${w.word_index}`;
 }
