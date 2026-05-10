@@ -1,3 +1,4 @@
+import unicodedata
 from dataclasses import dataclass
 from enum import Enum
 from itertools import groupby
@@ -316,10 +317,13 @@ class Word:
             number=Number.from_code(number),
             gender=Gender.from_code(gender),
             degree=Degree.from_code(degree),
-            text=text,
-            text_word=text_word,
-            normalized=normalized,
-            lemma=lemma,
+            # NFC-normalize Greek text fields so lookups match other Greek
+            # corpora (e.g. TBESG lexicon, which uses oxia codepoints — NFC
+            # folds them to the tonos forms SBLGNT already uses).
+            text=unicodedata.normalize("NFC", text),
+            text_word=unicodedata.normalize("NFC", text_word),
+            normalized=unicodedata.normalize("NFC", normalized),
+            lemma=unicodedata.normalize("NFC", lemma),
         )
 
 
