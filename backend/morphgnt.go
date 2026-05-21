@@ -261,6 +261,14 @@ type Word struct {
 	TextWord     string       `json:"text_word"        db:"text_word"`
 	Normalized   string       `json:"normalized"       db:"normalized"`
 	Lemma        string       `json:"lemma"            db:"lemma"`
+	Lexicon      []Lexicon    `json:"lexicon"          db:"lexicon"`
+}
+
+type Lexicon struct {
+	Form            string `json:"form"`
+	Transliteration string `json:"transliteration"`
+	Gloss           string `json:"gloss"`
+	Meaning         string `json:"meaning"`
 }
 
 type Passage struct {

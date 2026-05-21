@@ -20,13 +20,30 @@ func (p *PgStore) WordCount(ctx context.Context) (WordCount, error) {
 }
 
 const versesSelect = `
-	SELECT book, chapter, verse, word_index, part_of_speech,
-		   person, tense, voice, mood, grammatical_case,
-		   number, gender, degree,
-		   text, text_word, normalized, lemma
-	FROM morphgnt_sblgnt
+	SELECT m.book, m.chapter, m.verse, m.word_index, m.part_of_speech,
+		m.person, m.tense, m.voice, m.mood, m.grammatical_case,
+		m.number, m.gender, m.degree,
+		m.text, m.text_word, m.normalized, m.lemma,
+		COALESCE(
+			jsonb_agg(
+				jsonb_build_object(
+					'form',            lf.form,
+					'transliteration', l.transliteration,
+					'gloss',           l.gloss,
+					'meaning',         l.meaning
+				)
+			) FILTER (WHERE l.id IS NOT NULL),
+			'[]'::jsonb
+		) AS lexicon
+	FROM morphgnt_sblgnt m
+	LEFT JOIN tbesg_lexicon_form lf ON lf.form = m.lemma
+	LEFT JOIN tbesg_lexicon l ON l.id = lf.lexicon_id
 	WHERE %s
-	ORDER BY book, chapter, verse, word_index`
+	GROUP BY m.book, m.chapter, m.verse, m.word_index, m.part_of_speech,
+		m.person, m.tense, m.voice, m.mood, m.grammatical_case,
+		m.number, m.gender, m.degree,
+		m.text, m.text_word, m.normalized, m.lemma
+	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
 func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
 	switch r := ref.(type) {
