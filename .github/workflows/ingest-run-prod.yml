@@ -12,7 +12,7 @@ env:
 
 jobs:
   ingest:
-    name: Ingest MorphGNT into prod DB
+    name: Ingest MorphGNT and TBESG into prod DB
     runs-on: ubuntu-latest
 
     steps:

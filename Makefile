@@ -8,7 +8,7 @@
 export
 
 .PHONY: pre-commit prek \
-	ingest-run ingest-tests \
+	ingest-run ingest-morphgnt-run ingest-tbesg-run ingest-tests \
 	backend-up backend-down backend-dev backend-tests \
 	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-tests frontend-preview \
 	db-up db-down db-psql \
@@ -20,6 +20,12 @@ prek:
 
 ingest-run:
 	cd ingest && PYTHONPATH=src uv run python main.py
+
+ingest-morphgnt-run:
+	cd ingest && PYTHONPATH=src uv run python main_morphgnt.py
+
+ingest-tbesg-run:
+	cd ingest && PYTHONPATH=src uv run python main_tbesg.py
 
 ingest-tests:
 	cd ingest && uv run pytest
