@@ -1,7 +1,9 @@
+import re
 import unicodedata
 from dataclasses import dataclass
 
 COLUMN_HEADER_PREFIX = "eStrong\tdStrong\tuStrong\t"
+FORM_SEPARATORS = re.compile(r"[,=]")
 
 
 @dataclass(frozen=True)
@@ -18,12 +20,19 @@ class Entry:
     meaning: str
 
     def forms(self) -> list[str]:
-        """Split the `greek` cell on commas to get individual lexical forms.
+        """Split the `greek` cell into individual lexical forms.
 
-        Some entries list variant spellings (e.g. ``"α, Ἀλφα"``). Each
-        comma-separated fragment is stripped; empties are dropped.
+        Some entries list variant spellings as ``"α, Ἀλφα"``; others use ``=``
+        to link related forms (e.g. ``"Ἑλληνιστί=Ἑλληνικός"``, where the
+        dStrong column reads "a Spelling of"). Both halves of an ``=`` link
+        belong in the form index so a lookup of either resolves to this entry.
+
+        Fragments are stripped, empties dropped, and duplicates removed while
+        preserving first-occurrence order — `greek` is already NFC-normalized,
+        so string equality is the right dedupe key.
         """
-        return [f for f in (s.strip() for s in self.greek.split(",")) if f]
+        fragments = (s.strip() for s in FORM_SEPARATORS.split(self.greek))
+        return list(dict.fromkeys(f for f in fragments if f))
 
 
 def parse_tbesg_file(filename: str) -> list[Entry]:

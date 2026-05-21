@@ -119,3 +119,15 @@ class TestEntryForms:
 
     def test_drops_empty_fragments(self):
         assert self._entry("α,, Ἀλφα,").forms() == ["α", "Ἀλφα"]
+
+    def test_splits_on_equals(self):
+        assert self._entry("Ἑλληνιστί=Ἑλληνικός").forms() == [
+            "Ἑλληνιστί",
+            "Ἑλληνικός",
+        ]
+
+    def test_dedupes_identical_fragments(self):
+        assert self._entry("Ἑλληνίς=Ἑλληνίς").forms() == ["Ἑλληνίς"]
+
+    def test_mixed_comma_and_equals(self):
+        assert self._entry("α, β=α").forms() == ["α", "β"]

@@ -2,6 +2,7 @@ import logging
 
 import psycopg
 
+from tbesg.aliases import load_aligned_forms
 from tbesg.parser import Entry
 
 log = logging.getLogger(__name__)
@@ -73,11 +74,28 @@ def load_entries(conn: psycopg.Connection, entries: list[Entry]) -> None:
                 copy.write_row(_entry_to_row(e))
 
         form_count = 0
+        form_to_lex_id: dict[str, int] = {}
         with conn.cursor().copy(
             "COPY tbesg_lexicon_form (lexicon_id, form) FROM STDIN"
         ) as copy:
             for i, e in enumerate(entries, start=1):
                 for form in e.forms():
                     copy.write_row((i, form))
+                    form_to_lex_id[form] = i
                     form_count += 1
-    log.info(f"Loaded {len(entries)} entries and {form_count} forms")
+
+        aliases = load_aligned_forms()
+        missing = [a.tbesg for a in aliases if a.tbesg not in form_to_lex_id]
+        if missing:
+            raise ValueError(
+                f"Aligned tbesg forms not present in lexicon: {sorted(set(missing))}"
+            )
+        with conn.cursor().copy(
+            "COPY tbesg_lexicon_form (lexicon_id, form) FROM STDIN"
+        ) as copy:
+            for a in aliases:
+                copy.write_row((form_to_lex_id[a.tbesg], a.morphgnt))
+    log.info(
+        f"Loaded {len(entries)} entries, {form_count} forms, "
+        f"{len(aliases)} morphgnt aliases"
+    )
