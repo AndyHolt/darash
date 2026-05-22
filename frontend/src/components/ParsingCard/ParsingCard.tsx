@@ -1,5 +1,7 @@
+import type React from "react";
 import { useEffect, useRef } from "react";
-import { Item, ItemContent, ItemDescription, ItemTitle } from "@/components/ui/item";
+import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
+import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";
 import { formatParsing } from "./parsing";
@@ -42,16 +44,26 @@ export function ParsingCard({
     >
       <ItemContent>
         <ItemTitle className="font-greek">{word.text_word}</ItemTitle>
-        <ItemDescription>
-          <div>
-            <Parsing word={word} />
-          </div>
-          <div>
-            <Gloss word={word} />
-          </div>
-        </ItemDescription>
+        <WordDataRow>
+          <Parsing word={word} />
+        </WordDataRow>
+        <WordDataRow>
+          <Gloss word={word} />
+        </WordDataRow>
       </ItemContent>
     </Item>
+  );
+}
+
+function WordDataRow({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      className={cn(
+        "text-left text-sm leading-normal font-normal text-muted-foreground group-data-[size=xs]/item:text-xs",
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
