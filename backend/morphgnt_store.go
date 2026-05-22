@@ -24,6 +24,7 @@ const versesSelect = `
 		m.person, m.tense, m.voice, m.mood, m.grammatical_case,
 		m.number, m.gender, m.degree,
 		m.text, m.text_word, m.normalized, m.lemma,
+		m.normalized_count, m.normalized_rank, m.lemma_count, m.lemma_rank,
 		COALESCE(
 			jsonb_agg(
 				jsonb_build_object(
@@ -42,7 +43,8 @@ const versesSelect = `
 	GROUP BY m.book, m.chapter, m.verse, m.word_index, m.part_of_speech,
 		m.person, m.tense, m.voice, m.mood, m.grammatical_case,
 		m.number, m.gender, m.degree,
-		m.text, m.text_word, m.normalized, m.lemma
+		m.text, m.text_word, m.normalized, m.lemma,
+		m.normalized_count, m.normalized_rank, m.lemma_count, m.lemma_rank
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
 func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
