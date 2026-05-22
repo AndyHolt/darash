@@ -56,6 +56,14 @@ export interface Word {
   text_word: string;
   normalized: string;
   lemma: string;
+  lexicon: Lexicon[];
+}
+
+export interface Lexicon {
+  form: string;
+  transliteration: string;
+  gloss: string;
+  meaning: string;
 }
 
 export interface Passage {
