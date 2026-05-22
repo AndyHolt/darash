@@ -7,8 +7,12 @@ from morphgnt.parser import Word
 
 log = logging.getLogger(__name__)
 
+# DROP+CREATE+COPY runs inside a single transaction in load_words(), so a
+# mid-load failure rolls back to the previous ingest's data.
 SCHEMA_SQL = """
-CREATE TABLE IF NOT EXISTS morphgnt_sblgnt (
+DROP TABLE IF EXISTS morphgnt_sblgnt;
+
+CREATE TABLE morphgnt_sblgnt (
     id               SERIAL PRIMARY KEY,
     book             TEXT    NOT NULL,
     chapter          INTEGER NOT NULL,
@@ -27,23 +31,21 @@ CREATE TABLE IF NOT EXISTS morphgnt_sblgnt (
     text_word        TEXT    NOT NULL,
     normalized       TEXT    NOT NULL,
     lemma            TEXT    NOT NULL,
+    normalized_count INTEGER NOT NULL,
+    normalized_rank  INTEGER NOT NULL,
+    lemma_count      INTEGER NOT NULL,
+    lemma_rank       INTEGER NOT NULL,
     UNIQUE (book, chapter, verse, word_index)
 );
 
-CREATE INDEX IF NOT EXISTS idx_morphgnt_sblgnt_lemma ON morphgnt_sblgnt (lemma);
-CREATE INDEX IF NOT EXISTS idx_morphgnt_sblgnt_reference ON morphgnt_sblgnt (book, chapter, verse);
+CREATE INDEX idx_morphgnt_sblgnt_lemma ON morphgnt_sblgnt (lemma);
+CREATE INDEX idx_morphgnt_sblgnt_reference ON morphgnt_sblgnt (book, chapter, verse);
 """
 
 
 def connect() -> psycopg.Connection:
     """Connect using PG* environment variables (libpq defaults)."""
     return psycopg.connect(autocommit=True)
-
-
-def ensure_schema(conn: psycopg.Connection) -> None:
-    """Create the morphgnt_sblgnt table and indexes if they don't exist."""
-    conn.execute(SCHEMA_SQL)
-    log.info("Schema ensured")
 
 
 def _nullable(enum_val: Enum) -> str | None:
@@ -71,17 +73,26 @@ def _word_to_row(w: Word) -> tuple:
         w.text_word,
         w.normalized,
         w.lemma,
+        w.normalized_count,
+        w.normalized_rank,
+        w.lemma_count,
+        w.lemma_rank,
     )
 
 
 def load_words(conn: psycopg.Connection, words: list[Word]) -> None:
-    """Truncate and bulk-load all words in a single transaction."""
+    """Recreate the table and bulk-load all words in a single transaction.
+
+    On failure the transaction rolls back, leaving the previous ingest's
+    data intact (Postgres DDL is transactional).
+    """
     with conn.transaction():
-        conn.execute("TRUNCATE morphgnt_sblgnt")
+        conn.execute(SCHEMA_SQL)
         with conn.cursor().copy(
             "COPY morphgnt_sblgnt (book, chapter, verse, word_index, part_of_speech, "
             "person, tense, voice, mood, grammatical_case, number, gender, degree, "
-            "text, text_word, normalized, lemma) FROM STDIN"
+            "text, text_word, normalized, lemma, "
+            "normalized_count, normalized_rank, lemma_count, lemma_rank) FROM STDIN"
         ) as copy:
             for w in words:
                 copy.write_row(_word_to_row(w))

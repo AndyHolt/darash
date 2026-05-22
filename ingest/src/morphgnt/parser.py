@@ -284,6 +284,12 @@ class Word:
     text_word: str
     normalized: str
     lemma: str
+    # Frequency stats — populated by morphgnt.stats.attach_stats after the full
+    # corpus is parsed, since rank is only defined relative to the whole NT.
+    normalized_count: int = 0
+    normalized_rank: int = 0
+    lemma_count: int = 0
+    lemma_rank: int = 0
 
     @classmethod
     def from_line(cls, line: str, word_in_verse: int) -> "Word":
