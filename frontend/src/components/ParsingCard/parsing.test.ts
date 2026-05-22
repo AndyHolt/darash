@@ -13,6 +13,10 @@ function word(overrides: Partial<Word>): Word {
     text_word: "",
     normalized: "",
     lemma: "λόγος",
+    normalized_count: 0,
+    normalized_rank: 0,
+    lemma_count: 0,
+    lemma_rank: 0,
     lexicon: [],
     ...overrides,
   };

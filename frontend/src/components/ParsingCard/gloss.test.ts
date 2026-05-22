@@ -17,6 +17,10 @@ function word(lexicon: Lexicon[]): Word {
     text_word: "",
     normalized: "",
     lemma: "",
+    normalized_count: 0,
+    normalized_rank: 0,
+    lemma_count: 0,
+    lemma_rank: 0,
     lexicon,
   };
 }
