@@ -56,6 +56,10 @@ export interface Word {
   text_word: string;
   normalized: string;
   lemma: string;
+  normalized_count: number;
+  normalized_rank: number;
+  lemma_count: number;
+  lemma_rank: number;
   lexicon: Lexicon[];
 }
 

@@ -8,10 +8,26 @@ export interface MorphgntPassageProps {
   passage: Passage;
 }
 
+// Cards for common words are hidden by default to keep the help focused on
+// vocabulary the reader is unlikely to know. Clicking such a word reveals its
+// card for the rest of the session.
+const COMMON_LEMMA_THRESHOLD = 10;
+
 export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(() => new Set());
   const focusedId = hoveredId ?? pinnedId;
+
+  const handleWordClick = (id: string) => {
+    setPinnedId((curr) => (curr === id ? null : id));
+    setRevealedIds((curr) => {
+      if (curr.has(id)) return curr;
+      const next = new Set(curr);
+      next.add(id);
+      return next;
+    });
+  };
 
   const wordRefs = useRef(new Map<string, HTMLSpanElement>());
 
@@ -51,25 +67,27 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
         }}
         onMouseEnter={() => setHoveredId(id)}
         onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-        onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
+        onClick={() => handleWordClick(id)}
       />
     );
   });
 
-  const cardList = passage.words.map((w) => {
-    const id = wordKey(w);
-    return (
-      <ParsingCard
-        key={id}
-        word={w}
-        focused={focusedId === id}
-        pinned={pinnedId === id}
-        onMouseEnter={() => setHoveredId(id)}
-        onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-        onClick={() => setPinnedId((curr) => (curr === id ? null : id))}
-      />
-    );
-  });
+  const cardList = passage.words
+    .filter((w) => w.lemma_count <= COMMON_LEMMA_THRESHOLD || revealedIds.has(wordKey(w)))
+    .map((w) => {
+      const id = wordKey(w);
+      return (
+        <ParsingCard
+          key={id}
+          word={w}
+          focused={focusedId === id}
+          pinned={pinnedId === id}
+          onMouseEnter={() => setHoveredId(id)}
+          onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
+          onClick={() => handleWordClick(id)}
+        />
+      );
+    });
 
   if (isWide) {
     return (
