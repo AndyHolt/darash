@@ -14,14 +14,22 @@ function isWordHelpMode(v: unknown): v is WordHelpMode {
 // Both thresholds live on the object regardless of `mode` (rather than a
 // discriminated union) so that toggling between modes preserves the user's
 // last chosen value for each.
+//
+// The `*IsCustom` flags distinguish "user has selected Custom" from "the
+// current value happens not to match a preset" — needed because clicking the
+// Custom radio while the value is still a preset shouldn't change the value,
+// only the UI affordance shown. Without the flag, there would be no way to
+// enter Custom mode at all from a preset value.
 export interface WordHelpSettings {
   mode: WordHelpMode;
   // Show help for lemmas occurring at most this many times in the NT.
   // Use Number.POSITIVE_INFINITY to mean "show help for every word".
   occurrencesThreshold: number;
+  occurrencesIsCustom: boolean;
   // Show help for lemmas ranked strictly higher than this (rank 1 = most common).
   // Use 0 to mean "show help for every word".
   rankThreshold: number;
+  rankIsCustom: boolean;
 }
 
 export const OCCURRENCE_PRESETS: readonly number[] = [5, 10, 20, 50, 100, Number.POSITIVE_INFINITY];
@@ -31,7 +39,9 @@ export const RANK_PRESETS: readonly number[] = [100, 250, 500, 1000, 0];
 export const DEFAULT_SETTINGS: WordHelpSettings = {
   mode: "occurrences",
   occurrencesThreshold: 10,
+  occurrencesIsCustom: false,
   rankThreshold: 500,
+  rankIsCustom: false,
 };
 
 const STORAGE_KEY = "darash.word-help-settings.v1";
@@ -54,6 +64,10 @@ function coerceThreshold(v: unknown, fallback: number): number {
   return typeof v === "number" && Number.isFinite(v) ? v : fallback;
 }
 
+function coerceBool(v: unknown, fallback: boolean): boolean {
+  return typeof v === "boolean" ? v : fallback;
+}
+
 function readStored(): WordHelpSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
@@ -66,7 +80,12 @@ function readStored(): WordHelpSettings {
         parsed.occurrencesThreshold,
         DEFAULT_SETTINGS.occurrencesThreshold,
       ),
+      occurrencesIsCustom: coerceBool(
+        parsed.occurrencesIsCustom,
+        DEFAULT_SETTINGS.occurrencesIsCustom,
+      ),
       rankThreshold: coerceThreshold(parsed.rankThreshold, DEFAULT_SETTINGS.rankThreshold),
+      rankIsCustom: coerceBool(parsed.rankIsCustom, DEFAULT_SETTINGS.rankIsCustom),
     };
   } catch {
     return DEFAULT_SETTINGS;

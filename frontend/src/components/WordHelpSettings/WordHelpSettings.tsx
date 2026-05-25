@@ -86,40 +86,142 @@ function ThresholdSubmenu({ mode }: { mode: WordHelpMode }) {
 
 function OccurrencesPresets() {
   const [settings, setSettings] = useWordHelpSettings();
+  const { occurrencesIsCustom: isCustom, occurrencesThreshold: t } = settings;
+
   return (
     <>
       <DropdownMenuLabel>Show help for lemmas with</DropdownMenuLabel>
       <DropdownMenuRadioGroup
-        value={String(settings.occurrencesThreshold)}
-        onValueChange={(v) =>
-          setSettings({ ...settings, mode: "occurrences", occurrencesThreshold: Number(v) })
-        }
+        // When in custom mode, the "custom" sentinel keeps that radio selected
+        // regardless of how the typed value relates to the preset list.
+        value={isCustom ? "custom" : String(t)}
+        onValueChange={(v) => {
+          if (v === "custom") {
+            setSettings({ ...settings, mode: "occurrences", occurrencesIsCustom: true });
+          } else {
+            setSettings({
+              ...settings,
+              mode: "occurrences",
+              occurrencesThreshold: Number(v),
+              occurrencesIsCustom: false,
+            });
+          }
+        }}
       >
         {OCCURRENCE_PRESETS.map((n) => (
           <StickyRadioItem key={n} value={String(n)}>
             {formatOccurrencePreset(n)}
           </StickyRadioItem>
         ))}
+        <StickyRadioItem value="custom">Custom…</StickyRadioItem>
       </DropdownMenuRadioGroup>
+      {isCustom && (
+        <CustomThresholdRow
+          prefix="≤"
+          suffix="occurrences"
+          // Infinity ("All words" preset) can't be rendered in a number input;
+          // fall back to empty so the placeholder shows.
+          value={Number.isFinite(t) ? t : ""}
+          onChange={(n) =>
+            setSettings({
+              ...settings,
+              mode: "occurrences",
+              occurrencesThreshold: n,
+              occurrencesIsCustom: true,
+            })
+          }
+        />
+      )}
     </>
   );
 }
 
 function RankPresets() {
   const [settings, setSettings] = useWordHelpSettings();
+  const { rankIsCustom: isCustom, rankThreshold: t } = settings;
+
   return (
     <>
       <DropdownMenuLabel>Show help for lemmas</DropdownMenuLabel>
       <DropdownMenuRadioGroup
-        value={String(settings.rankThreshold)}
-        onValueChange={(v) => setSettings({ ...settings, mode: "rank", rankThreshold: Number(v) })}
+        value={isCustom ? "custom" : String(t)}
+        onValueChange={(v) => {
+          if (v === "custom") {
+            setSettings({ ...settings, mode: "rank", rankIsCustom: true });
+          } else {
+            setSettings({
+              ...settings,
+              mode: "rank",
+              rankThreshold: Number(v),
+              rankIsCustom: false,
+            });
+          }
+        }}
       >
         {RANK_PRESETS.map((n) => (
           <StickyRadioItem key={n} value={String(n)}>
             {formatRankPreset(n)}
           </StickyRadioItem>
         ))}
+        <StickyRadioItem value="custom">Custom…</StickyRadioItem>
       </DropdownMenuRadioGroup>
+      {isCustom && (
+        <CustomThresholdRow
+          prefix="Outside top"
+          // 0 ("All words" preset) renders as an empty input rather than literal 0.
+          value={t > 0 ? t : ""}
+          onChange={(n) =>
+            setSettings({
+              ...settings,
+              mode: "rank",
+              rankThreshold: n,
+              rankIsCustom: true,
+            })
+          }
+        />
+      )}
     </>
+  );
+}
+
+// Custom-value row shown beneath the radio group when "Custom…" is selected.
+// Kept in the same visual idiom as the preset radios so the format stays
+// consistent (e.g. "≤ [N] occurrences"). Committed live on each keystroke,
+// matching the radios' instant-apply behavior. A bare <input> is used in
+// place of a wrapped UI primitive since adding a shadcn Input component just
+// for this one use isn't worth it.
+function CustomThresholdRow({
+  prefix,
+  suffix,
+  value,
+  onChange,
+}: {
+  prefix: string;
+  suffix?: string;
+  value: number | "";
+  onChange: (n: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-sm">
+      <span>{prefix}</span>
+      <input
+        type="number"
+        min={1}
+        step={1}
+        value={value}
+        placeholder="N"
+        // Stop keystrokes from reaching Radix's DropdownMenu, which would
+        // otherwise treat single characters as typeahead for menu items.
+        onKeyDown={(e) => e.stopPropagation()}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw === "") return;
+          const n = Number(raw);
+          if (Number.isFinite(n) && n >= 1) onChange(n);
+        }}
+        className="w-16 rounded border border-input bg-background px-1 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+      />
+      {suffix && <span>{suffix}</span>}
+    </div>
   );
 }
