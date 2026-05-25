@@ -54,6 +54,7 @@
 }
 
 :root {
+  color-scheme: light;
   --vellum: oklch(0.9623 0.0143 84.58);
   --vellum-input: oklch(0.978 0.0095 84.58);
   --vellum-hover-subtle: oklch(0.938 0.018 84.58);
@@ -114,6 +115,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --ink-black-950: oklch(0.152 0.01 77.89); /* deeper than base */
   --ink-black-900: oklch(0.178 0.012 77.89); /* slightly deeper */
   --ink-black-800: oklch(0.2028 0.0131 77.89); /* BASE — background */
