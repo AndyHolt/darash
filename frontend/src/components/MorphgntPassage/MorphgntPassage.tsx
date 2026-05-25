@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
 
@@ -8,15 +9,14 @@ export interface MorphgntPassageProps {
   passage: Passage;
 }
 
-// Cards for common words are hidden by default to keep the help focused on
-// vocabulary the reader is unlikely to know. Clicking such a word reveals its
-// card for the rest of the session.
-const COMMON_LEMMA_THRESHOLD = 10;
-
 export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
+  // Cards for common words are hidden by default to keep the help focused on
+  // vocabulary the reader is unlikely to know. Clicking such a word reveals its
+  // card for the rest of the session even if the threshold would exclude it.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [helpSettings] = useWordHelpSettings();
   const focusedId = hoveredId ?? pinnedId;
 
   const handleWordClick = (id: string) => {
@@ -53,6 +53,16 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     wordRefs.current.get(pinnedId)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [pinnedId]);
 
+  // When the help settings change, the click-driven reveal/pin state becomes
+  // stale (a pinned card may no longer pass the new threshold, and previously
+  // revealed words shouldn't carry forward). Clear both so the sidebar
+  // reflects the new threshold immediately.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: helpSettings is intentionally a change trigger; the effect body uses only stable setters.
+  useEffect(() => {
+    setRevealedIds((prev) => (prev.size === 0 ? prev : new Set()));
+    setPinnedId((prev) => (prev === null ? prev : null));
+  }, [helpSettings]);
+
   const wordList = passage.words.map((w) => {
     const id = wordKey(w);
     return (
@@ -73,7 +83,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   });
 
   const cardList = passage.words
-    .filter((w) => w.lemma_count <= COMMON_LEMMA_THRESHOLD || revealedIds.has(wordKey(w)))
+    .filter((w) => shouldShowHelp(w, helpSettings) || revealedIds.has(wordKey(w)))
     .map((w) => {
       const id = wordKey(w);
       return (

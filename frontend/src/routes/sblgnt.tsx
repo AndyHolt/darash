@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import Header from "@/components/Header";
 import { PassagePicker } from "@/components/PassagePicker/PassagePicker";
+import { WordHelpSettings } from "@/components/WordHelpSettings/WordHelpSettings";
 
 export const Route = createFileRoute("/sblgnt")({
   component: SblgntLayout,
@@ -14,7 +15,9 @@ function SblgntLayout() {
   // ResizablePanelGroup has a known height to split.
   return (
     <div className="md:contents flex flex-col h-dvh">
-      <Header>{passageRef ? <PassagePicker passageRef={passageRef} /> : null}</Header>
+      <Header rightActions={<WordHelpSettings />}>
+        {passageRef ? <PassagePicker passageRef={passageRef} /> : null}
+      </Header>
       <div className="md:contents flex-1 min-h-0">
         <Outlet />
       </div>
