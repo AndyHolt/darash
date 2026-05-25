@@ -1,4 +1,5 @@
 import { BookOpen } from "lucide-react";
+import type { ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,6 +18,19 @@ import {
   useWordHelpSettings,
   type WordHelpMode,
 } from "./state";
+
+// Wrap radio items with onSelect preventDefault so menu stays open on select
+function StickyRadioItem(props: ComponentProps<typeof DropdownMenuRadioItem>) {
+  return (
+    <DropdownMenuRadioItem
+      {...props}
+      onSelect={(e) => {
+        e.preventDefault();
+        props.onSelect?.(e);
+      }}
+    />
+  );
+}
 
 export function WordHelpSettings() {
   const [settings] = useWordHelpSettings();
@@ -50,8 +64,8 @@ function ModeSelector() {
         value={settings.mode}
         onValueChange={(v) => setSettings({ ...settings, mode: v as WordHelpMode })}
       >
-        <DropdownMenuRadioItem value="occurrences">Occurrences</DropdownMenuRadioItem>
-        <DropdownMenuRadioItem value="rank">Rank</DropdownMenuRadioItem>
+        <StickyRadioItem value="occurrences">Occurrences</StickyRadioItem>
+        <StickyRadioItem value="rank">Rank</StickyRadioItem>
       </DropdownMenuRadioGroup>
     </>
   );
@@ -82,9 +96,9 @@ function OccurrencesPresets() {
         }
       >
         {OCCURRENCE_PRESETS.map((n) => (
-          <DropdownMenuRadioItem key={n} value={String(n)}>
+          <StickyRadioItem key={n} value={String(n)}>
             {formatOccurrencePreset(n)}
-          </DropdownMenuRadioItem>
+          </StickyRadioItem>
         ))}
       </DropdownMenuRadioGroup>
     </>
@@ -101,9 +115,9 @@ function RankPresets() {
         onValueChange={(v) => setSettings({ ...settings, mode: "rank", rankThreshold: Number(v) })}
       >
         {RANK_PRESETS.map((n) => (
-          <DropdownMenuRadioItem key={n} value={String(n)}>
+          <StickyRadioItem key={n} value={String(n)}>
             {formatRankPreset(n)}
-          </DropdownMenuRadioItem>
+          </StickyRadioItem>
         ))}
       </DropdownMenuRadioGroup>
     </>
