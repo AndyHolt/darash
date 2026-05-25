@@ -76,10 +76,10 @@ function ModeSelector() {
           className="w-full"
         >
           <ToggleGroupItem value="occurrences" className="flex-1">
-            Occurrences
+            Word count
           </ToggleGroupItem>
           <ToggleGroupItem value="rank" className="flex-1">
-            Rank
+            Vocab rank
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
