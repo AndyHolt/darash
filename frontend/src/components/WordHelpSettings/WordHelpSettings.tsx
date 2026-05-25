@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   formatOccurrencePreset,
   formatRankPreset,
@@ -60,13 +61,28 @@ function ModeSelector() {
   return (
     <>
       <DropdownMenuLabel>Show help by</DropdownMenuLabel>
-      <DropdownMenuRadioGroup
-        value={settings.mode}
-        onValueChange={(v) => setSettings({ ...settings, mode: v as WordHelpMode })}
-      >
-        <StickyRadioItem value="occurrences">Occurrences</StickyRadioItem>
-        <StickyRadioItem value="rank">Rank</StickyRadioItem>
-      </DropdownMenuRadioGroup>
+      <div className="px-1.5 py-1">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          spacing={0}
+          value={settings.mode}
+          // Radix allows deselecting the current item, which would leave us
+          // with an empty value. Ignore that — there is always an active mode.
+          onValueChange={(v) => {
+            if (v) setSettings({ ...settings, mode: v as WordHelpMode });
+          }}
+          className="w-full"
+        >
+          <ToggleGroupItem value="occurrences" className="flex-1">
+            Occurrences
+          </ToggleGroupItem>
+          <ToggleGroupItem value="rank" className="flex-1">
+            Rank
+          </ToggleGroupItem>
+        </ToggleGroup>
+      </div>
     </>
   );
 }
