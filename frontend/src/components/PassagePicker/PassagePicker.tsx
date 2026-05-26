@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import { useReducer } from "react";
-import { formatReference } from "@/bible/references";
+import { formatReference, parseReferenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -146,8 +146,8 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline">
-          {passage ? formatReference(passage.reference) : "Select passage"}
-          <ChevronDown />
+          {passage ? formatReference(passage.reference) : pendingLabel(passageRef)}
+          {passage ? <ChevronDown /> : <Loader2 className="animate-spin" />}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-72 p-2">
@@ -160,4 +160,15 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       </PopoverContent>
     </Popover>
   );
+}
+
+// While the query is in flight we don't yet have a server-canonicalised
+// reference to display, so derive a label from the URL slug. A malformed
+// slug shouldn't crash the header — fall back to a generic label.
+function pendingLabel(passageRef: string): string {
+  try {
+    return formatReference(parseReferenceUrlTag(passageRef));
+  } catch {
+    return "Loading passage";
+  }
 }
