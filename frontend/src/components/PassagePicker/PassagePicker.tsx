@@ -11,7 +11,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { passageQuery } from "@/texts/morphgnt";
+import { type Passage, passageQuery } from "@/texts/morphgnt";
 import { BackButton } from "./BackButton";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
@@ -20,11 +20,14 @@ import { StartVersePicker } from "./StartVersePicker";
 import { initialStep, type Step, stepReducer } from "./state";
 
 export interface PassagePickerProps {
-  passageRef: string;
+  passageRef?: string;
 }
 
 export function PassagePicker({ passageRef }: PassagePickerProps) {
-  const { data: passage } = useQuery(passageQuery(passageRef));
+  const { data: passage, isLoading } = useQuery({
+    ...passageQuery(passageRef ?? ""),
+    enabled: !!passageRef,
+  });
   const [step, dispatch] = useReducer(stepReducer, initialStep);
 
   function handleOpenChange(open: boolean) {
@@ -146,8 +149,8 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
     <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="outline">
-          {passage ? formatReference(passage.reference) : pendingLabel(passageRef)}
-          {passage ? <ChevronDown /> : <Loader2 className="animate-spin" />}
+          {triggerLabel(passageRef, passage)}
+          {isLoading ? <Loader2 className="animate-spin" /> : <ChevronDown />}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-72 p-2">
@@ -160,6 +163,12 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       </PopoverContent>
     </Popover>
   );
+}
+
+function triggerLabel(passageRef: string | undefined, passage: Passage | undefined): string {
+  if (passage) return formatReference(passage.reference);
+  if (passageRef) return pendingLabel(passageRef);
+  return "Choose passage";
 }
 
 // While the query is in flight we don't yet have a server-canonicalised
