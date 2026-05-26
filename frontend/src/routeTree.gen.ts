@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SblgntRouteImport } from './routes/sblgnt'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as SblgntIndexRouteImport } from './routes/sblgnt.index'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as SblgntPassageRefRouteImport } from './routes/sblgnt.$passageRef'
 import { Route as AppCountRouteImport } from './routes/_app.count'
@@ -24,6 +25,11 @@ const SblgntRoute = SblgntRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const SblgntIndexRoute = SblgntIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SblgntRoute,
 } as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
@@ -52,13 +58,14 @@ export interface FileRoutesByFullPath {
   '/about': typeof AppAboutRoute
   '/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/sblgnt/': typeof SblgntIndexRoute
 }
 export interface FileRoutesByTo {
-  '/sblgnt': typeof SblgntRouteWithChildren
   '/about': typeof AppAboutRoute
   '/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
   '/': typeof AppIndexRoute
+  '/sblgnt': typeof SblgntIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -68,12 +75,19 @@ export interface FileRoutesById {
   '/_app/count': typeof AppCountRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
   '/_app/': typeof AppIndexRoute
+  '/sblgnt/': typeof SblgntIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/sblgnt' | '/about' | '/count' | '/sblgnt/$passageRef'
+  fullPaths:
+    | '/'
+    | '/sblgnt'
+    | '/about'
+    | '/count'
+    | '/sblgnt/$passageRef'
+    | '/sblgnt/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/sblgnt' | '/about' | '/count' | '/sblgnt/$passageRef' | '/'
+  to: '/about' | '/count' | '/sblgnt/$passageRef' | '/' | '/sblgnt'
   id:
     | '__root__'
     | '/_app'
@@ -82,6 +96,7 @@ export interface FileRouteTypes {
     | '/_app/count'
     | '/sblgnt/$passageRef'
     | '/_app/'
+    | '/sblgnt/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -104,6 +119,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/sblgnt/': {
+      id: '/sblgnt/'
+      path: '/'
+      fullPath: '/sblgnt/'
+      preLoaderRoute: typeof SblgntIndexRouteImport
+      parentRoute: typeof SblgntRoute
     }
     '/_app/': {
       id: '/_app/'
@@ -152,10 +174,12 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 interface SblgntRouteChildren {
   SblgntPassageRefRoute: typeof SblgntPassageRefRoute
+  SblgntIndexRoute: typeof SblgntIndexRoute
 }
 
 const SblgntRouteChildren: SblgntRouteChildren = {
   SblgntPassageRefRoute: SblgntPassageRefRoute,
+  SblgntIndexRoute: SblgntIndexRoute,
 }
 
 const SblgntRouteWithChildren =

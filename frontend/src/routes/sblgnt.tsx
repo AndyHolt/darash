@@ -16,7 +16,7 @@ function SblgntLayout() {
   return (
     <div className="md:contents flex flex-col h-dvh">
       <Header rightActions={<WordHelpSettings />}>
-        {passageRef ? <PassagePicker passageRef={passageRef} /> : null}
+        <PassagePicker passageRef={passageRef} />
       </Header>
       <div className="md:contents flex-1 min-h-0">
         <Outlet />
