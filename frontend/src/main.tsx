@@ -10,7 +10,15 @@ import { routeTree } from "./routeTree.gen";
 
 // Create a new router instance
 const queryClient = new QueryClient();
-const router = createRouter({ routeTree, context: { queryClient } });
+const router = createRouter({
+  routeTree,
+  context: { queryClient },
+  // Show the pendingComponent (skeleton) almost immediately on navigation so
+  // the user gets visual confirmation of their selection. defaultPendingMinMs
+  // keeps the skeleton visible long enough that a fast load doesn't flash.
+  defaultPendingMs: 0,
+  defaultPendingMinMs: 400,
+});
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
