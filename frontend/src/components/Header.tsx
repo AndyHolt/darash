@@ -19,7 +19,7 @@ export default function Header({
             Darash
           </h1>
         </Link>
-        {children}
+        <div>{children}</div>
         <div className="justify-self-end flex items-center gap-2">
           {rightActions}
           <ModeToggle />
