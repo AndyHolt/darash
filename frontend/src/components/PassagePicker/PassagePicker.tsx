@@ -24,10 +24,19 @@ export interface PassagePickerProps {
 }
 
 export function PassagePicker({ passageRef }: PassagePickerProps) {
-  const { data: passage, isLoading } = useQuery({
+  const {
+    data: passage,
+    isLoading,
+    failureCount,
+  } = useQuery({
     ...passageQuery(passageRef ?? ""),
     enabled: !!passageRef,
   });
+  // `isError` only flips once retries are exhausted, so a failing-then-retrying
+  // query still reports `isLoading: true` and would keep the spinner up while
+  // the route's error UI is on screen. `failureCount` increments on the first
+  // failed attempt, giving us the earlier signal we need to stop the spinner.
+  const hasFailed = failureCount > 0;
   const [step, dispatch] = useReducer(stepReducer, initialStep);
 
   function handleOpenChange(open: boolean) {
@@ -150,7 +159,7 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
       <PopoverTrigger asChild>
         <Button variant="outline">
           {triggerLabel(passageRef, passage)}
-          {isLoading ? <Loader2 className="animate-spin" /> : <ChevronDown />}
+          {isLoading && !hasFailed ? <Loader2 className="animate-spin" /> : <ChevronDown />}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto min-w-72 p-2">
@@ -171,13 +180,15 @@ function triggerLabel(passageRef: string | undefined, passage: Passage | undefin
   return "Choose passage";
 }
 
-// While the query is in flight we don't yet have a server-canonicalised
-// reference to display, so derive a label from the URL slug. A malformed
-// slug shouldn't crash the header — fall back to a generic label.
+// Before the server has returned we don't yet have a canonicalised reference
+// to display, so derive a label from the URL slug. A malformed slug (also the
+// shape an erroring request takes — passage stays undefined) shouldn't crash
+// the header; fall back to the same prompt as the no-ref case so the picker
+// invites the user to pick rather than implying a load is in progress.
 function pendingLabel(passageRef: string): string {
   try {
     return formatReference(parseReferenceUrlTag(passageRef));
   } catch {
-    return "Loading passage";
+    return "Choose passage";
   }
 }

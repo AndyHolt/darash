@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { HttpError } from "@/lib/http-error";
 import type { Passage } from "./morphgnt.types";
 
 export const passageQueryKeyPrefix = ["morphgntPassage"] as const;
@@ -20,7 +21,7 @@ export function passageQuery(ref: string) {
     // cycle on PassagePicker briefly empties the observer set.
     queryFn: () =>
       fetch(`/api/morphgnt/passage/${ref}`).then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) throw new HttpError(res.status, res.statusText);
         return res.json() as Promise<Passage>;
       }),
   });
