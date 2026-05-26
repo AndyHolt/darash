@@ -3,7 +3,13 @@ import type { ReactNode } from "react";
 import { ModeToggle } from "@/components/color-theme/ModeToggle";
 import DarashIcon from "@/components/DarashIcon";
 
-export default function Header({ children }: { children?: ReactNode }) {
+export default function Header({
+  children,
+  rightActions,
+}: {
+  children?: ReactNode;
+  rightActions?: ReactNode;
+}) {
   return (
     <>
       <div className="p-2 grid grid-cols-[1fr_auto_1fr] items-center bg-sidebar">
@@ -14,7 +20,8 @@ export default function Header({ children }: { children?: ReactNode }) {
           </h1>
         </Link>
         {children}
-        <div className="justify-self-end">
+        <div className="justify-self-end flex items-center gap-2">
+          {rightActions}
           <ModeToggle />
         </div>
       </div>
