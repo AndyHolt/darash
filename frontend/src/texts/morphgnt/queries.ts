@@ -12,8 +12,14 @@ export const morphgntQueryKeys = {
 export function passageQuery(ref: string) {
   return queryOptions({
     queryKey: morphgntQueryKeys.passage(ref),
-    queryFn: ({ signal }) =>
-      fetch(`/api/morphgnt/passage/${ref}`, { signal }).then((res) => {
+    // Deliberately not consuming the request signal: a fetched passage is
+    // always worth completing and caching even if every observer has gone
+    // away, so the next read of the same ref within gcTime hits warm
+    // cache. As a side benefit this avoids React Query's CancelledError
+    // path on a slow initial load, where StrictMode's mount/cleanup/mount
+    // cycle on PassagePicker briefly empties the observer set.
+    queryFn: () =>
+      fetch(`/api/morphgnt/passage/${ref}`).then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<Passage>;
       }),
