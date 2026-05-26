@@ -31,15 +31,23 @@ export function MorphgntPassageSkeleton() {
     </div>
   );
 
+  // Light mode: `--muted` is nearly identical to `--sidebar`, so the default
+  // skeleton color disappears against the sidebar background — override with
+  // `bg-sidebar-accent`. Dark mode: `--muted` already contrasts well against
+  // the much darker sidebar, so keep it via `dark:bg-muted`.
+  const skeletonBg = "bg-sidebar-accent dark:bg-muted";
   const cardBlock = (
     <div className="flex flex-col gap-2">
       {Array.from({ length: CARD_COUNT }).map((_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: static decorative skeleton cards.
         <Item key={i} variant="default" size="xs">
-          <ItemContent>
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-3 w-40" />
-            <Skeleton className="h-3 w-32" />
+          {/* Override the size=xs gap-0 default on ItemContent — real cards
+              get visual breathing room from text line-height, which fixed-
+              height skeleton bars lack. */}
+          <ItemContent className="group-data-[size=xs]/item:gap-1.5">
+            <Skeleton className={`h-4 w-24 ${skeletonBg}`} />
+            <Skeleton className={`h-3 w-40 ${skeletonBg}`} />
+            <Skeleton className={`h-3 w-32 ${skeletonBg}`} />
           </ItemContent>
         </Item>
       ))}
