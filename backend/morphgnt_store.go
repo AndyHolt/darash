@@ -85,16 +85,16 @@ func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
 	panic(fmt.Sprintf("unhandled Reference type: %T", ref))
 }
 
-func (p *PgStore) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
+func (p *PgStore) FetchVerses(ctx context.Context, ref Reference) ([]Word, error) {
 	where, args := versesFilter(ref)
 	query := fmt.Sprintf(versesSelect, where)
 	rows, err := p.db.Query(ctx, query, args)
 	if err != nil {
-		return Passage{}, fmt.Errorf("query verses: %w", err)
+		return nil, fmt.Errorf("query verses: %w", err)
 	}
 	words, err := pgx.CollectRows(rows, pgx.RowToStructByName[Word])
 	if err != nil {
-		return Passage{}, fmt.Errorf("convert rows to Words: %w", err)
+		return nil, fmt.Errorf("convert rows to Words: %w", err)
 	}
-	return Passage{Reference: ref, Words: words}, nil
+	return words, nil
 }

@@ -8,7 +8,7 @@ import (
 
 type fakeRepo struct {
 	fetchCalled bool
-	passage     Passage
+	words       []Word
 	err         error
 }
 
@@ -16,9 +16,9 @@ func (f *fakeRepo) WordCount(_ context.Context) (WordCount, error) {
 	return WordCount{}, nil
 }
 
-func (f *fakeRepo) FetchVerses(_ context.Context, ref Reference) (Passage, error) {
+func (f *fakeRepo) FetchVerses(_ context.Context, _ Reference) ([]Word, error) {
 	f.fetchCalled = true
-	return f.passage, f.err
+	return f.words, f.err
 }
 
 func TestFetchVersesRejectsOldTestament(t *testing.T) {
@@ -35,10 +35,7 @@ func TestFetchVersesRejectsOldTestament(t *testing.T) {
 }
 
 func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
-	repo := &fakeRepo{passage: Passage{
-		Reference: VerseReference{John, 3, 16},
-		Words:     []Word{},
-	}}
+	repo := &fakeRepo{words: []Word{}}
 	svc := NewMorphgntService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
@@ -48,11 +45,9 @@ func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
 }
 
 func TestFetchVersesAcceptsNewTestament(t *testing.T) {
-	want := Passage{
-		Reference: VerseReference{John, 3, 16},
-		Words:     []Word{{Book: "John", Chapter: 3, Verse: 16, ParagraphID: 64003}},
-	}
-	repo := &fakeRepo{passage: want}
+	repo := &fakeRepo{words: []Word{
+		{Book: "John", Chapter: 3, Verse: 16, ParagraphID: 64003},
+	}}
 	svc := NewMorphgntService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
@@ -62,14 +57,13 @@ func TestFetchVersesAcceptsNewTestament(t *testing.T) {
 	if !repo.fetchCalled {
 		t.Error("repo.FetchVerses was not called for NT reference")
 	}
-	if len(got.Words) != 1 || got.Words[0].Book != "John" {
+	if len(got.Paragraphs) != 1 || len(got.Paragraphs[0].Words) != 1 {
 		t.Errorf("unexpected passage: %+v", got)
 	}
 }
 
 // TestFetchVersesGroupsParagraphs verifies the service groups consecutive
-// words with the same ParagraphID into a Paragraph, and that the deprecated
-// Words field is still populated identically.
+// words with the same ParagraphID into a single Paragraph.
 func TestFetchVersesGroupsParagraphs(t *testing.T) {
 	words := []Word{
 		{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, ParagraphID: 64003, Text: "a"},
@@ -77,10 +71,7 @@ func TestFetchVersesGroupsParagraphs(t *testing.T) {
 		{Book: "John", Chapter: 3, Verse: 17, WordIndex: 1, ParagraphID: 64004, Text: "c"},
 		{Book: "John", Chapter: 3, Verse: 18, WordIndex: 1, ParagraphID: 64004, Text: "d"},
 	}
-	repo := &fakeRepo{passage: Passage{
-		Reference: VerseReference{John, 3, 16},
-		Words:     words,
-	}}
+	repo := &fakeRepo{words: words}
 	svc := NewMorphgntService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
@@ -98,17 +89,17 @@ func TestFetchVersesGroupsParagraphs(t *testing.T) {
 		t.Errorf("paragraph[1] = %+v, want id=64004 with 2 words", got.Paragraphs[1])
 	}
 
-	// Concatenated paragraph words must equal the deprecated Words field.
+	// Concatenated paragraph words must equal the input word sequence.
 	var flat []Word
 	for _, p := range got.Paragraphs {
 		flat = append(flat, p.Words...)
 	}
-	if len(flat) != len(got.Words) {
-		t.Fatalf("flattened paragraphs = %d words, Words = %d", len(flat), len(got.Words))
+	if len(flat) != len(words) {
+		t.Fatalf("flattened paragraphs = %d words, input = %d", len(flat), len(words))
 	}
 	for i := range flat {
-		if flat[i].Text != got.Words[i].Text {
-			t.Errorf("position %d: paragraph word %q != Words %q", i, flat[i].Text, got.Words[i].Text)
+		if flat[i].Text != words[i].Text {
+			t.Errorf("position %d: paragraph word %q != input %q", i, flat[i].Text, words[i].Text)
 		}
 	}
 }
