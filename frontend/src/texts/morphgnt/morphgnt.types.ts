@@ -60,6 +60,7 @@ export interface Word {
   normalized_rank: number;
   lemma_count: number;
   lemma_rank: number;
+  paragraph_id: number;
   lexicon: Lexicon[];
 }
 
@@ -70,9 +71,14 @@ export interface Lexicon {
   meaning: string;
 }
 
+export interface Paragraph {
+  id: number;
+  words: Word[];
+}
+
 export interface Passage {
   reference: Reference;
-  words: Word[];
+  paragraphs: Paragraph[];
 }
 
 export function wordKey(w: Word): string {

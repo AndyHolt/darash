@@ -3,9 +3,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
-// Widths chosen so successive lines look like prose rather than a uniform
-// stack; the final partial line hints at a paragraph break.
-const TEXT_LINE_WIDTHS = [
+// Each entry is a paragraph; widths chosen so successive lines look like
+// prose rather than a uniform stack, with a shorter trailing line.
+const PARAGRAPH_LINES = [
   "w-full",
   "w-[95%]",
   "w-[88%]",
@@ -16,6 +16,7 @@ const TEXT_LINE_WIDTHS = [
   "w-[85%]",
   "w-[60%]",
 ];
+const PARAGRAPH_LINE_WIDTHS: string[][] = [PARAGRAPH_LINES, PARAGRAPH_LINES];
 
 const CARD_COUNT = 6;
 
@@ -23,10 +24,15 @@ export function MorphgntPassageSkeleton() {
   const isWide = useMediaQuery("(min-width: 768px)");
 
   const textBlock = (
-    <div className="font-greek leading-7 space-y-2 py-1">
-      {TEXT_LINE_WIDTHS.map((w, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: static decorative skeleton lines.
-        <Skeleton key={i} className={`h-5 ${w}`} />
+    <div className="font-greek leading-7 py-1">
+      {PARAGRAPH_LINE_WIDTHS.map((widths, pIdx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static decorative skeleton paragraphs.
+        <div key={pIdx} className="space-y-2 mb-8 last:mb-0">
+          {widths.map((w, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: static decorative skeleton lines.
+            <Skeleton key={i} className={`h-5 ${w}`} />
+          ))}
+        </div>
       ))}
     </div>
   );
