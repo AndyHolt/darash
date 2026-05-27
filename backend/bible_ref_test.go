@@ -68,9 +68,14 @@ func TestRangeReferenceEndpointsHaveNoKind(t *testing.T) {
 func TestPassageMarshalJSON(t *testing.T) {
 	p := Passage{
 		Reference: VerseReference{John, 3, 16},
-		Words: []Word{
-			{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, PartOfSpeech: PartOfSpeechAdverb,
-				Text: "Οὕτως", TextWord: "Οὕτως", Normalized: "οὕτως", Lemma: "οὕτως"},
+		Paragraphs: []Paragraph{
+			{
+				ID: 64003,
+				Words: []Word{
+					{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, ParagraphID: 64003, PartOfSpeech: PartOfSpeechAdverb,
+						Text: "Οὕτως", TextWord: "Οὕτως", Normalized: "οὕτως", Lemma: "οὕτως"},
+				},
+			},
 		},
 	}
 	got, err := json.Marshal(p)
@@ -79,8 +84,11 @@ func TestPassageMarshalJSON(t *testing.T) {
 	}
 
 	var decoded struct {
-		Reference map[string]interface{}   `json:"reference"`
-		Words     []map[string]interface{} `json:"words"`
+		Reference  map[string]interface{} `json:"reference"`
+		Paragraphs []struct {
+			ID    int                      `json:"id"`
+			Words []map[string]interface{} `json:"words"`
+		} `json:"paragraphs"`
 	}
 	if err := json.Unmarshal(got, &decoded); err != nil {
 		t.Fatalf("unmarshal error: %v", err)
@@ -88,15 +96,21 @@ func TestPassageMarshalJSON(t *testing.T) {
 	if decoded.Reference["kind"] != "verse" {
 		t.Errorf("reference.kind = %v, want \"verse\"", decoded.Reference["kind"])
 	}
-	if len(decoded.Words) != 1 {
-		t.Fatalf("got %d words, want 1", len(decoded.Words))
+	if len(decoded.Paragraphs) != 1 {
+		t.Fatalf("got %d paragraphs, want 1", len(decoded.Paragraphs))
 	}
-	if decoded.Words[0]["book"] != "John" {
-		t.Errorf("words[0].book = %v, want \"John\"", decoded.Words[0]["book"])
+	if decoded.Paragraphs[0].ID != 64003 {
+		t.Errorf("paragraphs[0].id = %d, want 64003", decoded.Paragraphs[0].ID)
+	}
+	if len(decoded.Paragraphs[0].Words) != 1 {
+		t.Fatalf("got %d words in paragraph, want 1", len(decoded.Paragraphs[0].Words))
+	}
+	if decoded.Paragraphs[0].Words[0]["book"] != "John" {
+		t.Errorf("words[0].book = %v, want \"John\"", decoded.Paragraphs[0].Words[0]["book"])
 	}
 	// nullable morphology fields with omitempty should be absent
-	if _, ok := decoded.Words[0]["mood"]; ok {
-		t.Errorf("nil Mood should be omitted, got %v", decoded.Words[0]["mood"])
+	if _, ok := decoded.Paragraphs[0].Words[0]["mood"]; ok {
+		t.Errorf("nil Mood should be omitted, got %v", decoded.Paragraphs[0].Words[0]["mood"])
 	}
 }
 

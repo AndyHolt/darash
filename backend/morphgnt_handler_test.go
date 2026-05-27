@@ -23,12 +23,9 @@ func fetchVersesRequest(ref string) *http.Request {
 }
 
 func TestFetchVersesHandlerSuccess(t *testing.T) {
-	repo := &fakeRepo{passage: Passage{
-		Reference: VerseReference{John, 3, 16},
-		Words: []Word{
-			{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, PartOfSpeech: PartOfSpeechAdverb,
-				Text: "Οὕτως", TextWord: "Οὕτως", Normalized: "οὕτως", Lemma: "οὕτως"},
-		},
+	repo := &fakeRepo{words: []Word{
+		{Book: "John", Chapter: 3, Verse: 16, WordIndex: 1, ParagraphID: 64003, PartOfSpeech: PartOfSpeechAdverb,
+			Text: "Οὕτως", TextWord: "Οὕτως", Normalized: "οὕτως", Lemma: "οὕτως"},
 	}}
 	h := newTestHandler(repo)
 
@@ -43,8 +40,7 @@ func TestFetchVersesHandlerSuccess(t *testing.T) {
 	}
 
 	var decoded struct {
-		Reference  map[string]interface{}   `json:"reference"`
-		Words      []map[string]interface{} `json:"words"`
+		Reference  map[string]interface{} `json:"reference"`
 		Paragraphs []struct {
 			ID    int                      `json:"id"`
 			Words []map[string]interface{} `json:"words"`
@@ -55,9 +51,6 @@ func TestFetchVersesHandlerSuccess(t *testing.T) {
 	}
 	if decoded.Reference["kind"] != "verse" {
 		t.Errorf("reference.kind = %v, want \"verse\"", decoded.Reference["kind"])
-	}
-	if len(decoded.Words) != 1 {
-		t.Errorf("words length = %d, want 1", len(decoded.Words))
 	}
 	if len(decoded.Paragraphs) != 1 || len(decoded.Paragraphs[0].Words) != 1 {
 		t.Errorf("paragraphs = %+v, want 1 paragraph with 1 word", decoded.Paragraphs)
@@ -98,10 +91,7 @@ func TestFetchVersesHandlerOldTestamentReturns400(t *testing.T) {
 }
 
 func TestFetchVersesHandlerNoWordsReturns404(t *testing.T) {
-	repo := &fakeRepo{passage: Passage{
-		Reference: VerseReference{John, 3, 16},
-		Words:     []Word{},
-	}}
+	repo := &fakeRepo{words: []Word{}}
 	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()

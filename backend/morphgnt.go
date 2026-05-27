@@ -283,6 +283,5 @@ type Paragraph struct {
 
 type Passage struct {
 	Reference  Reference   `json:"reference"`
-	Words      []Word      `json:"words"` // deprecated; removed once frontend reads paragraphs
 	Paragraphs []Paragraph `json:"paragraphs"`
 }
