@@ -59,7 +59,7 @@ function WordDataRow({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "text-left text-sm leading-normal font-normal text-muted-foreground group-data-[size=xs]/item:text-xs",
+        "text-left text-sm leading-normal font-normal text-sidebar-muted-foreground group-data-[size=xs]/item:text-xs",
         className,
       )}
       {...props}

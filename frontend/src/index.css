@@ -19,6 +19,7 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted-foreground: var(--sidebar-muted-foreground);
   --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -106,6 +107,7 @@
 
   --sidebar: var(--vellum-hover-subtle);
   --sidebar-foreground: var(--deep-brown-800);
+  --sidebar-muted-foreground: var(--deep-brown-500);
   --sidebar-primary: var(--terracotta-red);
   --sidebar-primary-foreground: var(--vellum-input);
   --sidebar-accent: var(--vellum-hover);
@@ -166,6 +168,7 @@
 
   --sidebar: var(--ink-black-950);
   --sidebar-foreground: var(--parchment-white);
+  --sidebar-muted-foreground: var(--ink-black-200);
   --sidebar-primary: var(--amber);
   --sidebar-primary-foreground: var(--ink-black-900);
   --sidebar-accent: var(--ink-black-700);
