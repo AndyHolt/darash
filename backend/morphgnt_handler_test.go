@@ -43,14 +43,24 @@ func TestFetchVersesHandlerSuccess(t *testing.T) {
 	}
 
 	var decoded struct {
-		Reference map[string]interface{}   `json:"reference"`
-		Words     []map[string]interface{} `json:"words"`
+		Reference  map[string]interface{}   `json:"reference"`
+		Words      []map[string]interface{} `json:"words"`
+		Paragraphs []struct {
+			ID    int                      `json:"id"`
+			Words []map[string]interface{} `json:"words"`
+		} `json:"paragraphs"`
 	}
 	if err := json.NewDecoder(w.Body).Decode(&decoded); err != nil {
 		t.Fatalf("decode body: %v", err)
 	}
 	if decoded.Reference["kind"] != "verse" {
 		t.Errorf("reference.kind = %v, want \"verse\"", decoded.Reference["kind"])
+	}
+	if len(decoded.Words) != 1 {
+		t.Errorf("words length = %d, want 1", len(decoded.Words))
+	}
+	if len(decoded.Paragraphs) != 1 || len(decoded.Paragraphs[0].Words) != 1 {
+		t.Errorf("paragraphs = %+v, want 1 paragraph with 1 word", decoded.Paragraphs)
 	}
 }
 

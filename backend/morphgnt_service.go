@@ -39,5 +39,26 @@ func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passa
 	if len(passage.Words) == 0 {
 		return Passage{}, ErrNoWordsFound
 	}
+	passage.Paragraphs = groupParagraphs(passage.Words)
 	return passage, nil
+}
+
+// groupParagraphs groups consecutive runs of equal ParagraphID into Paragraphs.
+// Words are assumed already ordered by token id (which the store guarantees
+// via the ORDER BY in versesSelect), so consecutive equal ParagraphIDs are
+// contiguous.
+func groupParagraphs(words []Word) []Paragraph {
+	if len(words) == 0 {
+		return nil
+	}
+	paragraphs := []Paragraph{{ID: words[0].ParagraphID}}
+	last := &paragraphs[0]
+	for _, w := range words {
+		if w.ParagraphID != last.ID {
+			paragraphs = append(paragraphs, Paragraph{ID: w.ParagraphID})
+			last = &paragraphs[len(paragraphs)-1]
+		}
+		last.Words = append(last.Words, w)
+	}
+	return paragraphs
 }
