@@ -265,6 +265,7 @@ type Word struct {
 	NormalizedRank  int          `json:"normalized_rank"  db:"normalized_rank"`
 	LemmaCount      int          `json:"lemma_count"      db:"lemma_count"`
 	LemmaRank       int          `json:"lemma_rank"       db:"lemma_rank"`
+	ParagraphID     int          `json:"paragraph_id"     db:"paragraph_id"`
 	Lexicon         []Lexicon    `json:"lexicon"          db:"lexicon"`
 }
 
@@ -275,7 +276,13 @@ type Lexicon struct {
 	Meaning         string `json:"meaning"`
 }
 
+type Paragraph struct {
+	ID    int    `json:"id"`
+	Words []Word `json:"words"`
+}
+
 type Passage struct {
-	Reference Reference `json:"reference"`
-	Words     []Word    `json:"words"`
+	Reference  Reference   `json:"reference"`
+	Words      []Word      `json:"words"` // deprecated; removed once frontend reads paragraphs
+	Paragraphs []Paragraph `json:"paragraphs"`
 }
