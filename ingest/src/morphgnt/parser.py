@@ -290,6 +290,9 @@ class Word:
     normalized_rank: int = 0
     lemma_count: int = 0
     lemma_rank: int = 0
+    # Paragraph id from jtauber's vocabulary-tools paragraphs.txt; populated by
+    # morphgnt.paragraphs.assign_paragraphs after parsing.
+    paragraph_id: int = 0
 
     @classmethod
     def from_line(cls, line: str, word_in_verse: int) -> "Word":
