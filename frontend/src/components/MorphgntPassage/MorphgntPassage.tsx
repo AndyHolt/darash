@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import Footer from "@/components/Footer";
 import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
@@ -122,8 +123,14 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   return (
     <ResizablePanelGroup orientation="vertical" className="h-full">
       <ResizablePanel defaultSize={60} minSize={20}>
-        <div className="h-full overflow-y-auto px-4 py-2">
-          <div className="font-greek leading-7">{paragraphList}</div>
+        <div className="h-full overflow-y-auto">
+          {/* min-h-full + flex-col pins the footer to the bottom of the
+              panel when the text is short, and reveals it after the text
+              when the text overflows. */}
+          <div className="min-h-full flex flex-col">
+            <div className="font-greek leading-7 px-4 py-2 flex-1">{paragraphList}</div>
+            <Footer />
+          </div>
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
