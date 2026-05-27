@@ -21,6 +21,7 @@ function word(lexicon: Lexicon[]): Word {
     normalized_rank: 0,
     lemma_count: 0,
     lemma_rank: 0,
+    paragraph_id: 0,
     lexicon,
   };
 }

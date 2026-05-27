@@ -63,7 +63,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     setPinnedId((prev) => (prev === null ? prev : null));
   }, [helpSettings]);
 
-  const wordList = passage.words.map((w) => {
+  const renderWord = (w: WordData) => {
     const id = wordKey(w);
     return (
       <Word
@@ -80,9 +80,16 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
         onClick={() => handleWordClick(id)}
       />
     );
-  });
+  };
 
-  const cardList = passage.words
+  const paragraphList = passage.paragraphs.map((p) => (
+    <p key={p.id} className="mb-3 last:mb-0">
+      {p.words.map(renderWord)}
+    </p>
+  ));
+
+  const cardList = passage.paragraphs
+    .flatMap((p) => p.words)
     .filter((w) => shouldShowHelp(w, helpSettings) || revealedIds.has(wordKey(w)))
     .map((w) => {
       const id = wordKey(w);
@@ -103,7 +110,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     return (
       <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
         <div className="max-w-lg">
-          <div className="font-greek leading-7">{wordList}</div>
+          <div className="font-greek leading-7">{paragraphList}</div>
         </div>
         <aside className="max-w-sm sticky top-2 max-h-dvh overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
           {cardList}
@@ -116,7 +123,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     <ResizablePanelGroup orientation="vertical" className="h-full">
       <ResizablePanel defaultSize={60} minSize={20}>
         <div className="h-full overflow-y-auto px-4 py-2">
-          <div className="font-greek leading-7">{wordList}</div>
+          <div className="font-greek leading-7">{paragraphList}</div>
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
