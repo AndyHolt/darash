@@ -35,11 +35,13 @@ CREATE TABLE morphgnt_sblgnt (
     normalized_rank  INTEGER NOT NULL,
     lemma_count      INTEGER NOT NULL,
     lemma_rank       INTEGER NOT NULL,
+    paragraph_id     INTEGER NOT NULL,
     UNIQUE (book, chapter, verse, word_index)
 );
 
 CREATE INDEX idx_morphgnt_sblgnt_lemma ON morphgnt_sblgnt (lemma);
 CREATE INDEX idx_morphgnt_sblgnt_reference ON morphgnt_sblgnt (book, chapter, verse);
+CREATE INDEX idx_morphgnt_sblgnt_paragraph ON morphgnt_sblgnt (paragraph_id);
 """
 
 
@@ -77,6 +79,7 @@ def _word_to_row(w: Word) -> tuple:
         w.normalized_rank,
         w.lemma_count,
         w.lemma_rank,
+        w.paragraph_id,
     )
 
 
@@ -92,7 +95,8 @@ def load_words(conn: psycopg.Connection, words: list[Word]) -> None:
             "COPY morphgnt_sblgnt (book, chapter, verse, word_index, part_of_speech, "
             "person, tense, voice, mood, grammatical_case, number, gender, degree, "
             "text, text_word, normalized, lemma, "
-            "normalized_count, normalized_rank, lemma_count, lemma_rank) FROM STDIN"
+            "normalized_count, normalized_rank, lemma_count, lemma_rank, "
+            "paragraph_id) FROM STDIN"
         ) as copy:
             for w in words:
                 copy.write_row(_word_to_row(w))
