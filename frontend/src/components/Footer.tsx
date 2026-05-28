@@ -1,3 +1,4 @@
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { Link } from "@tanstack/react-router";
 import DarashIcon from "./DarashIcon";
 
@@ -43,9 +44,10 @@ export default function Footer({ className }: FooterProps) {
             href="https://github.com/AndyHolt/darash"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-primary"
+            className="flex flex-row items-center gap-x-1.5 hover:text-primary"
           >
-            GitHub
+            <SiGithub className="size-4" aria-hidden />
+            <span>GitHub</span>
           </a>
         </nav>
       </div>
