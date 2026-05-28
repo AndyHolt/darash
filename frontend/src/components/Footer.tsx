@@ -26,7 +26,7 @@ export default function Footer({ className }: FooterProps) {
               href="https://andyholt.github.io"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-primary"
+              className="hover:text-primary-hover transition-colors"
             >
               Andy Holt
             </a>{" "}
@@ -34,17 +34,23 @@ export default function Footer({ className }: FooterProps) {
           </p>
         </div>
         <nav className="flex flex-col gap-1 sm:items-end">
-          <Link to="/about" className="hover:text-primary [&.active]:font-semibold">
+          <Link
+            to="/about"
+            className="hover:text-primary-hover transition-colors [&.active]:font-semibold"
+          >
             About
           </Link>
-          <Link to="/sources" className="hover:text-primary [&.active]:font-semibold">
+          <Link
+            to="/sources"
+            className="hover:text-primary-hover transition-colors [&.active]:font-semibold"
+          >
             Sources & Data
           </Link>
           <a
             href="https://github.com/AndyHolt/darash"
             target="_blank"
             rel="noreferrer"
-            className="flex flex-row items-center gap-x-1.5 hover:text-primary"
+            className="flex flex-row items-center gap-x-1.5 hover:text-primary-hover transition-colors"
           >
             <SiGithub className="size-4" aria-hidden />
             <span>GitHub</span>
