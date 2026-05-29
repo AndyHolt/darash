@@ -51,10 +51,7 @@ export function ParsingCard({
         <WordDataRow>
           <Parsing word={word} />
         </WordDataRow>
-        <WordDataRow>
-          <Gloss word={word} />
-        </WordDataRow>
-        {meanings.length > 0 && <Definition meanings={meanings} />}
+        <Gloss word={word} meanings={meanings} />
       </ItemContent>
     </Item>
   );
@@ -81,16 +78,18 @@ function Parsing({ word }: { word: Word }) {
   );
 }
 
-function Gloss({ word }: { word: Word }) {
+function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
   const text = formatGloss(word);
-  return text ? text : null;
-}
-
-function Definition({ meanings }: { meanings: string[] }) {
   const [expanded, setExpanded] = useState(false);
 
+  if (!text) return null;
+
+  if (meanings.length === 0) {
+    return <WordDataRow>{text}</WordDataRow>;
+  }
+
   return (
-    <div className="mt-0.5">
+    <WordDataRow>
       <button
         type="button"
         aria-expanded={expanded}
@@ -99,10 +98,12 @@ function Definition({ meanings }: { meanings: string[] }) {
           e.stopPropagation();
           setExpanded((v) => !v);
         }}
-        className="flex items-center gap-0.5 text-xs text-sidebar-muted-foreground/60 hover:text-sidebar-foreground transition-colors"
+        className="group/gloss inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
       >
-        <ChevronRight className={cn("size-3 transition-transform", expanded && "rotate-90")} />
-        definition
+        <span className="group-hover/gloss:decoration-sidebar-foreground/60">{text}</span>
+        <ChevronRight
+          className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
+        />
       </button>
       {expanded && (
         <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
@@ -114,6 +115,6 @@ function Definition({ meanings }: { meanings: string[] }) {
           ))}
         </div>
       )}
-    </div>
+    </WordDataRow>
   );
 }
