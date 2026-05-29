@@ -1,9 +1,12 @@
+import { ChevronRight } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";
+import { MeaningText } from "./MeaningText";
+import { meaningsOf } from "./meaning";
 import { formatParsing } from "./parsing";
 
 export interface ParsingCardProps {
@@ -24,6 +27,7 @@ export function ParsingCard({
   onClick,
 }: ParsingCardProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const meanings = meaningsOf(word);
 
   useEffect(() => {
     if (pinned) {
@@ -47,9 +51,7 @@ export function ParsingCard({
         <WordDataRow>
           <Parsing word={word} />
         </WordDataRow>
-        <WordDataRow>
-          <Gloss word={word} />
-        </WordDataRow>
+        <Gloss word={word} meanings={meanings} />
       </ItemContent>
     </Item>
   );
@@ -76,7 +78,43 @@ function Parsing({ word }: { word: Word }) {
   );
 }
 
-function Gloss({ word }: { word: Word }) {
+function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
   const text = formatGloss(word);
-  return text ? text : null;
+  const [expanded, setExpanded] = useState(false);
+
+  if (!text) return null;
+
+  if (meanings.length === 0) {
+    return <WordDataRow>{text}</WordDataRow>;
+  }
+
+  return (
+    <WordDataRow>
+      <button
+        type="button"
+        aria-expanded={expanded}
+        // Stop the card's click handler from also pinning/unpinning the word.
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded((v) => !v);
+        }}
+        className="group/gloss inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
+      >
+        <span className="group-hover/gloss:decoration-sidebar-foreground/60">{text}</span>
+        <ChevronRight
+          className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
+        />
+      </button>
+      {expanded && (
+        <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
+          {meanings.map((markup, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
+            <p key={i} className={cn(i > 0 && "mt-2")}>
+              <MeaningText markup={markup} />
+            </p>
+          ))}
+        </div>
+      )}
+    </WordDataRow>
+  );
 }
