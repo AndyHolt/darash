@@ -1,9 +1,12 @@
+import { ChevronRight } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";
+import { MeaningText } from "./MeaningText";
+import { meaningsOf } from "./meaning";
 import { formatParsing } from "./parsing";
 
 export interface ParsingCardProps {
@@ -24,6 +27,7 @@ export function ParsingCard({
   onClick,
 }: ParsingCardProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const meanings = meaningsOf(word);
 
   useEffect(() => {
     if (pinned) {
@@ -50,6 +54,7 @@ export function ParsingCard({
         <WordDataRow>
           <Gloss word={word} />
         </WordDataRow>
+        {meanings.length > 0 && <Definition meanings={meanings} />}
       </ItemContent>
     </Item>
   );
@@ -79,4 +84,36 @@ function Parsing({ word }: { word: Word }) {
 function Gloss({ word }: { word: Word }) {
   const text = formatGloss(word);
   return text ? text : null;
+}
+
+function Definition({ meanings }: { meanings: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mt-0.5">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        // Stop the card's click handler from also pinning/unpinning the word.
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded((v) => !v);
+        }}
+        className="flex items-center gap-0.5 text-xs text-sidebar-muted-foreground/60 hover:text-sidebar-foreground transition-colors"
+      >
+        <ChevronRight className={cn("size-3 transition-transform", expanded && "rotate-90")} />
+        definition
+      </button>
+      {expanded && (
+        <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
+          {meanings.map((markup, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
+            <p key={i} className={cn(i > 0 && "mt-2")}>
+              <MeaningText markup={markup} />
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
