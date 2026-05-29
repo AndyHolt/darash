@@ -89,8 +89,8 @@ function Sources() {
           <a href="https://jktauber.com" target="_blank" rel="noreferrer" className={linkClass}>
             James Tauber
           </a>
-          <p className="text-sm">MIT License</p>
         </p>
+        <p className="text-sm">MIT License</p>
       </section>
 
       <section className="space-y-2">
