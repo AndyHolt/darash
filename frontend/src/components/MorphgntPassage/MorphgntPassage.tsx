@@ -5,6 +5,7 @@ import { WordHelp } from "@/components/WordHelp/WordHelp";
 import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
+import { PassageAttribution } from "./PassageAttribution";
 
 export interface MorphgntPassageProps {
   passage: Passage;
@@ -112,6 +113,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
       <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
         <div className="max-w-lg">
           <div className="font-greek leading-7">{paragraphList}</div>
+          <PassageAttribution />
         </div>
         <aside className="max-w-sm sticky top-16 max-h-[calc(100dvh-3rem)] overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
           {helpList}
@@ -128,7 +130,10 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
               panel when the text is short, and reveals it after the text
               when the text overflows. */}
           <div className="min-h-full flex flex-col">
-            <div className="font-greek leading-7 px-4 py-2 flex-1">{paragraphList}</div>
+            <div className="px-4 py-2 flex-1">
+              <div className="font-greek leading-7">{paragraphList}</div>
+              <PassageAttribution />
+            </div>
             <Footer />
           </div>
         </div>
