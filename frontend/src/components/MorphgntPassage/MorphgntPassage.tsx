@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Footer from "@/components/Footer";
-import { ParsingCard } from "@/components/ParsingCard/ParsingCard";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { WordHelp } from "@/components/WordHelp/WordHelp";
 import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
@@ -13,9 +13,9 @@ export interface MorphgntPassageProps {
 export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
-  // Cards for common words are hidden by default to keep the help focused on
+  // Help for common words is hidden by default to keep the sidebar focused on
   // vocabulary the reader is unlikely to know. Clicking such a word reveals its
-  // card for the rest of the session even if the threshold would exclude it.
+  // help for the rest of the session even if the threshold would exclude it.
   const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [helpSettings] = useWordHelpSettings();
   const focusedId = hoveredId ?? pinnedId;
@@ -33,7 +33,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   const wordRefs = useRef(new Map<string, HTMLSpanElement>());
 
   // Matches Tailwind's md breakpoint. Wide → sidebar with page scroll.
-  // Narrow → vertical resizable split (text on top, parsing cards below).
+  // Narrow → vertical resizable split (text on top, word help below).
   const isWide = useMediaQuery("(min-width: 768px)");
 
   // Reset window scroll when this component mounts. The component is keyed by
@@ -46,7 +46,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   }, []);
 
   // Scroll the pinned word into view in the main text panel. Fires when a
-  // user clicks a sidebar card for an off-screen word; clicking a word
+  // user clicks a sidebar help item for an off-screen word; clicking a word
   // already on screen is a no-op because of `block: "nearest"`. As above,
   // useLayoutEffect would eliminate any visible scroll lag if it ever shows.
   useEffect(() => {
@@ -55,7 +55,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
   }, [pinnedId]);
 
   // When the help settings change, the click-driven reveal/pin state becomes
-  // stale (a pinned card may no longer pass the new threshold, and previously
+  // stale (a pinned word may no longer pass the new threshold, and previously
   // revealed words shouldn't carry forward). Clear both so the sidebar
   // reflects the new threshold immediately.
   // biome-ignore lint/correctness/useExhaustiveDependencies: helpSettings is intentionally a change trigger; the effect body uses only stable setters.
@@ -89,13 +89,13 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     </p>
   ));
 
-  const cardList = passage.paragraphs
+  const helpList = passage.paragraphs
     .flatMap((p) => p.words)
     .filter((w) => shouldShowHelp(w, helpSettings) || revealedIds.has(wordKey(w)))
     .map((w) => {
       const id = wordKey(w);
       return (
-        <ParsingCard
+        <WordHelp
           key={id}
           word={w}
           focused={focusedId === id}
@@ -114,7 +114,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
           <div className="font-greek leading-7">{paragraphList}</div>
         </div>
         <aside className="max-w-sm sticky top-16 max-h-[calc(100dvh-3rem)] overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
-          {cardList}
+          {helpList}
         </aside>
       </div>
     );
@@ -136,7 +136,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={40} minSize={15}>
         <div className="h-full overflow-y-auto bg-sidebar text-sidebar-foreground py-2 px-4">
-          {cardList}
+          {helpList}
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
@@ -170,7 +170,7 @@ function Word({
       {word.word_index === 1 && word.verse !== 1 && (
         <sup className="mr-1 text-muted-foreground font-sans text-xs">{word.verse}</sup>
       )}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the parsing sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the word help sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
       <span
         ref={registerRef}

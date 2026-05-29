@@ -9,7 +9,7 @@ import { MeaningText } from "./MeaningText";
 import { meaningsOf } from "./meaning";
 import { formatParsing } from "./parsing";
 
-export interface ParsingCardProps {
+export interface WordHelpProps {
   word: Word;
   focused?: boolean;
   pinned?: boolean;
@@ -18,14 +18,14 @@ export interface ParsingCardProps {
   onClick?: () => void;
 }
 
-export function ParsingCard({
+export function WordHelp({
   word,
   focused,
   pinned,
   onMouseEnter,
   onMouseLeave,
   onClick,
-}: ParsingCardProps) {
+}: WordHelpProps) {
   const ref = useRef<HTMLDivElement>(null);
   const meanings = meaningsOf(word);
 
