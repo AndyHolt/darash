@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
@@ -46,6 +47,8 @@ export function WordHelpSettings() {
         <ModeSelector />
         <DropdownMenuSeparator />
         <ThresholdSubmenu mode={settings.mode} />
+        <DropdownMenuSeparator />
+        <FrequencyStatsToggle />
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -84,6 +87,19 @@ function ModeSelector() {
         </ToggleGroup>
       </div>
     </>
+  );
+}
+
+function FrequencyStatsToggle() {
+  const [settings, setSettings] = useWordHelpSettings();
+  return (
+    <DropdownMenuCheckboxItem
+      checked={settings.showFrequencyStats}
+      onCheckedChange={(checked) => setSettings({ ...settings, showFrequencyStats: checked })}
+      onSelect={(e) => e.preventDefault()}
+    >
+      Show frequency stats
+    </DropdownMenuCheckboxItem>
   );
 }
 

@@ -3,6 +3,7 @@ import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";
@@ -82,6 +83,7 @@ function Parsing({ word }: { word: Word }) {
 function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
   const text = formatGloss(word);
   const [expanded, setExpanded] = useState(false);
+  const [{ showFrequencyStats }] = useWordHelpSettings();
 
   if (!text) return null;
 
@@ -107,7 +109,7 @@ function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
             className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
           />
         </button>
-        <WordFreqStats word={word} />
+        {showFrequencyStats && <WordFreqStats word={word} />}
       </div>
       {expanded && (
         <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
