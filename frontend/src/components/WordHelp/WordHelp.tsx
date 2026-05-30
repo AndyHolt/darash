@@ -2,6 +2,8 @@ import { ChevronRight } from "lucide-react";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Item, ItemContent, ItemTitle } from "@/components/ui/item";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";
@@ -81,6 +83,7 @@ function Parsing({ word }: { word: Word }) {
 function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
   const text = formatGloss(word);
   const [expanded, setExpanded] = useState(false);
+  const [{ showFrequencyStats }] = useWordHelpSettings();
 
   if (!text) return null;
 
@@ -90,21 +93,24 @@ function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
 
   return (
     <WordDataRow>
-      <button
-        type="button"
-        aria-expanded={expanded}
-        // Stop the card's click handler from also pinning/unpinning the word.
-        onClick={(e) => {
-          e.stopPropagation();
-          setExpanded((v) => !v);
-        }}
-        className="group/gloss inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
-      >
-        <span className="group-hover/gloss:decoration-sidebar-foreground/60">{text}</span>
-        <ChevronRight
-          className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
-        />
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          aria-expanded={expanded}
+          // Stop the card's click handler from also pinning/unpinning the word.
+          onClick={(e) => {
+            e.stopPropagation();
+            setExpanded((v) => !v);
+          }}
+          className="group/gloss inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
+        >
+          <span className="group-hover/gloss:decoration-sidebar-foreground/60">{text}</span>
+          <ChevronRight
+            className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
+          />
+        </button>
+        {showFrequencyStats && <WordFreqStats word={word} />}
+      </div>
       {expanded && (
         <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
           {meanings.map((markup, i) => (
@@ -116,5 +122,103 @@ function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
         </div>
       )}
     </WordDataRow>
+  );
+}
+
+function FreqRow({
+  word,
+  kind,
+  count,
+  rank,
+}: {
+  word: string;
+  kind: "form" | "lemma";
+  count: number;
+  rank: number;
+}) {
+  return (
+    <tr>
+      <th scope="row" className="pr-3 text-left font-normal">
+        <span className="font-greek">{word}</span>{" "}
+        <span className="text-sidebar-muted-foreground">({kind})</span>
+      </th>
+      <td className="pr-3 tabular-nums">{count}×</td>
+      <td className="tabular-nums text-sidebar-muted-foreground"># {rank}</td>
+    </tr>
+  );
+}
+
+function WordFreqStats({ word }: { word: Word }) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+  const scheduleClose = () => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          // Stop the card's click handler from also pinning/unpinning the word.
+          onClick={(e) => e.stopPropagation()}
+          onPointerEnter={(e) => {
+            if (e.pointerType === "mouse") {
+              cancelClose();
+              setOpen(true);
+            }
+          }}
+          onPointerLeave={(e) => {
+            if (e.pointerType === "mouse") scheduleClose();
+          }}
+          className="font-mono text-xs tabular-nums text-sidebar-muted-foreground hover:text-sidebar-foreground transition-colors"
+        >
+          {word.normalized_count}/{word.lemma_count}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        side="bottom"
+        className="w-auto max-w-xs gap-2 text-xs"
+        onPointerEnter={cancelClose}
+        onPointerLeave={(e) => {
+          if (e.pointerType === "mouse") scheduleClose();
+        }}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <table className="border-collapse">
+          <caption className="sr-only">Frequency in the SBLGNT</caption>
+          <tbody>
+            <FreqRow
+              word={word.normalized}
+              kind="form"
+              count={word.normalized_count}
+              rank={word.normalized_rank}
+            />
+            <FreqRow
+              word={word.lemma}
+              kind="lemma"
+              count={word.lemma_count}
+              rank={word.lemma_rank}
+            />
+          </tbody>
+        </table>
+        <p className="text-sidebar-muted-foreground border-t pt-2">
+          Shown as{" "}
+          <span className="font-mono tabular-nums">
+            {word.normalized_count}/{word.lemma_count}
+          </span>{" "}
+          — occurrences of this exact form / of any form sharing this lemma.
+        </p>
+      </PopoverContent>
+    </Popover>
   );
 }

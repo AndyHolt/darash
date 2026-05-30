@@ -30,6 +30,8 @@ export interface WordHelpSettings {
   // Use 0 to mean "show help for every word".
   rankThreshold: number;
   rankIsCustom: boolean;
+  // Whether to show the form/lemma frequency stats on each WordHelp card.
+  showFrequencyStats: boolean;
 }
 
 export const OCCURRENCE_PRESETS: readonly number[] = [5, 10, 20, 50, 100, Number.POSITIVE_INFINITY];
@@ -42,6 +44,7 @@ export const DEFAULT_SETTINGS: WordHelpSettings = {
   occurrencesIsCustom: false,
   rankThreshold: 500,
   rankIsCustom: false,
+  showFrequencyStats: true,
 };
 
 const STORAGE_KEY = "darash.word-help-settings.v1";
@@ -86,6 +89,10 @@ function readStored(): WordHelpSettings {
       ),
       rankThreshold: coerceThreshold(parsed.rankThreshold, DEFAULT_SETTINGS.rankThreshold),
       rankIsCustom: coerceBool(parsed.rankIsCustom, DEFAULT_SETTINGS.rankIsCustom),
+      showFrequencyStats: coerceBool(
+        parsed.showFrequencyStats,
+        DEFAULT_SETTINGS.showFrequencyStats,
+      ),
     };
   } catch {
     return DEFAULT_SETTINGS;
