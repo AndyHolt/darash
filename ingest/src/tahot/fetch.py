@@ -18,10 +18,11 @@ log = logging.getLogger(__name__)
 
 LOCAL_DATA_DIR = Path(__file__).parent / "data"
 
-RAW_BASE = (
-    "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master/"
-    "Translators Amalgamated OT+NT"
-)
+RAW_BASE = "https://raw.githubusercontent.com/STEPBible/STEPBible-Data/master"
+
+# Directory within the repo holding the TAHOT files; contains spaces, so it must
+# be URL-quoted along with the filename when building download URLs.
+SOURCE_DIR = "Translators Amalgamated OT+NT"
 
 # In canonical (book) order, which is also the order they should be parsed in.
 SOURCE_FILES = (
@@ -41,7 +42,7 @@ def fetch_and_parse() -> list[Word]:
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         for name in SOURCE_FILES:
-            url = f"{RAW_BASE}/{urllib.parse.quote(name)}"
+            url = f"{RAW_BASE}/{urllib.parse.quote(SOURCE_DIR)}/{urllib.parse.quote(name)}"
             dest = tmp / name
             log.info(f"Downloading {url}")
             urllib.request.urlretrieve(url, dest)
