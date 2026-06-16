@@ -24,6 +24,9 @@ ingest-run:
 ingest-morphgnt-run:
 	cd ingest && PYTHONPATH=src uv run python main_morphgnt.py
 
+ingest-tahot-run:
+	cd ingest && PYTHONPATH=src uv run python main_tahot.py
+
 ingest-tbesg-run:
 	cd ingest && PYTHONPATH=src uv run python main_tbesg.py
 

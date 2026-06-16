@@ -7,3 +7,7 @@
 terraform.tfvars
 
 .claude/settings.local.json
+
+# TAHOT source files: large (~66MB) and redistribution-restricted; downloaded
+# at ingest time from github.com/STEPBible/STEPBible-Data.
+ingest/src/tahot/data/
