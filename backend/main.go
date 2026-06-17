@@ -47,7 +47,8 @@ func main() {
 	defer store.Close()
 
 	morphgntService := NewMorphgntService(store)
+	tahotService := NewTahotService(store)
 
-	srv := NewServer(morphgntService)
+	srv := NewServer(morphgntService, tahotService)
 	log.Fatal(srv.ListenAndServe(":" + port))
 }

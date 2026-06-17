@@ -8,11 +8,13 @@ import (
 
 type Server struct {
 	morphgntHandler *MorphgntHandler
+	tahotHandler    *TahotHandler
 }
 
-func NewServer(s *MorphgntService) *Server {
+func NewServer(m *MorphgntService, t *TahotService) *Server {
 	return &Server{
-		morphgntHandler: &MorphgntHandler{service: s},
+		morphgntHandler: &MorphgntHandler{service: m},
+		tahotHandler:    &TahotHandler{service: t},
 	}
 }
 
@@ -29,6 +31,7 @@ func (s *Server) ListenAndServe(addr string) error {
 	})
 	mux.HandleFunc("GET /api/count", s.morphgntHandler.Count)
 	mux.HandleFunc("GET /api/morphgnt/passage/{ref}", s.morphgntHandler.FetchVerses)
+	mux.HandleFunc("GET /api/tahot/passage/{ref}", s.tahotHandler.FetchVerses)
 	mux.HandleFunc("/", helloHandler)
 	return http.ListenAndServe(addr, mux)
 }
