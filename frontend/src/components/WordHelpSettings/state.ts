@@ -1,5 +1,11 @@
 import { useSyncExternalStore } from "react";
-import type { Word } from "@/texts/morphgnt";
+
+// Structural shape interface for words which can be filtered based on frequency
+// within corpus
+interface FrequencyWord {
+  lemma_count: number;
+  lemma_rank: number;
+}
 
 // The array is the single source of truth for the mode set: the type is
 // derived from it, and the runtime validator reads from it. Adding a mode is
@@ -49,7 +55,7 @@ export const DEFAULT_SETTINGS: WordHelpSettings = {
 
 const STORAGE_KEY = "darash.word-help-settings.v1";
 
-export function shouldShowHelp(word: Word, settings: WordHelpSettings): boolean {
+export function shouldShowHelp(word: FrequencyWord, settings: WordHelpSettings): boolean {
   switch (settings.mode) {
     case "occurrences":
       return word.lemma_count <= settings.occurrencesThreshold;
