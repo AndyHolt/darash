@@ -29,7 +29,7 @@ func TestFetchTahotVersesHandlerSuccess(t *testing.T) {
 			Book: "Genesis", Chapter: 1, Verse: 1, WordIndex: "01",
 			Hebrew: "בְּ/רֵאשִׁית", Translation: "in/ beginning",
 			Segments: []TahotWordSegment{
-				{SegmentIndex: 0, Kind: "prefix", Hebrew: "בְּ", Gloss: &gloss},
+				{SegmentIndex: 0, Kind: TahotSegmentKindPrefix, Hebrew: "בְּ", Gloss: &gloss},
 			},
 		},
 	}}
