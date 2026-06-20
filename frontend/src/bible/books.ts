@@ -441,6 +441,12 @@ export function lookupBookByAbbrev(abbrev: string): BookInfo | undefined {
   return bookByLowerAbbrev.get(abbrev.toLowerCase() as Lowercase<BookAbbrev>);
 }
 
+const otBookNames: ReadonlySet<string> = new Set(OT_BOOKS.map((b) => b.name));
+
+export function testamentOf(book: Book): Testament {
+  return otBookNames.has(book) ? "Old Testament" : "New Testament";
+}
+
 export function chaptersForBook(book: BookInfo): number[] {
   return Array.from({ length: book.verses.length }, (_, i) => i + 1);
 }

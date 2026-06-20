@@ -24,6 +24,7 @@
   --font-sans: "Geist Variable", sans-serif;
   --font-display: "Lora Variable", serif;
   --font-greek: "GFS Neohellenic", sans-serif;
+  --font-hebrew: "Ezra SIL", serif;
   /* Per-script fallback for mixed lexicon text: Latin falls to Geist first;
      Greek codepoints (no Geist subset) reach GFS Neohellenic; Hebrew codepoints
      (no Geist/GFS subset) reach Ezra SIL. Each font is scoped by unicode-range,
