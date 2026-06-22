@@ -66,6 +66,67 @@ export function FreqStatsPopover({
   );
 }
 
+/** The four frequency numbers a word contributes: its exact form and its lemma. */
+export interface FreqCounts {
+  form_count: number;
+  form_rank: number;
+  lemma_count: number;
+  lemma_rank: number;
+}
+
+/**
+ * The standard word-frequency popover: a `count/count` trigger that reveals a
+ * two-row table of exact-form and shared-lemma frequencies. Text-agnostic — the
+ * caller supplies the styled form/lemma labels (e.g. font-greek/font-hebrew),
+ * the four `counts`, and the `corpus` name used in the accessible caption.
+ */
+export function WordFreqStats({
+  corpus,
+  formLabel,
+  lemmaLabel,
+  counts,
+}: {
+  corpus: string;
+  formLabel: React.ReactNode;
+  lemmaLabel: React.ReactNode;
+  counts: FreqCounts;
+}) {
+  return (
+    <FreqStatsPopover
+      triggerLabel={
+        <>
+          {counts.form_count}/{counts.lemma_count}
+        </>
+      }
+    >
+      <table className="border-collapse">
+        <caption className="sr-only">Frequency in {corpus}</caption>
+        <tbody>
+          <FreqRow
+            label={formLabel}
+            kind="form"
+            count={counts.form_count}
+            rank={counts.form_rank}
+          />
+          <FreqRow
+            label={lemmaLabel}
+            kind="lemma"
+            count={counts.lemma_count}
+            rank={counts.lemma_rank}
+          />
+        </tbody>
+      </table>
+      <p className="text-sidebar-muted-foreground border-t pt-2">
+        Shown as{" "}
+        <span className="font-mono tabular-nums">
+          {counts.form_count}/{counts.lemma_count}
+        </span>{" "}
+        — occurrences of this exact form / of any form sharing this lemma.
+      </p>
+    </FreqStatsPopover>
+  );
+}
+
 /** A single form/lemma row in the frequency-stats table. */
 export function FreqRow({
   label,
