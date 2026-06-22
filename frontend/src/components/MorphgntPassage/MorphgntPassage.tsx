@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Footer from "@/components/Footer";
+import { MorphgntWordHelp } from "@/components/MorphgntWordHelp/MorphgntWordHelp";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { WordHelp } from "@/components/WordHelp/WordHelp";
 import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
@@ -96,7 +96,7 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
     .map((w) => {
       const id = wordKey(w);
       return (
-        <WordHelp
+        <MorphgntWordHelp
           key={id}
           word={w}
           focused={focusedId === id}
