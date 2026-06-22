@@ -32,7 +32,7 @@ export function Disclosure({
             e.stopPropagation();
             setExpanded((v) => !v);
           }}
-          className="group/disclosure inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
+          className="group/disclosure inline-flex items-center gap-0.5 rounded-sm text-left text-inherit transition-colors outline-none hover:text-sidebar-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           <span className="group-hover/disclosure:decoration-sidebar-foreground/60">{summary}</span>
           <ChevronRight

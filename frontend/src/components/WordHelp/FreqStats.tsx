@@ -45,7 +45,7 @@ export function FreqStatsPopover({
           onPointerLeave={(e) => {
             if (e.pointerType === "mouse") scheduleClose();
           }}
-          className="font-mono text-xs tabular-nums text-sidebar-muted-foreground hover:text-sidebar-foreground transition-colors"
+          className="rounded-sm font-mono text-xs tabular-nums text-sidebar-muted-foreground transition-colors outline-none hover:text-sidebar-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
         >
           {triggerLabel}
         </button>
