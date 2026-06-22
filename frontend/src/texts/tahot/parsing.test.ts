@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { formatSegmentParsing } from "./parsing";
-import type { TahotSegment } from "./tahot.types";
+import type { WordSegment } from "./tahot.types";
 
-function seg(overrides: Partial<TahotSegment>): TahotSegment {
+function seg(overrides: Partial<WordSegment>): WordSegment {
   return { segment_index: 0, kind: "root", hebrew: "", ...overrides };
 }
 

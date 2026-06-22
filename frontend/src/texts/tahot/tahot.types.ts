@@ -111,7 +111,7 @@ export type Subtype =
   // preposition
   | "with article";
 
-export interface TahotSegment {
+export interface WordSegment {
   segment_index: number;
   kind: SegmentKind;
   hebrew: string;
@@ -132,7 +132,7 @@ export interface TahotSegment {
   function_marker?: FunctionMarker;
 }
 
-export interface TahotWord {
+export interface Word {
   book: OTBook;
   chapter: number;
   verse: number;
@@ -160,21 +160,21 @@ export interface TahotWord {
   form_rank: number;
   lemma_count: number;
   lemma_rank: number;
-  segments: TahotSegment[];
+  segments: WordSegment[];
 }
 
-export interface TahotVerse {
+export interface Verse {
   chapter: number;
   verse: number;
-  words: TahotWord[];
+  words: Word[];
 }
 
-export interface TahotPassage {
+export interface Passage {
   reference: Reference;
-  verses: TahotVerse[];
+  verses: Verse[];
 }
 
-export function wordKey(w: TahotWord): string {
+export function wordKey(w: Word): string {
   return `${w.book}.${w.chapter}.${w.verse}.${w.word_index}`;
 }
 
@@ -190,7 +190,7 @@ export function wordKey(w: TahotWord): string {
  * stanza breaks (see `endsParagraph`), so a closed paragraph shows both the
  * marker glyph and the structural break, as in printed editions (e.g. BHS).
  */
-export function wordDisplayHebrew(w: TahotWord): string {
+export function wordDisplayHebrew(w: Word): string {
   if (w.segments.length > 0) {
     return w.segments.map((s) => s.hebrew).join("");
   }
@@ -202,7 +202,7 @@ export function wordDisplayHebrew(w: TahotWord): string {
 // word's trailing punctuation segment.
 const PARAGRAPH_MARKERS = new Set(["פ", "ס"]);
 
-function isParagraphMarker(s: TahotSegment): boolean {
+function isParagraphMarker(s: WordSegment): boolean {
   return s.kind === "punctuation" && PARAGRAPH_MARKERS.has(s.hebrew);
 }
 
@@ -213,7 +213,7 @@ function isParagraphMarker(s: TahotSegment): boolean {
  * needs the marker separated from the word body. `paragraphMarker` is undefined
  * for the common no-marker case.
  */
-export function wordDisplayParts(w: TahotWord): { text: string; paragraphMarker?: string } {
+export function wordDisplayParts(w: Word): { text: string; paragraphMarker?: string } {
   const paragraphMarker = w.segments.find(isParagraphMarker)?.hebrew;
   if (!paragraphMarker) return { text: wordDisplayHebrew(w) };
   return {

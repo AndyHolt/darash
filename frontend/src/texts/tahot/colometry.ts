@@ -1,5 +1,5 @@
 import type { OTBook } from "@/bible/books";
-import type { TahotVerse, TahotWord } from "./tahot.types";
+import type { Verse, Word } from "./tahot.types";
 
 /**
  * Prose/poetry layout for the TAHOT Hebrew OT, derived from the Masoretic data
@@ -84,13 +84,13 @@ export function classifyVerse(book: OTBook, chapter: number, verse: number): "po
 
 // --- Accent / marker probes --------------------------------------------------
 
-function hasAccent(word: TahotWord, mark: string): boolean {
+function hasAccent(word: Word, mark: string): boolean {
   // The accents are single BMP combining marks, so a substring test on the
   // pointed Hebrew is sufficient; the "/" and "\" separators don't interfere.
   return word.hebrew.includes(mark);
 }
 
-function isColonEnd(word: TahotWord): boolean {
+function isColonEnd(word: Word): boolean {
   // NB: the paseq ׀ (U+05C0) is *not* a colon boundary — in Psa 1:1 it sits
   // mid-colon — so we key strictly on the disjunctive accents, never on it.
   return hasAccent(word, OLE) || hasAccent(word, ATNACH) || hasAccent(word, SOF_PASUQ);
@@ -100,7 +100,7 @@ function isColonEnd(word: TahotWord): boolean {
  * True when this verse's last word carries a petuhah/setumah paragraph marker
  * (a lone punctuation segment), i.e. a Masoretic paragraph boundary closes here.
  */
-function endsParagraph(verse: TahotVerse): boolean {
+function endsParagraph(verse: Verse): boolean {
   return verse.words.some((w) =>
     w.segments.some(
       (s) => s.kind === "punctuation" && (s.hebrew === PETUHAH || s.hebrew === SETUMAH),
@@ -115,9 +115,9 @@ function endsParagraph(verse: TahotVerse): boolean {
  * bears a major disjunctive accent (ole-weyored or atnach) and closing the final
  * colon at sof-pasuq. Verses with no internal divider come back as a single colon.
  */
-export function splitCola(words: TahotWord[]): TahotWord[][] {
-  const cola: TahotWord[][] = [];
-  let current: TahotWord[] = [];
+export function splitCola(words: Word[]): Word[][] {
+  const cola: Word[][] = [];
+  let current: Word[] = [];
   for (const word of words) {
     current.push(word);
     if (isColonEnd(word)) {
@@ -132,15 +132,15 @@ export function splitCola(words: TahotWord[]): TahotWord[][] {
 // --- Passage layout ----------------------------------------------------------
 
 export interface PoetryLine {
-  verse: TahotVerse;
-  cola: TahotWord[][];
+  verse: Verse;
+  cola: Word[][];
 }
 
 export type RenderBlock =
-  | { kind: "prose"; id: string; verses: TahotVerse[] }
+  | { kind: "prose"; id: string; verses: Verse[] }
   | { kind: "poetry"; id: string; lines: PoetryLine[] };
 
-function verseBook(verse: TahotVerse): OTBook | undefined {
+function verseBook(verse: Verse): OTBook | undefined {
   return verse.words[0]?.book;
 }
 
@@ -150,9 +150,9 @@ function verseBook(verse: TahotVerse): OTBook | undefined {
  * collect into one poem, with a fresh block (visual gap) started after a
  * petuhah/setumah so stanzas separate.
  */
-export function layoutPassage(verses: TahotVerse[]): RenderBlock[] {
+export function layoutPassage(verses: Verse[]): RenderBlock[] {
   const blocks: RenderBlock[] = [];
-  let prose: TahotVerse[] | null = null;
+  let prose: Verse[] | null = null;
   let poetry: PoetryLine[] | null = null;
 
   const flushProse = () => {

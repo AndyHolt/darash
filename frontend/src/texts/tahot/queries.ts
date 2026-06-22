@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { HttpError } from "@/lib/http-error";
-import type { TahotPassage } from "./tahot.types";
+import type { Passage } from "./tahot.types";
 
 export const tahotQueryKeys = {
   all: ["tahot"] as const,
@@ -17,7 +17,7 @@ export function passageQuery(ref: string) {
     queryFn: () =>
       fetch(`/api/tahot/passage/${ref}`).then((res) => {
         if (!res.ok) throw new HttpError(res.status, res.statusText);
-        return res.json() as Promise<TahotPassage>;
+        return res.json() as Promise<Passage>;
       }),
   });
 }
