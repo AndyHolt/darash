@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Footer from "@/components/Footer";
-import { MorphgntWordHelp } from "@/components/MorphgntWordHelp/MorphgntWordHelp";
+import { MorphgntWordHelp } from "@/components/MorphgntWordHelp";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings/state";
+import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
 import { PassageAttribution } from "./PassageAttribution";

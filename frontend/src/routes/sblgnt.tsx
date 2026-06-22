@@ -1,8 +1,8 @@
 import { createFileRoute, Outlet, useParams } from "@tanstack/react-router";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
-import { PassagePicker } from "@/components/PassagePicker/PassagePicker";
-import { WordHelpSettings } from "@/components/WordHelpSettings/WordHelpSettings";
+import { PassagePicker } from "@/components/PassagePicker";
+import { WordHelpSettings } from "@/components/WordHelpSettings";
 
 export const Route = createFileRoute("/sblgnt")({
   component: SblgntLayout,
