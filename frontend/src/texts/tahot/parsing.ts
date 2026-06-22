@@ -1,4 +1,4 @@
-import type { Gender, GrammaticalNumber, Person, State, TahotSegment } from "./tahot.types";
+import type { Gender, GrammaticalNumber, Person, State, WordSegment } from "./tahot.types";
 
 const PERSON: Record<Person, string> = {
   first: "1",
@@ -38,7 +38,7 @@ function joinSpaces(...parts: (string | undefined | false)[]): string {
 }
 
 // Person-gender-number, e.g. "3ms" for a finite verb or pronominal suffix.
-function personGenderNumber(seg: TahotSegment): string {
+function personGenderNumber(seg: WordSegment): string {
   return joinTight(
     seg.person && PERSON[seg.person],
     seg.gender && GENDER[seg.gender],
@@ -47,7 +47,7 @@ function personGenderNumber(seg: TahotSegment): string {
 }
 
 // Gender-number (+ state), e.g. "fs cstr" for a noun in construct.
-function genderNumberState(seg: TahotSegment): string {
+function genderNumberState(seg: WordSegment): string {
   const gn = joinTight(seg.gender && GENDER[seg.gender], seg.number && NUMBER[seg.number]);
   return joinSpaces(gn, seg.state && STATE[seg.state]);
 }
@@ -56,7 +56,7 @@ function genderNumberState(seg: TahotSegment): string {
  * A compact parsing label for one morpheme segment, e.g. "Qal perfect 3ms",
  * "Noun fs cstr", "Preposition". Returns "" for punctuation (no morphology).
  */
-export function formatSegmentParsing(seg: TahotSegment): string {
+export function formatSegmentParsing(seg: WordSegment): string {
   if (seg.kind === "punctuation" || !seg.part_of_speech) return "";
 
   if (seg.part_of_speech === "verb") {

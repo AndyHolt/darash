@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { classifyVerse, layoutPassage, splitCola } from "./colometry";
-import type { TahotSegment, TahotVerse, TahotWord } from "./tahot.types";
+import type { Verse, Word, WordSegment } from "./tahot.types";
 
 // Accent codepoints, by their Unicode escapes, so the fixtures are unambiguous
 // and the test doubles as a check that the colometry constants match them.
@@ -9,13 +9,13 @@ const ATNACH = "֑"; // etnahta
 const SOF_PASUQ = "׃"; // sof-pasuq
 
 function word(
-  book: TahotWord["book"],
+  book: Word["book"],
   chapter: number,
   verse: number,
   index: string,
   hebrew: string,
-  segments: TahotSegment[] = [],
-): TahotWord {
+  segments: WordSegment[] = [],
+): Word {
   return {
     book,
     chapter,
@@ -40,7 +40,7 @@ function word(
   };
 }
 
-const punct = (hebrew: string): TahotSegment => ({
+const punct = (hebrew: string): WordSegment => ({
   segment_index: 99,
   kind: "punctuation",
   hebrew,
@@ -108,12 +108,7 @@ describe("classifyVerse", () => {
 });
 
 describe("layoutPassage", () => {
-  function verse(
-    book: TahotWord["book"],
-    chapter: number,
-    v: number,
-    endMarker?: "פ" | "ס",
-  ): TahotVerse {
+  function verse(book: Word["book"], chapter: number, v: number, endMarker?: "פ" | "ס"): Verse {
     const last = word(book, chapter, v, "02", "סוף", endMarker ? [punct(endMarker)] : []);
     return { chapter, verse: v, words: [word(book, chapter, v, "01", "מילה"), last] };
   }
