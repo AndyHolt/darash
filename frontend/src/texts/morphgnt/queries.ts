@@ -2,8 +2,6 @@ import { queryOptions } from "@tanstack/react-query";
 import { HttpError } from "@/lib/http-error";
 import type { Passage } from "./morphgnt.types";
 
-export const passageQueryKeyPrefix = ["morphgntPassage"] as const;
-
 export const morphgntQueryKeys = {
   all: ["morphgnt"] as const,
   passages: () => [...morphgntQueryKeys.all, "passage"] as const,
