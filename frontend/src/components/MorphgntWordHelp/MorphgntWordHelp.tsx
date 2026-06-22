@@ -1,6 +1,6 @@
 import { ItemTitle } from "@/components/ui/item";
 import { Disclosure } from "@/components/WordHelp/Disclosure";
-import { FreqRow, FreqStatsPopover } from "@/components/WordHelp/FreqStats";
+import { WordFreqStats } from "@/components/WordHelp/FreqStats";
 import { WordDataRow, WordHelp } from "@/components/WordHelp/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings/state";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,19 @@ function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
 
   if (!text) return null;
 
-  const stats = showFrequencyStats ? <WordFreqStats word={word} /> : null;
+  const stats = showFrequencyStats ? (
+    <WordFreqStats
+      corpus="SBLGNT"
+      formLabel={<span className="font-greek">{word.normalized}</span>}
+      lemmaLabel={<span className="font-greek">{word.lemma}</span>}
+      counts={{
+        form_count: word.normalized_count,
+        form_rank: word.normalized_rank,
+        lemma_count: word.lemma_count,
+        lemma_rank: word.lemma_rank,
+      }}
+    />
+  ) : null;
 
   // No lexicon entries: render the gloss as plain text, with frequency stats
   // alongside (stats always show when enabled, regardless of definition depth).
@@ -93,42 +105,5 @@ function DefinitionList({ meanings }: { meanings: string[] }) {
         </p>
       ))}
     </div>
-  );
-}
-
-function WordFreqStats({ word }: { word: Word }) {
-  return (
-    <FreqStatsPopover
-      triggerLabel={
-        <>
-          {word.normalized_count}/{word.lemma_count}
-        </>
-      }
-    >
-      <table className="border-collapse">
-        <caption className="sr-only">Frequency in the SBLGNT</caption>
-        <tbody>
-          <FreqRow
-            label={<span className="font-greek">{word.normalized}</span>}
-            kind="form"
-            count={word.normalized_count}
-            rank={word.normalized_rank}
-          />
-          <FreqRow
-            label={<span className="font-greek">{word.lemma}</span>}
-            kind="lemma"
-            count={word.lemma_count}
-            rank={word.lemma_rank}
-          />
-        </tbody>
-      </table>
-      <p className="text-sidebar-muted-foreground border-t pt-2">
-        Shown as{" "}
-        <span className="font-mono tabular-nums">
-          {word.normalized_count}/{word.lemma_count}
-        </span>{" "}
-        — occurrences of this exact form / of any form sharing this lemma.
-      </p>
-    </FreqStatsPopover>
   );
 }
