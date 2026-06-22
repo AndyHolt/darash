@@ -1,6 +1,5 @@
-import { ChevronRight } from "lucide-react";
-import { useState } from "react";
 import { ItemTitle } from "@/components/ui/item";
+import { Disclosure } from "@/components/WordHelp/Disclosure";
 import { FreqRow, FreqStatsPopover } from "@/components/WordHelp/FreqStats";
 import { WordDataRow, WordHelp } from "@/components/WordHelp/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings/state";
@@ -58,46 +57,42 @@ function Parsing({ word }: { word: Word }) {
 
 function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
   const text = formatGloss(word);
-  const [expanded, setExpanded] = useState(false);
   const [{ showFrequencyStats }] = useWordHelpSettings();
 
   if (!text) return null;
 
+  const stats = showFrequencyStats ? <WordFreqStats word={word} /> : null;
+
+  // No lexicon entries: render the gloss as plain text, with frequency stats
+  // alongside (stats always show when enabled, regardless of definition depth).
   if (meanings.length === 0) {
-    return <WordDataRow>{text}</WordDataRow>;
+    return (
+      <WordDataRow className="flex items-center justify-between">
+        <span>{text}</span>
+        {stats}
+      </WordDataRow>
+    );
   }
 
   return (
     <WordDataRow>
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          aria-expanded={expanded}
-          // Stop the card's click handler from also pinning/unpinning the word.
-          onClick={(e) => {
-            e.stopPropagation();
-            setExpanded((v) => !v);
-          }}
-          className="group/gloss inline-flex items-center gap-0.5 text-left text-inherit hover:text-sidebar-foreground transition-colors"
-        >
-          <span className="group-hover/gloss:decoration-sidebar-foreground/60">{text}</span>
-          <ChevronRight
-            className={cn("size-3 shrink-0 transition-transform", expanded && "rotate-90")}
-          />
-        </button>
-        {showFrequencyStats && <WordFreqStats word={word} />}
-      </div>
-      {expanded && (
-        <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
-          {meanings.map((markup, i) => (
-            // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
-            <p key={i} className={cn(i > 0 && "mt-2")}>
-              <MeaningText markup={markup} />
-            </p>
-          ))}
-        </div>
-      )}
+      <Disclosure summary={text} trailing={stats}>
+        <DefinitionList meanings={meanings} />
+      </Disclosure>
     </WordDataRow>
+  );
+}
+
+function DefinitionList({ meanings }: { meanings: string[] }) {
+  return (
+    <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
+      {meanings.map((markup, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
+        <p key={i} className={cn(i > 0 && "mt-2")}>
+          <MeaningText markup={markup} />
+        </p>
+      ))}
+    </div>
   );
 }
 
