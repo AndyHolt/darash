@@ -1,5 +1,11 @@
 import { ItemTitle } from "@/components/ui/item";
-import { Disclosure, WordDataRow, WordFreqStats, WordHelp } from "@/components/WordHelp";
+import {
+  Disclosure,
+  WordDataRow,
+  WordFreqStats,
+  WordHelp,
+  type WordHelpInteraction,
+} from "@/components/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
@@ -8,33 +14,15 @@ import { MeaningText } from "./MeaningText";
 import { meaningsOf } from "./meaning";
 import { formatParsing } from "./parsing";
 
-export interface MorphgntWordHelpProps {
+export interface MorphgntWordHelpProps extends WordHelpInteraction {
   word: Word;
-  focused?: boolean;
-  pinned?: boolean;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onClick?: () => void;
 }
 
-export function MorphgntWordHelp({
-  word,
-  focused,
-  pinned,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
-}: MorphgntWordHelpProps) {
+export function MorphgntWordHelp({ word, ...interaction }: MorphgntWordHelpProps) {
   const meanings = meaningsOf(word);
 
   return (
-    <WordHelp
-      focused={focused}
-      pinned={pinned}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-    >
+    <WordHelp {...interaction}>
       <ItemTitle className="font-greek">{word.text_word}</ItemTitle>
       <WordDataRow>
         <Parsing word={word} />
