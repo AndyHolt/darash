@@ -4,17 +4,27 @@ import { Item, ItemContent } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
 
 /**
- * The hover/focus/pin interaction props every word-help card shares. The base
- * shell and each dataset card (`MorphgntWordHelp`, `TahotWordHelp`) extend this
- * so the wiring is defined once.
+ * The complete hover/focus/pin interaction for a single word — the *producer*
+ * contract. `usePassageReader` always returns every field populated, so a word
+ * span or help card that spreads it gets fully-wired interactivity. This is the
+ * canonical shape; the card-facing type below is derived from it.
  */
-export interface WordHelpInteraction {
-  focused?: boolean;
-  pinned?: boolean;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  onClick?: () => void;
+export interface WordInteraction {
+  focused: boolean;
+  pinned: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onClick: () => void;
 }
+
+/**
+ * The interaction props a word-help card *accepts* — the *consumer* contract.
+ * Every field is optional because a card legitimately renders fully static (no
+ * hover/pin), e.g. in tests or a non-interactive context. The base shell and
+ * each dataset card (`MorphgntWordHelp`, `TahotWordHelp`) extend this so the
+ * wiring is defined once.
+ */
+export type WordHelpInteraction = Partial<WordInteraction>;
 
 export interface WordHelpProps extends WordHelpInteraction {
   children: React.ReactNode;

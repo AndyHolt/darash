@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import Footer from "@/components/Footer";
 import { MorphgntWordHelp } from "@/components/MorphgntWordHelp";
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import { shouldShowHelp, useWordHelpSettings } from "@/components/WordHelpSettings";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { PassageLayout, usePassageReader } from "@/components/PassageReader";
+import type { WordInteraction } from "@/components/WordHelp";
+import { shouldShowHelp } from "@/components/WordHelpSettings";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
 import { PassageAttribution } from "./PassageAttribution";
 
@@ -12,75 +10,12 @@ export interface MorphgntPassageProps {
 }
 
 export function MorphgntPassage({ passage }: MorphgntPassageProps) {
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [pinnedId, setPinnedId] = useState<string | null>(null);
-  // Help for common words is hidden by default to keep the sidebar focused on
-  // vocabulary the reader is unlikely to know. Clicking such a word reveals its
-  // help for the rest of the session even if the threshold would exclude it.
-  const [revealedIds, setRevealedIds] = useState<ReadonlySet<string>>(() => new Set());
-  const [helpSettings] = useWordHelpSettings();
-  const focusedId = hoveredId ?? pinnedId;
-
-  const handleWordClick = (id: string) => {
-    setPinnedId((curr) => (curr === id ? null : id));
-    setRevealedIds((curr) => {
-      if (curr.has(id)) return curr;
-      const next = new Set(curr);
-      next.add(id);
-      return next;
-    });
-  };
-
-  const wordRefs = useRef(new Map<string, HTMLSpanElement>());
-
-  // Matches Tailwind's md breakpoint. Wide → sidebar with page scroll.
-  // Narrow → vertical resizable split (text on top, word help below).
-  const isWide = useMediaQuery("(min-width: 768px)");
-
-  // Reset window scroll when this component mounts. The component is keyed by
-  // passageRef in the route, so navigating to a new passage remounts it; window
-  // scroll lives outside React's tree and would otherwise persist from the
-  // previous passage. If a flash of mid-scroll content is ever observed on
-  // navigation, switch to useLayoutEffect to run before paint.
-  useEffect(() => {
-    window.scrollTo({ top: 0 });
-  }, []);
-
-  // Scroll the pinned word into view in the main text panel. Fires when a
-  // user clicks a sidebar help item for an off-screen word; clicking a word
-  // already on screen is a no-op because of `block: "nearest"`. As above,
-  // useLayoutEffect would eliminate any visible scroll lag if it ever shows.
-  useEffect(() => {
-    if (!pinnedId) return;
-    wordRefs.current.get(pinnedId)?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [pinnedId]);
-
-  // When the help settings change, the click-driven reveal/pin state becomes
-  // stale (a pinned word may no longer pass the new threshold, and previously
-  // revealed words shouldn't carry forward). Clear both so the sidebar
-  // reflects the new threshold immediately.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: helpSettings is intentionally a change trigger; the effect body uses only stable setters.
-  useEffect(() => {
-    setRevealedIds((prev) => (prev.size === 0 ? prev : new Set()));
-    setPinnedId((prev) => (prev === null ? prev : null));
-  }, [helpSettings]);
+  const reader = usePassageReader();
 
   const renderWord = (w: WordData) => {
     const id = wordKey(w);
     return (
-      <Word
-        key={id}
-        word={w}
-        focused={focusedId === id}
-        pinned={pinnedId === id}
-        registerRef={(el) => {
-          if (el) wordRefs.current.set(id, el);
-          else wordRefs.current.delete(id);
-        }}
-        onMouseEnter={() => setHoveredId(id)}
-        onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-        onClick={() => handleWordClick(id)}
-      />
+      <Word key={id} word={w} registerRef={reader.registerWord(id)} {...reader.interaction(id)} />
     );
   };
 
@@ -92,70 +27,25 @@ export function MorphgntPassage({ passage }: MorphgntPassageProps) {
 
   const helpList = passage.paragraphs
     .flatMap((p) => p.words)
-    .filter((w) => shouldShowHelp(w, helpSettings) || revealedIds.has(wordKey(w)))
+    .filter((w) => shouldShowHelp(w, reader.helpSettings) || reader.isRevealed(wordKey(w)))
     .map((w) => {
       const id = wordKey(w);
-      return (
-        <MorphgntWordHelp
-          key={id}
-          word={w}
-          focused={focusedId === id}
-          pinned={pinnedId === id}
-          onMouseEnter={() => setHoveredId(id)}
-          onMouseLeave={() => setHoveredId((curr) => (curr === id ? null : curr))}
-          onClick={() => handleWordClick(id)}
-        />
-      );
+      return <MorphgntWordHelp key={id} word={w} {...reader.interaction(id)} />;
     });
 
-  if (isWide) {
-    return (
-      <div className="my-2 mx-4 flex flex-row justify-center gap-x-16 items-start">
-        <div className="max-w-lg">
-          <div className="font-greek leading-7">{paragraphList}</div>
-          <PassageAttribution />
-        </div>
-        <aside className="w-xs sticky top-16 max-h-[calc(100dvh-3rem)] overflow-y-auto bg-sidebar text-sidebar-foreground my-2 py-2 px-4 border border-border rounded-md">
-          {helpList}
-        </aside>
-      </div>
-    );
-  }
-
   return (
-    <ResizablePanelGroup orientation="vertical" className="h-full">
-      <ResizablePanel defaultSize={60} minSize={20}>
-        <div className="h-full overflow-y-auto">
-          {/* min-h-full + flex-col pins the footer to the bottom of the
-              panel when the text is short, and reveals it after the text
-              when the text overflows. */}
-          <div className="min-h-full flex flex-col">
-            <div className="px-4 py-2 flex-1">
-              <div className="font-greek leading-7">{paragraphList}</div>
-              <PassageAttribution />
-            </div>
-            <Footer />
-          </div>
-        </div>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={40} minSize={15}>
-        <div className="h-full overflow-y-auto bg-sidebar text-sidebar-foreground py-2 px-4">
-          {helpList}
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <PassageLayout
+      text={paragraphList}
+      help={helpList}
+      attribution={<PassageAttribution />}
+      textClassName="font-greek leading-7"
+    />
   );
 }
 
-interface WordProps {
+interface WordProps extends WordInteraction {
   word: WordData;
-  focused: boolean;
-  pinned: boolean;
-  registerRef: (el: HTMLSpanElement | null) => void;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onClick: () => void;
+  registerRef: (el: HTMLElement | null) => void;
 }
 
 function Word({
