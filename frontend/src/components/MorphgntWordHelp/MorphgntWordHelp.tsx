@@ -1,8 +1,6 @@
 import { ItemTitle } from "@/components/ui/item";
-import { Disclosure } from "@/components/WordHelp/Disclosure";
-import { WordFreqStats } from "@/components/WordHelp/FreqStats";
-import { WordDataRow, WordHelp } from "@/components/WordHelp/WordHelp";
-import { useWordHelpSettings } from "@/components/WordHelpSettings/state";
+import { Disclosure, WordDataRow, WordFreqStats, WordHelp } from "@/components/WordHelp";
+import { useWordHelpSettings } from "@/components/WordHelpSettings";
 import { cn } from "@/lib/utils";
 import type { Word } from "@/texts/morphgnt";
 import { formatGloss } from "./gloss";

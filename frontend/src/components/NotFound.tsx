@@ -1,6 +1,6 @@
 import { GoToDefaultPassageButton } from "@/components/GoToDefaultPassageButton";
 import Header from "@/components/Header";
-import { PassagePicker } from "@/components/PassagePicker/PassagePicker";
+import { PassagePicker } from "@/components/PassagePicker";
 
 export function NotFound() {
   return (

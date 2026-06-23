@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { ModeToggle } from "@/components/color-theme/ModeToggle";
+import { ModeToggle } from "@/components/color-theme";
 import DarashIcon from "@/components/DarashIcon";
 
 export default function Header({

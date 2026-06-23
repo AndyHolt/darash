@@ -1,8 +1,10 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { MorphgntPassage } from "@/components/MorphgntPassage/MorphgntPassage";
-import { MorphgntPassageError } from "@/components/MorphgntPassage/MorphgntPassageError";
-import { MorphgntPassageSkeleton } from "@/components/MorphgntPassage/MorphgntPassageSkeleton";
+import {
+  MorphgntPassage,
+  MorphgntPassageError,
+  MorphgntPassageSkeleton,
+} from "@/components/MorphgntPassage";
 import { passageQuery } from "@/texts/morphgnt";
 
 export const Route = createFileRoute("/sblgnt/$passageRef")({
