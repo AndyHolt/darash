@@ -3,12 +3,20 @@ import { useEffect, useRef } from "react";
 import { Item, ItemContent } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
 
-export interface WordHelpProps {
+/**
+ * The hover/focus/pin interaction props every word-help card shares. The base
+ * shell and each dataset card (`MorphgntWordHelp`, `TahotWordHelp`) extend this
+ * so the wiring is defined once.
+ */
+export interface WordHelpInteraction {
   focused?: boolean;
   pinned?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onClick?: () => void;
+}
+
+export interface WordHelpProps extends WordHelpInteraction {
   children: React.ReactNode;
 }
 
