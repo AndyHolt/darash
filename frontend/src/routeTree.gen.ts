@@ -9,15 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TahotRouteImport } from './routes/tahot'
 import { Route as SblgntRouteImport } from './routes/sblgnt'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as TahotIndexRouteImport } from './routes/tahot.index'
 import { Route as SblgntIndexRouteImport } from './routes/sblgnt.index'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as TahotPassageRefRouteImport } from './routes/tahot.$passageRef'
 import { Route as SblgntPassageRefRouteImport } from './routes/sblgnt.$passageRef'
 import { Route as AppSourcesRouteImport } from './routes/_app.sources'
 import { Route as AppCountRouteImport } from './routes/_app.count'
 import { Route as AppAboutRouteImport } from './routes/_app.about'
 
+const TahotRoute = TahotRouteImport.update({
+  id: '/tahot',
+  path: '/tahot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SblgntRoute = SblgntRouteImport.update({
   id: '/sblgnt',
   path: '/sblgnt',
@@ -26,6 +34,11 @@ const SblgntRoute = SblgntRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TahotIndexRoute = TahotIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TahotRoute,
 } as any)
 const SblgntIndexRoute = SblgntIndexRouteImport.update({
   id: '/',
@@ -36,6 +49,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const TahotPassageRefRoute = TahotPassageRefRouteImport.update({
+  id: '/$passageRef',
+  path: '/$passageRef',
+  getParentRoute: () => TahotRoute,
 } as any)
 const SblgntPassageRefRoute = SblgntPassageRefRouteImport.update({
   id: '/$passageRef',
@@ -61,62 +79,92 @@ const AppAboutRoute = AppAboutRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/sblgnt': typeof SblgntRouteWithChildren
+  '/tahot': typeof TahotRouteWithChildren
   '/about': typeof AppAboutRoute
   '/count': typeof AppCountRoute
   '/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/tahot/$passageRef': typeof TahotPassageRefRoute
   '/sblgnt/': typeof SblgntIndexRoute
+  '/tahot/': typeof TahotIndexRoute
 }
 export interface FileRoutesByTo {
   '/about': typeof AppAboutRoute
   '/count': typeof AppCountRoute
   '/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/tahot/$passageRef': typeof TahotPassageRefRoute
   '/': typeof AppIndexRoute
   '/sblgnt': typeof SblgntIndexRoute
+  '/tahot': typeof TahotIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/sblgnt': typeof SblgntRouteWithChildren
+  '/tahot': typeof TahotRouteWithChildren
   '/_app/about': typeof AppAboutRoute
   '/_app/count': typeof AppCountRoute
   '/_app/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
+  '/tahot/$passageRef': typeof TahotPassageRefRoute
   '/_app/': typeof AppIndexRoute
   '/sblgnt/': typeof SblgntIndexRoute
+  '/tahot/': typeof TahotIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/sblgnt'
+    | '/tahot'
     | '/about'
     | '/count'
     | '/sources'
     | '/sblgnt/$passageRef'
+    | '/tahot/$passageRef'
     | '/sblgnt/'
+    | '/tahot/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/about' | '/count' | '/sources' | '/sblgnt/$passageRef' | '/' | '/sblgnt'
+  to:
+    | '/about'
+    | '/count'
+    | '/sources'
+    | '/sblgnt/$passageRef'
+    | '/tahot/$passageRef'
+    | '/'
+    | '/sblgnt'
+    | '/tahot'
   id:
     | '__root__'
     | '/_app'
     | '/sblgnt'
+    | '/tahot'
     | '/_app/about'
     | '/_app/count'
     | '/_app/sources'
     | '/sblgnt/$passageRef'
+    | '/tahot/$passageRef'
     | '/_app/'
     | '/sblgnt/'
+    | '/tahot/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   SblgntRoute: typeof SblgntRouteWithChildren
+  TahotRoute: typeof TahotRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tahot': {
+      id: '/tahot'
+      path: '/tahot'
+      fullPath: '/tahot'
+      preLoaderRoute: typeof TahotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sblgnt': {
       id: '/sblgnt'
       path: '/sblgnt'
@@ -131,6 +179,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tahot/': {
+      id: '/tahot/'
+      path: '/'
+      fullPath: '/tahot/'
+      preLoaderRoute: typeof TahotIndexRouteImport
+      parentRoute: typeof TahotRoute
+    }
     '/sblgnt/': {
       id: '/sblgnt/'
       path: '/'
@@ -144,6 +199,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/tahot/$passageRef': {
+      id: '/tahot/$passageRef'
+      path: '/$passageRef'
+      fullPath: '/tahot/$passageRef'
+      preLoaderRoute: typeof TahotPassageRefRouteImport
+      parentRoute: typeof TahotRoute
     }
     '/sblgnt/$passageRef': {
       id: '/sblgnt/$passageRef'
@@ -205,9 +267,22 @@ const SblgntRouteChildren: SblgntRouteChildren = {
 const SblgntRouteWithChildren =
   SblgntRoute._addFileChildren(SblgntRouteChildren)
 
+interface TahotRouteChildren {
+  TahotPassageRefRoute: typeof TahotPassageRefRoute
+  TahotIndexRoute: typeof TahotIndexRoute
+}
+
+const TahotRouteChildren: TahotRouteChildren = {
+  TahotPassageRefRoute: TahotPassageRefRoute,
+  TahotIndexRoute: TahotIndexRoute,
+}
+
+const TahotRouteWithChildren = TahotRoute._addFileChildren(TahotRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   SblgntRoute: SblgntRouteWithChildren,
+  TahotRoute: TahotRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
