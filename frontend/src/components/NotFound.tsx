@@ -1,3 +1,4 @@
+import { CORPORA } from "@/bible/corpora";
 import { GoToDefaultPassageButton } from "@/components/GoToDefaultPassageButton";
 import Header from "@/components/Header";
 import { PassagePicker } from "@/components/PassagePicker";
@@ -6,7 +7,7 @@ export function NotFound() {
   return (
     <>
       <Header>
-        <PassagePicker />
+        <PassagePicker corpus={CORPORA["greek-nt"]} />
       </Header>
       <div className="flex h-full items-center justify-center p-6 select-none">
         <div className="flex max-w-sm flex-col items-center gap-4 text-center">

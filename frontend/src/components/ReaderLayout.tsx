@@ -1,5 +1,6 @@
 import { type QueryKey, type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { Outlet, useParams } from "@tanstack/react-router";
+import type { Corpus } from "@/bible/corpora";
 import type { Reference } from "@/bible/references";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -10,10 +11,13 @@ import { WordHelpSettings } from "@/components/WordHelpSettings";
 // the passage picker, the routed passage view, and the footer.
 export function ReaderLayout<TPassage extends { reference: Reference }, TKey extends QueryKey>({
   passageQuery,
+  corpus,
 }: {
   // The concrete passage query for this route's text, injected by the route so
   // the layout (and picker) stay text-agnostic. See routes/{sblgnt,tahot}.tsx.
   passageQuery: (ref: string) => UseQueryOptions<TPassage, Error, TPassage, TKey>;
+  // The corpus this route reads — supplies the picker's book list and routing.
+  corpus: Corpus;
 }) {
   const { passageRef } = useParams({ strict: false });
   // Non-suspense read of the same query the routed passage view loads (shared
@@ -36,7 +40,11 @@ export function ReaderLayout<TPassage extends { reference: Reference }, TKey ext
   return (
     <div className="flex flex-col h-dvh md:h-auto md:min-h-dvh">
       <Header rightActions={<WordHelpSettings />}>
-        <PassagePicker passageRef={passageRef} query={{ passage, isLoading, failureCount }} />
+        <PassagePicker
+          corpus={corpus}
+          passageRef={passageRef}
+          query={{ passage, isLoading, failureCount }}
+        />
       </Header>
       <div className="flex-1 min-h-0">
         <Outlet />

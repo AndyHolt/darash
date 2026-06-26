@@ -1,15 +1,12 @@
-import type { BookInfo, Testament } from "@/bible/books";
-import { NT_BOOKS, OT_BOOKS } from "@/bible/books";
+import type { BookInfo } from "@/bible/books";
 import { Button } from "@/components/ui/button";
 
 export interface BookPickerProps {
-  testament: Testament;
+  books: readonly BookInfo[];
   pickBook: (book: BookInfo) => void;
 }
 
-export function BookPicker({ testament, pickBook }: BookPickerProps) {
-  const books = testament === "Old Testament" ? OT_BOOKS : NT_BOOKS;
-
+export function BookPicker({ books, pickBook }: BookPickerProps) {
   return (
     <div className="columns-2 md:columns-3 gap-1">
       {books.map((b) => (
