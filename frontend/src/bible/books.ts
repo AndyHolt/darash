@@ -421,8 +421,6 @@ export type Book = BookInfo["name"];
 
 export type BookAbbrev = BookInfo["abbrev"];
 
-export type Testament = "Old Testament" | "New Testament";
-
 const bookByName: ReadonlyMap<Book, BookInfo> = new Map(BOOKS.map((b) => [b.name, b]));
 
 const bookByLowerAbbrev: ReadonlyMap<Lowercase<BookAbbrev>, BookInfo> = new Map(
@@ -439,12 +437,6 @@ export function lookupBookByName(name: Book): BookInfo {
 
 export function lookupBookByAbbrev(abbrev: string): BookInfo | undefined {
   return bookByLowerAbbrev.get(abbrev.toLowerCase() as Lowercase<BookAbbrev>);
-}
-
-const otBookNames: ReadonlySet<string> = new Set(OT_BOOKS.map((b) => b.name));
-
-export function testamentOf(book: Book): Testament {
-  return otBookNames.has(book) ? "Old Testament" : "New Testament";
 }
 
 export function chaptersForBook(book: BookInfo): number[] {
