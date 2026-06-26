@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { type BookInfo, versesForChapter } from "@/bible/books";
+import type { CorpusRoute } from "@/bible/corpora";
 import { passageReference, referenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
 import { PopoverClose } from "@/components/ui/popover";
@@ -10,6 +11,7 @@ export interface EndVersePickerProps {
   startChapter: number;
   startVerse: number;
   endChapter: number;
+  route: CorpusRoute;
 }
 
 export function EndVersePicker({
@@ -17,6 +19,7 @@ export function EndVersePicker({
   startChapter,
   startVerse,
   endChapter,
+  route,
 }: EndVersePickerProps) {
   const verses = versesForChapter(book, endChapter);
   const sameChapter = endChapter === startChapter;
@@ -41,7 +44,7 @@ export function EndVersePicker({
         return (
           <PopoverClose key={n} asChild>
             <Button variant={isStart ? "secondary" : "ghost"} size="sm" asChild>
-              <Link to="/sblgnt/$passageRef" params={{ passageRef }}>
+              <Link to={route} params={{ passageRef }}>
                 {n}
               </Link>
             </Button>

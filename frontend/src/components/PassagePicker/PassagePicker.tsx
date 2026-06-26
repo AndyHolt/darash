@@ -1,5 +1,6 @@
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useReducer } from "react";
+import type { Corpus } from "@/bible/corpora";
 import type { Reference } from "@/bible/references";
 import { formatReference, parseReferenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
@@ -28,11 +29,14 @@ export interface PassageQueryState {
 }
 
 export interface PassagePickerProps {
+  // The corpus this reader is showing — supplies the book list and destination
+  // route for the picker flow.
+  corpus: Corpus;
   passageRef?: string;
   query?: PassageQueryState;
 }
 
-export function PassagePicker({ passageRef, query }: PassagePickerProps) {
+export function PassagePicker({ corpus, passageRef, query }: PassagePickerProps) {
   const { passage, isLoading = false, failureCount = 0 } = query ?? {};
   // `isError` only flips once retries are exhausted, so a failing-then-retrying
   // query still reports `isLoading: true` and would keep the spinner up while
@@ -52,7 +56,7 @@ export function PassagePicker({ passageRef, query }: PassagePickerProps) {
       case "book":
         return (
           <BookPicker
-            testament="New Testament"
+            books={corpus.books}
             pickBook={(book) => dispatch({ type: "pickBook", book })}
           />
         );
@@ -78,6 +82,7 @@ export function PassagePicker({ passageRef, query }: PassagePickerProps) {
             startChapter={step.startChapter}
             startVerse={step.startVerse}
             endChapter={step.endChapter}
+            route={corpus.route}
           />
         );
       case "endChapter":
