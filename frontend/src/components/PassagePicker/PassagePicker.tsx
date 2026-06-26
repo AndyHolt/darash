@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useReducer } from "react";
+import type { Reference } from "@/bible/references";
 import { formatReference, parseReferenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +11,6 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { type Passage, passageQuery } from "@/texts/morphgnt";
 import { BackButton } from "./BackButton";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
@@ -19,19 +18,22 @@ import { EndVersePicker } from "./EndVersePicker";
 import { StartVersePicker } from "./StartVersePicker";
 import { initialStep, type Step, stepReducer } from "./state";
 
-export interface PassagePickerProps {
-  passageRef?: string;
+// Resolved state of the active text's passage query, supplied by the route
+// layout so the picker itself stays text-agnostic — it only reads this to
+// render the trigger label and loading spinner.
+export interface PassageQueryState {
+  passage: { reference: Reference } | undefined;
+  isLoading: boolean;
+  failureCount: number;
 }
 
-export function PassagePicker({ passageRef }: PassagePickerProps) {
-  const {
-    data: passage,
-    isLoading,
-    failureCount,
-  } = useQuery({
-    ...passageQuery(passageRef ?? ""),
-    enabled: !!passageRef,
-  });
+export interface PassagePickerProps {
+  passageRef?: string;
+  query?: PassageQueryState;
+}
+
+export function PassagePicker({ passageRef, query }: PassagePickerProps) {
+  const { passage, isLoading = false, failureCount = 0 } = query ?? {};
   // `isError` only flips once retries are exhausted, so a failing-then-retrying
   // query still reports `isLoading: true` and would keep the spinner up while
   // the route's error UI is on screen. `failureCount` increments on the first
@@ -174,7 +176,10 @@ export function PassagePicker({ passageRef }: PassagePickerProps) {
   );
 }
 
-function triggerLabel(passageRef: string | undefined, passage: Passage | undefined): string {
+function triggerLabel(
+  passageRef: string | undefined,
+  passage: { reference: Reference } | undefined,
+): string {
   if (passage) return formatReference(passage.reference);
   if (passageRef) return pendingLabel(passageRef);
   return "Choose passage";
