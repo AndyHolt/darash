@@ -1,6 +1,6 @@
 import { ChevronDown, Loader2 } from "lucide-react";
-import { useReducer } from "react";
-import type { Corpus } from "@/bible/corpora";
+import { useReducer, useState } from "react";
+import { CORPORA, type Corpus } from "@/bible/corpora";
 import type { Reference } from "@/bible/references";
 import { formatReference, parseReferenceUrlTag } from "@/bible/references";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { BackButton } from "./BackButton";
 import { BookPicker } from "./BookPicker";
 import { ChapterPicker } from "./ChapterPicker";
+import { CorpusTabs } from "./CorpusTabs";
 import { EndVersePicker } from "./EndVersePicker";
 import { StartVersePicker } from "./StartVersePicker";
 import { initialStep, type Step, stepReducer } from "./state";
@@ -29,8 +30,8 @@ export interface PassageQueryState {
 }
 
 export interface PassagePickerProps {
-  // The corpus this reader is showing — supplies the book list and destination
-  // route for the picker flow.
+  // The corpus this reader is showing — the default for the picker's corpus
+  // tabs, and the destination if the user picks within it without switching.
   corpus: Corpus;
   passageRef?: string;
   query?: PassageQueryState;
@@ -44,10 +45,16 @@ export function PassagePicker({ corpus, passageRef, query }: PassagePickerProps)
   // failed attempt, giving us the earlier signal we need to stop the spinner.
   const hasFailed = failureCount > 0;
   const [step, dispatch] = useReducer(stepReducer, initialStep);
+  // Which corpus the user is browsing. Defaults to the active reader's corpus
+  // but can be switched via the tabs (only at the book step), letting the user
+  // cross from e.g. the NT reader into the Hebrew Bible. It supplies the book
+  // list and the destination route for the rest of the flow.
+  const [selectedCorpus, setSelectedCorpus] = useState(corpus);
 
   function handleOpenChange(open: boolean) {
     if (!open) {
       dispatch({ type: "reset" });
+      setSelectedCorpus(corpus);
     }
   }
 
@@ -55,10 +62,16 @@ export function PassagePicker({ corpus, passageRef, query }: PassagePickerProps)
     switch (step.step) {
       case "book":
         return (
-          <BookPicker
-            books={corpus.books}
-            pickBook={(book) => dispatch({ type: "pickBook", book })}
-          />
+          <>
+            <CorpusTabs
+              value={selectedCorpus.id}
+              onChange={(id) => setSelectedCorpus(CORPORA[id])}
+            />
+            <BookPicker
+              books={selectedCorpus.books}
+              pickBook={(book) => dispatch({ type: "pickBook", book })}
+            />
+          </>
         );
       case "startChapter":
         return (
@@ -82,7 +95,7 @@ export function PassagePicker({ corpus, passageRef, query }: PassagePickerProps)
             startChapter={step.startChapter}
             startVerse={step.startVerse}
             endChapter={step.endChapter}
-            route={corpus.route}
+            route={selectedCorpus.route}
           />
         );
       case "endChapter":
