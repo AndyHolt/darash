@@ -23,7 +23,11 @@ export function CorpusTabs({ value, onChange }: CorpusTabsProps) {
       className="mb-2 w-full"
     >
       {CORPUS_LIST.map((corpus) => (
-        <ToggleGroupItem key={corpus.id} value={corpus.id} className="flex-1">
+        // The default `outline` border uses `border-input`, which is the same
+        // token as the popover background in the light theme (both vellum-input)
+        // — so it's invisible there. Override to the `border` token, which is
+        // meant to delineate against surfaces. (twMerge drops `border-input`.)
+        <ToggleGroupItem key={corpus.id} value={corpus.id} className="flex-1 border-border">
           {corpus.label}
         </ToggleGroupItem>
       ))}
