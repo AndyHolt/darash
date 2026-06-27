@@ -18,7 +18,7 @@ export default function Footer({ className }: FooterProps) {
             <span>Darash</span>
           </div>
           <p className="text-sidebar-muted-foreground">
-            Interactive reader for the Greek New Testament.
+            Interactive reader for the Bible in Hebrew and Greek.
           </p>
           <p className="text-sidebar-muted-foreground">
             Built with ❤️ by{" "}
