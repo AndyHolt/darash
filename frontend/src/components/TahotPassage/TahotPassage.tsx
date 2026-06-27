@@ -145,7 +145,7 @@ function Word({
   onMouseLeave,
   onClick,
 }: WordProps) {
-  const { text, paragraphMarker, joinsNext } = wordDisplayParts(word);
+  const { text, paragraphMarker, paseq, joinsNext } = wordDisplayParts(word);
   return (
     <>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the word help sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
@@ -161,6 +161,7 @@ function Word({
       >
         {text}
       </span>
+      <Paseq paseq={paseq} />
       {joinsNext ? null : " "}
       {paragraphMarker ? (
         <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
@@ -170,14 +171,29 @@ function Word({
 }
 
 function PlainWord({ word }: { word: WordData }) {
-  const { text, paragraphMarker, joinsNext } = wordDisplayParts(word);
+  const { text, paragraphMarker, paseq, joinsNext } = wordDisplayParts(word);
   return (
     <>
       {text ? <span>{text}</span> : null}
+      <Paseq paseq={paseq} />
       {text && !joinsNext ? " " : null}
       {paragraphMarker ? (
         <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
       ) : null}
+    </>
+  );
+}
+
+// The paseq word-divider, set apart with a space on each side. The leading space
+// is rendered here; the trailing one is the word's normal inter-word space. It
+// sits outside the word's hover target, since the divider belongs to neither
+// neighbour, and renders nothing for the common no-paseq case.
+function Paseq({ paseq }: { paseq?: string }) {
+  if (!paseq) return null;
+  return (
+    <>
+      {" "}
+      <span className="select-none">{paseq}</span>
     </>
   );
 }

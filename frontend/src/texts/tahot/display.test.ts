@@ -25,6 +25,13 @@ describe("wordDisplayParts", () => {
     expect(parts.joinsNext).toBe(true);
   });
 
+  test("a trailing paseq is split out as a separate divider", () => {
+    const parts = wordDisplayParts(word([seg("עִבְר֣וּ"), seg("׀", { kind: "punctuation" })]));
+    expect(parts.text).toBe("עִבְר֣וּ");
+    expect(parts.paseq).toBe("׀");
+    expect(parts.joinsNext).toBe(false);
+  });
+
   test("a paragraph marker is split out and does not count as joining", () => {
     const parts = wordDisplayParts(
       word([seg("הָאָֽרֶץ"), seg("׃", { kind: "punctuation" }), seg("פ", { kind: "punctuation" })]),
