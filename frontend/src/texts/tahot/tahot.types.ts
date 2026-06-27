@@ -198,6 +198,18 @@ export function wordDisplayHebrew(w: Word): string {
   return w.hebrew.replace(/[/\\]/g, "").trim();
 }
 
+// TAHOT keeps maqqef-joined words as separate entries, the first carrying a
+// trailing maqqef, so the reading view must render them flush (no intervening
+// space).
+const MAQQEF = "־";
+
+// The paseq (U+05C0) is a Masoretic word-divider: a thin vertical bar set in the
+// space between two words to hold them apart. TAHOT stores it as a trailing
+// punctuation segment on the preceding word, but it reads as a separator and is
+// printed with a space on either side, so the reading view sets it apart the way
+// it does the paragraph markers rather than letting it sit flush against the word.
+const PASEQ = "׀";
+
 // The petuhah (פ) / setumah (ס) Masoretic paragraph markers ride along as a
 // word's trailing punctuation segment.
 const PARAGRAPH_MARKERS = new Set(["פ", "ס"]);
@@ -206,21 +218,37 @@ function isParagraphMarker(s: WordSegment): boolean {
   return s.kind === "punctuation" && PARAGRAPH_MARKERS.has(s.hebrew);
 }
 
+function isPaseq(s: WordSegment): boolean {
+  return s.kind === "punctuation" && s.hebrew === PASEQ;
+}
+
 /**
- * The word's reading text split from any petuhah/setumah paragraph marker it
- * carries. The marker is part of the text (see `wordDisplayHebrew`), but the
- * reading view sets it apart with spacing the way printed editions do, so it
- * needs the marker separated from the word body. `paragraphMarker` is undefined
- * for the common no-marker case.
+ * The word's reading text split from the set-apart punctuation it carries — a
+ * petuhah/setumah paragraph marker, or a paseq word-divider. Both are part of the
+ * text (see `wordDisplayHebrew`), but the reading view spaces them off the way
+ * printed editions do, so each is returned separately and is undefined in the
+ * common case where the word carries it not.
+ *
+ * `joinsNext` is true when the word ends in a maqqef and so binds flush to the
+ * next word, which the reading view honours by suppressing the trailing space.
  */
-export function wordDisplayParts(w: Word): { text: string; paragraphMarker?: string } {
+export function wordDisplayParts(w: Word): {
+  text: string;
+  paragraphMarker?: string;
+  paseq?: string;
+  joinsNext: boolean;
+} {
   const paragraphMarker = w.segments.find(isParagraphMarker)?.hebrew;
-  if (!paragraphMarker) return { text: wordDisplayHebrew(w) };
-  return {
-    text: w.segments
-      .filter((s) => !isParagraphMarker(s))
-      .map((s) => s.hebrew)
-      .join(""),
-    paragraphMarker,
-  };
+  const paseq = w.segments.find(isPaseq)?.hebrew;
+  // Drop the set-apart punctuation from the word body; each renders on its own
+  // with its own spacing. With nothing to drop, fall back to wordDisplayHebrew so
+  // the no-segments path is preserved.
+  const text =
+    paragraphMarker || paseq
+      ? w.segments
+          .filter((s) => !isParagraphMarker(s) && !isPaseq(s))
+          .map((s) => s.hebrew)
+          .join("")
+      : wordDisplayHebrew(w);
+  return { text, paragraphMarker, paseq, joinsNext: text.endsWith(MAQQEF) };
 }
