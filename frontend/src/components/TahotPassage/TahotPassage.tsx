@@ -145,7 +145,7 @@ function Word({
   onMouseLeave,
   onClick,
 }: WordProps) {
-  const { text, paragraphMarker } = wordDisplayParts(word);
+  const { text, paragraphMarker, joinsNext } = wordDisplayParts(word);
   return (
     <>
       {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the word help sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
@@ -160,7 +160,8 @@ function Word({
         onClick={onClick}
       >
         {text}
-      </span>{" "}
+      </span>
+      {joinsNext ? null : " "}
       {paragraphMarker ? (
         <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
       ) : null}
@@ -169,11 +170,11 @@ function Word({
 }
 
 function PlainWord({ word }: { word: WordData }) {
-  const { text, paragraphMarker } = wordDisplayParts(word);
+  const { text, paragraphMarker, joinsNext } = wordDisplayParts(word);
   return (
     <>
       {text ? <span>{text}</span> : null}
-      {text ? " " : null}
+      {text && !joinsNext ? " " : null}
       {paragraphMarker ? (
         <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
       ) : null}

@@ -198,6 +198,11 @@ export function wordDisplayHebrew(w: Word): string {
   return w.hebrew.replace(/[/\\]/g, "").trim();
 }
 
+// TAHOT keeps maqqef-joined words as separate entries, the first carrying a
+// trailing maqqef, so the reading view must render them flush (no intervening
+// space).
+const MAQQEF = "־";
+
 // The petuhah (פ) / setumah (ס) Masoretic paragraph markers ride along as a
 // word's trailing punctuation segment.
 const PARAGRAPH_MARKERS = new Set(["פ", "ס"]);
@@ -212,15 +217,21 @@ function isParagraphMarker(s: WordSegment): boolean {
  * reading view sets it apart with spacing the way printed editions do, so it
  * needs the marker separated from the word body. `paragraphMarker` is undefined
  * for the common no-marker case.
+ *
+ * `joinsNext` is true when the word ends in a maqqef and so binds flush to the
+ * next word, which the reading view honours by suppressing the trailing space.
  */
-export function wordDisplayParts(w: Word): { text: string; paragraphMarker?: string } {
+export function wordDisplayParts(w: Word): {
+  text: string;
+  paragraphMarker?: string;
+  joinsNext: boolean;
+} {
   const paragraphMarker = w.segments.find(isParagraphMarker)?.hebrew;
-  if (!paragraphMarker) return { text: wordDisplayHebrew(w) };
-  return {
-    text: w.segments
-      .filter((s) => !isParagraphMarker(s))
-      .map((s) => s.hebrew)
-      .join(""),
-    paragraphMarker,
-  };
+  const text = paragraphMarker
+    ? w.segments
+        .filter((s) => !isParagraphMarker(s))
+        .map((s) => s.hebrew)
+        .join("")
+    : wordDisplayHebrew(w);
+  return { text, paragraphMarker, joinsNext: text.endsWith(MAQQEF) };
 }
