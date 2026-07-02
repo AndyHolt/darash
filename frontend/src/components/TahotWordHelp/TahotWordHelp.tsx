@@ -39,9 +39,6 @@ export function TahotWordHelp({ word, ...interaction }: TahotWordHelpProps) {
         </ItemTitle>
         {showFrequencyStats ? <FreqStats word={word} /> : null}
       </div>
-      {word.transliteration ? (
-        <WordDataRow className="italic">{word.transliteration}</WordDataRow>
-      ) : null}
       {segments.map((seg) => (
         <SegmentRow key={seg.segment_index} seg={seg} />
       ))}
