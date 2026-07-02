@@ -1,3 +1,4 @@
+import { CORPORA } from "@/bible/corpora";
 import { GoToDefaultPassageButton } from "@/components/GoToDefaultPassageButton";
 import { HttpError } from "@/lib/http-error";
 
@@ -39,7 +40,7 @@ export function TahotPassageError({ error }: TahotPassageErrorProps) {
           <h2 className="text-lg font-semibold">{title}</h2>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
-        <GoToDefaultPassageButton />
+        <GoToDefaultPassageButton corpus={CORPORA["hebrew-bible"]} />
       </div>
     </div>
   );
