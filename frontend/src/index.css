@@ -221,6 +221,19 @@
   .font-lexicon {
     font-size-adjust: 0.52;
   }
+  /* Ezra SIL reserves generous em-box space below the baseline for vowel points
+     and above for cantillation accents, so its consonants render smaller than a
+     Latin UI sans at the same font-size. Unlike the Greek rule (which targets
+     strict optical parity), Hebrew is intentionally set LARGER than a size match
+     to Geist: pointed Hebrew needs the extra size for legibility — several
+     letters differ only by small strokes (ר/ד, ב/כ, ה/ח) and the vowel points
+     are illegible at a Latin-parity size. Ezra SIL's metrics also differ from
+     GFS Neohellenic, so this is measured independently rather than folded into
+     the 0.52 rule above. Ratio is target x-height ÷ font-size; higher = larger.
+     Tuned by eye against the dev server. */
+  .font-hebrew {
+    font-size-adjust: 0.68;
+  }
 }
 
 @layer components {
