@@ -19,7 +19,7 @@ export function NotFound() {
             </p>
             <p className="text-sm text-muted-foreground">Choose a passage to start reading.</p>
           </div>
-          <GoToDefaultPassageButton />
+          <GoToDefaultPassageButton corpus={CORPORA["greek-nt"]} />
         </div>
       </div>
     </>

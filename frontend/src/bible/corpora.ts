@@ -1,3 +1,5 @@
+import { DEFAULT_PASSAGE_REF } from "@/texts/morphgnt";
+import { DEFAULT_TAHOT_PASSAGE_REF } from "@/texts/tahot";
 import type { BookInfo } from "./books";
 import { NT_BOOKS, OT_BOOKS } from "./books";
 
@@ -17,6 +19,9 @@ export interface Corpus {
   label: string;
   books: readonly BookInfo[];
   route: CorpusRoute;
+  // The passage the reader falls back to for this corpus (default landing spot,
+  // "go to default" recovery button). A URL ref tag, e.g. "gen.1.1-gen.1.31".
+  defaultPassageRef: string;
 }
 
 export const CORPORA = {
@@ -25,12 +30,14 @@ export const CORPORA = {
     label: "Hebrew Bible",
     books: OT_BOOKS,
     route: "/tahot/$passageRef",
+    defaultPassageRef: DEFAULT_TAHOT_PASSAGE_REF,
   },
   "greek-nt": {
     id: "greek-nt",
     label: "Greek New Testament",
     books: NT_BOOKS,
     route: "/sblgnt/$passageRef",
+    defaultPassageRef: DEFAULT_PASSAGE_REF,
   },
 } as const satisfies Record<CorpusId, Corpus>;
 
