@@ -141,11 +141,11 @@ export function FreqRow({
 }) {
   return (
     <tr>
-      <th scope="row" className="pr-3 text-left font-normal">
+      <th scope="row" className="py-1 pr-3 text-left font-normal align-baseline">
         {label} <span className="text-sidebar-muted-foreground">({kind})</span>
       </th>
-      <td className="pr-3 tabular-nums">{count}×</td>
-      <td className="tabular-nums text-sidebar-muted-foreground"># {rank}</td>
+      <td className="py-1 pr-3 tabular-nums align-baseline">{count}×</td>
+      <td className="py-1 tabular-nums text-sidebar-muted-foreground align-baseline"># {rank}</td>
     </tr>
   );
 }
