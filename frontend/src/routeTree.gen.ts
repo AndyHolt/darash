@@ -18,7 +18,6 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as TahotPassageRefRouteImport } from './routes/tahot.$passageRef'
 import { Route as SblgntPassageRefRouteImport } from './routes/sblgnt.$passageRef'
 import { Route as AppSourcesRouteImport } from './routes/_app.sources'
-import { Route as AppCountRouteImport } from './routes/_app.count'
 import { Route as AppAboutRouteImport } from './routes/_app.about'
 
 const TahotRoute = TahotRouteImport.update({
@@ -65,11 +64,6 @@ const AppSourcesRoute = AppSourcesRouteImport.update({
   path: '/sources',
   getParentRoute: () => AppRoute,
 } as any)
-const AppCountRoute = AppCountRouteImport.update({
-  id: '/count',
-  path: '/count',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppAboutRoute = AppAboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -81,7 +75,6 @@ export interface FileRoutesByFullPath {
   '/sblgnt': typeof SblgntRouteWithChildren
   '/tahot': typeof TahotRouteWithChildren
   '/about': typeof AppAboutRoute
-  '/count': typeof AppCountRoute
   '/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
   '/tahot/$passageRef': typeof TahotPassageRefRoute
@@ -90,7 +83,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/about': typeof AppAboutRoute
-  '/count': typeof AppCountRoute
   '/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
   '/tahot/$passageRef': typeof TahotPassageRefRoute
@@ -104,7 +96,6 @@ export interface FileRoutesById {
   '/sblgnt': typeof SblgntRouteWithChildren
   '/tahot': typeof TahotRouteWithChildren
   '/_app/about': typeof AppAboutRoute
-  '/_app/count': typeof AppCountRoute
   '/_app/sources': typeof AppSourcesRoute
   '/sblgnt/$passageRef': typeof SblgntPassageRefRoute
   '/tahot/$passageRef': typeof TahotPassageRefRoute
@@ -119,7 +110,6 @@ export interface FileRouteTypes {
     | '/sblgnt'
     | '/tahot'
     | '/about'
-    | '/count'
     | '/sources'
     | '/sblgnt/$passageRef'
     | '/tahot/$passageRef'
@@ -128,7 +118,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/about'
-    | '/count'
     | '/sources'
     | '/sblgnt/$passageRef'
     | '/tahot/$passageRef'
@@ -141,7 +130,6 @@ export interface FileRouteTypes {
     | '/sblgnt'
     | '/tahot'
     | '/_app/about'
-    | '/_app/count'
     | '/_app/sources'
     | '/sblgnt/$passageRef'
     | '/tahot/$passageRef'
@@ -221,13 +209,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSourcesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/count': {
-      id: '/_app/count'
-      path: '/count'
-      fullPath: '/count'
-      preLoaderRoute: typeof AppCountRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/about': {
       id: '/_app/about'
       path: '/about'
@@ -240,14 +221,12 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAboutRoute: typeof AppAboutRoute
-  AppCountRoute: typeof AppCountRoute
   AppSourcesRoute: typeof AppSourcesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAboutRoute: AppAboutRoute,
-  AppCountRoute: AppCountRoute,
   AppSourcesRoute: AppSourcesRoute,
   AppIndexRoute: AppIndexRoute,
 }
