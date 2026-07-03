@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import type { Lexicon, Word } from "@/texts/morphgnt";
 import { meaningsOf, parseMeaning } from "./meaning";
+import type { Lexicon, Word } from "./morphgnt.types";
 
 function lex(gloss: string, meaning: string): Lexicon {
   return { form: "", transliteration: "", gloss, meaning };

@@ -8,11 +8,8 @@ import {
 } from "@/components/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings";
 import { cn } from "@/lib/utils";
-import type { Word } from "@/texts/morphgnt";
-import { formatGloss } from "./gloss";
+import { formatGloss, formatParsing, meaningsOf, type Word } from "@/texts/morphgnt";
 import { MeaningText } from "./MeaningText";
-import { meaningsOf } from "./meaning";
-import { formatParsing } from "./parsing";
 
 export interface MorphgntWordHelpProps extends WordHelpInteraction {
   word: Word;

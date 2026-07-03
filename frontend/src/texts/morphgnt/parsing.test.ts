@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import type { Word } from "@/texts/morphgnt";
+import type { Word } from "./morphgnt.types";
 import { formatParsing } from "./parsing";
 
 function word(overrides: Partial<Word>): Word {

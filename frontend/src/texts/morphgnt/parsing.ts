@@ -8,7 +8,7 @@ import type {
   Tense,
   Voice,
   Word,
-} from "@/texts/morphgnt";
+} from "./morphgnt.types";
 
 const TENSE: Record<Tense, string> = {
   present: "Pres",
