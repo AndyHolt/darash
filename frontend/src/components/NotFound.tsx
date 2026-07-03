@@ -1,4 +1,4 @@
-import { CORPORA } from "@/bible/corpora";
+import { DEFAULT_CORPUS } from "@/bible/corpora";
 import { GoToDefaultPassageButton } from "@/components/GoToDefaultPassageButton";
 import Header from "@/components/Header";
 import { PassagePicker } from "@/components/PassagePicker";
@@ -7,7 +7,7 @@ export function NotFound() {
   return (
     <>
       <Header>
-        <PassagePicker corpus={CORPORA["greek-nt"]} />
+        <PassagePicker corpus={DEFAULT_CORPUS} />
       </Header>
       <div className="flex h-full items-center justify-center p-6 select-none">
         <div className="flex max-w-sm flex-col items-center gap-4 text-center">
@@ -19,7 +19,7 @@ export function NotFound() {
             </p>
             <p className="text-sm text-muted-foreground">Choose a passage to start reading.</p>
           </div>
-          <GoToDefaultPassageButton corpus={CORPORA["greek-nt"]} />
+          <GoToDefaultPassageButton corpus={DEFAULT_CORPUS} />
         </div>
       </div>
     </>
