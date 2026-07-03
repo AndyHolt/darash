@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { redirectToDefaultTahotPassage } from "@/texts/tahot";
+import { redirectToDefaultPassage } from "@/texts/tahot";
 
 export const Route = createFileRoute("/tahot/")({
-  beforeLoad: redirectToDefaultTahotPassage,
+  beforeLoad: redirectToDefaultPassage,
 });
