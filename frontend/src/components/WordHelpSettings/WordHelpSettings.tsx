@@ -15,8 +15,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   formatOccurrencePreset,
   formatRankPreset,
-  OCCURRENCE_PRESETS,
-  RANK_PRESETS,
+  useFrequencyConfig,
   useWordHelpSettings,
   type WordHelpMode,
 } from "./state";
@@ -118,6 +117,7 @@ function ThresholdSubmenu({ mode }: { mode: WordHelpMode }) {
 
 function OccurrencesPresets() {
   const [settings, setSettings] = useWordHelpSettings();
+  const { occurrencePresets } = useFrequencyConfig();
   const { occurrencesIsCustom: isCustom, occurrencesThreshold: t } = settings;
 
   return (
@@ -140,7 +140,7 @@ function OccurrencesPresets() {
           }
         }}
       >
-        {OCCURRENCE_PRESETS.map((n) => (
+        {occurrencePresets.map((n) => (
           <StickyRadioItem key={n} value={String(n)}>
             {formatOccurrencePreset(n)}
           </StickyRadioItem>
@@ -170,6 +170,7 @@ function OccurrencesPresets() {
 
 function RankPresets() {
   const [settings, setSettings] = useWordHelpSettings();
+  const { rankPresets } = useFrequencyConfig();
   const { rankIsCustom: isCustom, rankThreshold: t } = settings;
 
   return (
@@ -190,7 +191,7 @@ function RankPresets() {
           }
         }}
       >
-        {RANK_PRESETS.map((n) => (
+        {rankPresets.map((n) => (
           <StickyRadioItem key={n} value={String(n)}>
             {formatRankPreset(n)}
           </StickyRadioItem>
