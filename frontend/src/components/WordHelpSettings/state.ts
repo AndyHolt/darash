@@ -6,8 +6,8 @@
  *   3. Context     — the active corpus, so consumers resolve the right store.
  *   4. Persistence — localStorage read/write, with defensive coercion of stored JSON.
  *   5. Store       — one useSyncExternalStore-backed store per corpus + the hook.
- * Parts 2, 4, and 5 are all keyed by CorpusId (thresholds are corpus-relative;
- * see FrequencyConfig).
+ * Parts 2, 4, and 5 are all keyed by CorpusId (occurrence thresholds are
+ * corpus-relative; rank tiers are shared — see FREQUENCY_CONFIG).
  */
 
 import { createContext, useContext, useSyncExternalStore } from "react";
@@ -59,10 +59,19 @@ export interface FrequencyConfig {
   defaults: WordHelpSettingsState;
 }
 
+// Vocabulary rank is already corpus-relative — rank N means "the N-th most
+// common lemma in this corpus" — so the same rank tiers describe comparable
+// learning progress in either corpus (reaching the top 500 is a similar step in
+// Greek or Hebrew, and both distributions are steeply Zipfian). Hence rank
+// presets are shared. Occurrence *counts*, by contrast, scale with corpus size
+// (a word occurring ≤10× is rarer in the larger Hebrew Bible than in the GNT),
+// so occurrencePresets — and the occurrence defaults — stay per-corpus.
+const RANK_PRESETS = [100, 250, 500, 1000, 0] as const;
+
 const FREQUENCY_CONFIG = {
   "greek-nt": {
     occurrencePresets: [5, 10, 20, 50, 100, Number.POSITIVE_INFINITY],
-    rankPresets: [100, 250, 500, 1000, 0],
+    rankPresets: RANK_PRESETS,
     defaults: {
       mode: "occurrences",
       occurrencesThreshold: 10,
@@ -74,12 +83,12 @@ const FREQUENCY_CONFIG = {
   },
   "hebrew-bible": {
     occurrencePresets: [10, 25, 50, 100, 200, Number.POSITIVE_INFINITY],
-    rankPresets: [200, 500, 1000, 2000, 0],
+    rankPresets: RANK_PRESETS,
     defaults: {
       mode: "occurrences",
       occurrencesThreshold: 25,
       occurrencesIsCustom: false,
-      rankThreshold: 1000,
+      rankThreshold: 500,
       rankIsCustom: false,
       showFrequencyStats: true,
     },
