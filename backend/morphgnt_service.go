@@ -12,7 +12,6 @@ var (
 )
 
 type Repository interface {
-	WordCount(ctx context.Context) (WordCount, error)
 	FetchVerses(ctx context.Context, ref Reference) ([]Word, error)
 }
 
@@ -22,10 +21,6 @@ type MorphgntService struct {
 
 func NewMorphgntService(repo Repository) *MorphgntService {
 	return &MorphgntService{repo: repo}
-}
-
-func (s *MorphgntService) Count(ctx context.Context) (WordCount, error) {
-	return s.repo.WordCount(ctx)
 }
 
 func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {

@@ -12,10 +12,6 @@ type fakeRepo struct {
 	err         error
 }
 
-func (f *fakeRepo) WordCount(_ context.Context) (WordCount, error) {
-	return WordCount{}, nil
-}
-
 func (f *fakeRepo) FetchVerses(_ context.Context, _ Reference) ([]Word, error) {
 	f.fetchCalled = true
 	return f.words, f.err

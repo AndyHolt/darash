@@ -2,10 +2,6 @@ package main
 
 import "fmt"
 
-type WordCount struct {
-	Count int64 `json:"count"`
-}
-
 type PartOfSpeech string
 
 const (
