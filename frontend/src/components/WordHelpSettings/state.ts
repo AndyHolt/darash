@@ -1,4 +1,17 @@
-import { useSyncExternalStore } from "react";
+/**
+ * Word-help settings: which words get a help card, and how frequency is tuned.
+ * The file reads top-to-bottom as five parts:
+ *   1. Types       — the settings shape (WordHelpSettingsState) and config shape.
+ *   2. Config      — FREQUENCY_CONFIG: per-corpus presets/defaults (the tunable data).
+ *   3. Context     — the active corpus, so consumers resolve the right store.
+ *   4. Persistence — localStorage read/write, with defensive coercion of stored JSON.
+ *   5. Store       — one useSyncExternalStore-backed store per corpus + the hook.
+ * Parts 2, 4, and 5 are all keyed by CorpusId (thresholds are corpus-relative;
+ * see FrequencyConfig).
+ */
+
+import { createContext, useContext, useSyncExternalStore } from "react";
+import type { CorpusId } from "@/bible/corpora";
 
 // Structural shape interface for words which can be filtered based on frequency
 // within corpus
@@ -28,7 +41,7 @@ function isWordHelpMode(v: unknown): v is WordHelpMode {
 // enter Custom mode at all from a preset value.
 export interface WordHelpSettingsState {
   mode: WordHelpMode;
-  // Show help for lemmas occurring at most this many times in the NT.
+  // Show help for lemmas occurring at most this many times in the corpus.
   // Use Number.POSITIVE_INFINITY to mean "show help for every word".
   occurrencesThreshold: number;
   occurrencesIsCustom: boolean;
@@ -40,20 +53,54 @@ export interface WordHelpSettingsState {
   showFrequencyStats: boolean;
 }
 
-export const OCCURRENCE_PRESETS: readonly number[] = [5, 10, 20, 50, 100, Number.POSITIVE_INFINITY];
+export interface FrequencyConfig {
+  occurrencePresets: readonly number[];
+  rankPresets: readonly number[];
+  defaults: WordHelpSettingsState;
+}
 
-export const RANK_PRESETS: readonly number[] = [100, 250, 500, 1000, 0];
+const FREQUENCY_CONFIG = {
+  "greek-nt": {
+    occurrencePresets: [5, 10, 20, 50, 100, Number.POSITIVE_INFINITY],
+    rankPresets: [100, 250, 500, 1000, 0],
+    defaults: {
+      mode: "occurrences",
+      occurrencesThreshold: 10,
+      occurrencesIsCustom: false,
+      rankThreshold: 500,
+      rankIsCustom: false,
+      showFrequencyStats: true,
+    },
+  },
+  "hebrew-bible": {
+    occurrencePresets: [10, 25, 50, 100, 200, Number.POSITIVE_INFINITY],
+    rankPresets: [200, 500, 1000, 2000, 0],
+    defaults: {
+      mode: "occurrences",
+      occurrencesThreshold: 25,
+      occurrencesIsCustom: false,
+      rankThreshold: 1000,
+      rankIsCustom: false,
+      showFrequencyStats: true,
+    },
+  },
+} as const satisfies Record<CorpusId, FrequencyConfig>;
 
-export const DEFAULT_SETTINGS: WordHelpSettingsState = {
-  mode: "occurrences",
-  occurrencesThreshold: 10,
-  occurrencesIsCustom: false,
-  rankThreshold: 500,
-  rankIsCustom: false,
-  showFrequencyStats: true,
-};
+// The active corpus for word-help settings, provided once at ReaderLayout so
+// every consumer (the settings menu, the passage filter, the word-help cards)
+// resolves to the right per-corpus store without threading a prop through each.
+// Defaults to the site's default corpus for any stray consumer outside a reader.
+export const WordHelpCorpusContext = createContext<CorpusId>("greek-nt");
 
-const STORAGE_KEY = "darash.word-help-settings.v1";
+export function useFrequencyConfig(): FrequencyConfig {
+  return FREQUENCY_CONFIG[useContext(WordHelpCorpusContext)];
+}
+
+const STORAGE_KEY_BASE = "darash.word-help-settings.v1";
+
+function storageKey(corpus: CorpusId): string {
+  return `${STORAGE_KEY_BASE}.${corpus}`;
+}
 
 export function shouldShowHelp(word: FrequencyWord, settings: WordHelpSettingsState): boolean {
   switch (settings.mode) {
@@ -77,77 +124,85 @@ function coerceBool(v: unknown, fallback: boolean): boolean {
   return typeof v === "boolean" ? v : fallback;
 }
 
-function readStored(): WordHelpSettingsState {
-  if (typeof window === "undefined") return DEFAULT_SETTINGS;
+function readStored(corpus: CorpusId): WordHelpSettingsState {
+  const defaults = FREQUENCY_CONFIG[corpus].defaults;
+  if (typeof window === "undefined") return defaults;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SETTINGS;
+    const raw = window.localStorage.getItem(storageKey(corpus));
+    if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<WordHelpSettingsState>;
     return {
-      mode: isWordHelpMode(parsed.mode) ? parsed.mode : DEFAULT_SETTINGS.mode,
+      mode: isWordHelpMode(parsed.mode) ? parsed.mode : defaults.mode,
       occurrencesThreshold: coerceThreshold(
         parsed.occurrencesThreshold,
-        DEFAULT_SETTINGS.occurrencesThreshold,
+        defaults.occurrencesThreshold,
       ),
-      occurrencesIsCustom: coerceBool(
-        parsed.occurrencesIsCustom,
-        DEFAULT_SETTINGS.occurrencesIsCustom,
-      ),
-      rankThreshold: coerceThreshold(parsed.rankThreshold, DEFAULT_SETTINGS.rankThreshold),
-      rankIsCustom: coerceBool(parsed.rankIsCustom, DEFAULT_SETTINGS.rankIsCustom),
-      showFrequencyStats: coerceBool(
-        parsed.showFrequencyStats,
-        DEFAULT_SETTINGS.showFrequencyStats,
-      ),
+      occurrencesIsCustom: coerceBool(parsed.occurrencesIsCustom, defaults.occurrencesIsCustom),
+      rankThreshold: coerceThreshold(parsed.rankThreshold, defaults.rankThreshold),
+      rankIsCustom: coerceBool(parsed.rankIsCustom, defaults.rankIsCustom),
+      showFrequencyStats: coerceBool(parsed.showFrequencyStats, defaults.showFrequencyStats),
     };
   } catch {
-    return DEFAULT_SETTINGS;
+    return defaults;
   }
 }
 
-// Single shared store so every consumer (the menu, the passage view, future
-// consumers) sees the same object reference. Without this, each useState
-// instance would diverge and changes from the menu wouldn't propagate to the
-// passage's filter until the route remounted.
-let currentSettings: WordHelpSettingsState = readStored();
-const listeners = new Set<() => void>();
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-  };
+// One store per corpus, created lazily. Every consumer of a given corpus shares
+// its store's object reference (so changes from the menu propagate to the
+// passage filter immediately); different corpora keep independent settings and
+// persist to independent localStorage keys.
+interface Store {
+  getSnapshot: () => WordHelpSettingsState;
+  subscribe: (listener: () => void) => () => void;
+  setSettings: (next: WordHelpSettingsState) => void;
 }
 
-function getSnapshot(): WordHelpSettingsState {
-  return currentSettings;
-}
+const stores = new Map<CorpusId, Store>();
 
-function persist(next: WordHelpSettingsState): void {
+function persist(corpus: CorpusId, next: WordHelpSettingsState): void {
   try {
     // JSON.stringify converts Infinity → null; replace with a sentinel string
     // that readStored knows how to coerce back to Infinity.
     const payload = JSON.stringify(next, (_, v) =>
       v === Number.POSITIVE_INFINITY ? "Infinity" : v,
     );
-    window.localStorage.setItem(STORAGE_KEY, payload);
+    window.localStorage.setItem(storageKey(corpus), payload);
   } catch {
     // ignore quota / private-mode failures
   }
 }
 
-function setSettings(next: WordHelpSettingsState): void {
-  currentSettings = next;
-  persist(next);
-  for (const listener of listeners) listener();
+function storeFor(corpus: CorpusId): Store {
+  const existing = stores.get(corpus);
+  if (existing) return existing;
+
+  let currentSettings = readStored(corpus);
+  const listeners = new Set<() => void>();
+  const store: Store = {
+    getSnapshot: () => currentSettings,
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    setSettings: (next) => {
+      currentSettings = next;
+      persist(corpus, next);
+      for (const listener of listeners) listener();
+    },
+  };
+  stores.set(corpus, store);
+  return store;
 }
 
 export function useWordHelpSettings(): [
   WordHelpSettingsState,
   (next: WordHelpSettingsState) => void,
 ] {
-  const settings = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  return [settings, setSettings];
+  const store = storeFor(useContext(WordHelpCorpusContext));
+  const settings = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
+  return [settings, store.setSettings];
 }
 
 export function formatOccurrencePreset(n: number): string {

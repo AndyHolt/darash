@@ -5,7 +5,7 @@ import type { Reference } from "@/bible/references";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { PassagePicker } from "@/components/PassagePicker";
-import { WordHelpSettings } from "@/components/WordHelpSettings";
+import { WordHelpCorpusContext, WordHelpSettings } from "@/components/WordHelpSettings";
 
 // Shared chrome for the per-text reader routes (/sblgnt, /tahot): header with
 // the passage picker, the routed passage view, and the footer.
@@ -38,18 +38,23 @@ export function ReaderLayout<TPassage extends { reference: Reference }, TKey ext
   // the bottom — only visible when scrolled fully down, or at the bottom of
   // the viewport when content is short.
   return (
-    <div className="flex flex-col h-dvh md:h-auto md:min-h-dvh">
-      <Header rightActions={<WordHelpSettings />}>
-        <PassagePicker
-          corpus={corpus}
-          passageRef={passageRef}
-          query={{ passage, isLoading, failureCount }}
-        />
-      </Header>
-      <div className="flex-1 min-h-0">
-        <Outlet />
+    // Scope word-help settings (presets, thresholds, persisted store) to this
+    // route's corpus for every descendant: the settings menu, the passage
+    // filter, and the word-help cards.
+    <WordHelpCorpusContext value={corpus.id}>
+      <div className="flex flex-col h-dvh md:h-auto md:min-h-dvh">
+        <Header rightActions={<WordHelpSettings />}>
+          <PassagePicker
+            corpus={corpus}
+            passageRef={passageRef}
+            query={{ passage, isLoading, failureCount }}
+          />
+        </Header>
+        <div className="flex-1 min-h-0">
+          <Outlet />
+        </div>
+        <Footer className="hidden md:block" />
       </div>
-      <Footer className="hidden md:block" />
-    </div>
+    </WordHelpCorpusContext>
   );
 }
