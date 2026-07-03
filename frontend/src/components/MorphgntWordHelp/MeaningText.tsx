@@ -1,5 +1,5 @@
 import { Fragment, type ReactNode } from "react";
-import { type MeaningSpan, parseMeaning } from "./meaning";
+import { type MeaningSpan, parseMeaning } from "@/texts/morphgnt";
 
 // The parsed meaning tree is rendered by mapping each TBESG source tag to a
 // small, named component describing what that piece of the definition *is*.

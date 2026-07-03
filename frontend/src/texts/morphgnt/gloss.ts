@@ -1,4 +1,4 @@
-import type { Word } from "@/texts/morphgnt";
+import type { Word } from "./morphgnt.types";
 
 export function glossesOf(word: Word): string[] {
   return Array.from(new Set(word.lexicon.map((l) => l.gloss)));

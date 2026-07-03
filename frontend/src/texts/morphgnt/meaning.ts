@@ -10,7 +10,7 @@
  */
 
 import { Parser } from "htmlparser2";
-import type { Word } from "@/texts/morphgnt";
+import type { Word } from "./morphgnt.types";
 
 /**
  * A meaning (single definition entry) is composed of three types of span: a

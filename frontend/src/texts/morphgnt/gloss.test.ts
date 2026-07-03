@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import type { Lexicon, Word } from "@/texts/morphgnt";
 import { formatGloss, glossesOf } from "./gloss";
+import type { Lexicon, Word } from "./morphgnt.types";
 
 function lex(gloss: string, overrides: Partial<Lexicon> = {}): Lexicon {
   return { form: "", transliteration: "", gloss, meaning: "", ...overrides };

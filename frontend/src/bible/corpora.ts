@@ -1,5 +1,5 @@
-import { DEFAULT_PASSAGE_REF } from "@/texts/morphgnt";
-import { DEFAULT_TAHOT_PASSAGE_REF } from "@/texts/tahot";
+import { DEFAULT_PASSAGE_REF as MORPHGNT_DEFAULT_PASSAGE_REF } from "@/texts/morphgnt";
+import { DEFAULT_PASSAGE_REF as TAHOT_DEFAULT_PASSAGE_REF } from "@/texts/tahot";
 import type { BookInfo } from "./books";
 import { NT_BOOKS, OT_BOOKS } from "./books";
 
@@ -30,16 +30,23 @@ export const CORPORA = {
     label: "Hebrew Bible",
     books: OT_BOOKS,
     route: "/tahot/$passageRef",
-    defaultPassageRef: DEFAULT_TAHOT_PASSAGE_REF,
+    defaultPassageRef: TAHOT_DEFAULT_PASSAGE_REF,
   },
   "greek-nt": {
     id: "greek-nt",
     label: "Greek New Testament",
     books: NT_BOOKS,
     route: "/sblgnt/$passageRef",
-    defaultPassageRef: DEFAULT_PASSAGE_REF,
+    defaultPassageRef: MORPHGNT_DEFAULT_PASSAGE_REF,
   },
 } as const satisfies Record<CorpusId, Corpus>;
 
 // Display order for the picker's corpus tabs.
 export const CORPUS_LIST = [CORPORA["hebrew-bible"], CORPORA["greek-nt"]] as const;
+
+// The corpus the app lands on when the URL implies none: the site-root redirect,
+// the 404 recovery, and the fallback scope for word-help settings. Neither
+// corpus is privileged by naming — this is the single, deliberate place the
+// landing choice is made, so repoint it here to change it.
+export const DEFAULT_CORPUS_ID = "greek-nt" satisfies CorpusId;
+export const DEFAULT_CORPUS = CORPORA[DEFAULT_CORPUS_ID];

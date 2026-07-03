@@ -11,7 +11,7 @@
  */
 
 import { createContext, useContext, useSyncExternalStore } from "react";
-import type { CorpusId } from "@/bible/corpora";
+import { type CorpusId, DEFAULT_CORPUS_ID } from "@/bible/corpora";
 
 // Structural shape interface for words which can be filtered based on frequency
 // within corpus
@@ -99,7 +99,7 @@ const FREQUENCY_CONFIG = {
 // every consumer (the settings menu, the passage filter, the word-help cards)
 // resolves to the right per-corpus store without threading a prop through each.
 // Defaults to the site's default corpus for any stray consumer outside a reader.
-export const WordHelpCorpusContext = createContext<CorpusId>("greek-nt");
+export const WordHelpCorpusContext = createContext<CorpusId>(DEFAULT_CORPUS_ID);
 
 export function useFrequencyConfig(): FrequencyConfig {
   return FREQUENCY_CONFIG[useContext(WordHelpCorpusContext)];
