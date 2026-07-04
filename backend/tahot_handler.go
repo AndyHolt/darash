@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
+	"time"
 )
 
 type TahotHandler struct {
@@ -20,7 +22,10 @@ func (h *TahotHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	passage, err := h.service.FetchVerses(r.Context(), ref)
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+
+	passage, err := h.service.FetchVerses(ctx, ref)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrNotOldTestament):
