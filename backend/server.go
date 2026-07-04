@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"errors"
+	"log"
 	"net/http"
 	"time"
 )
@@ -17,7 +20,10 @@ func NewServer(m *MorphgntService, t *TahotService) *Server {
 	}
 }
 
-func (s *Server) ListenAndServe(addr string) error {
+// Run starts the HTTP server and blocks until it stops. When ctx is cancelled
+// (e.g. on SIGTERM) the server is shut down gracefully, draining in-flight
+// requests before returning. A clean shutdown is reported as a nil error.
+func (s *Server) Run(ctx context.Context, addr string) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -34,5 +40,19 @@ func (s *Server) ListenAndServe(addr string) error {
 		IdleTimeout:       60 * time.Second,
 		MaxHeaderBytes:    1 << 20,
 	}
-	return srv.ListenAndServe()
+
+	shutdownErr := make(chan error, 1)
+	go func() {
+		<-ctx.Done()
+		log.Println("shutting down server")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		shutdownErr <- srv.Shutdown(shutdownCtx)
+	}()
+
+	log.Printf("server listening on %s", addr)
+	if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return err
+	}
+	return <-shutdownErr
 }

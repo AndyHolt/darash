@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 func main() {
@@ -39,7 +41,10 @@ func main() {
 		connConfig.Password = os.Getenv("DB_PASSWORD")
 	}
 
-	store, err := NewPgStore(context.Background(), connConfig)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	store, err := NewPgStore(ctx, connConfig)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create db connection pool: %v\n", err)
 		os.Exit(1)
@@ -50,5 +55,7 @@ func main() {
 	tahotService := NewTahotService(store)
 
 	srv := NewServer(morphgntService, tahotService)
-	log.Fatal(srv.ListenAndServe(":" + port))
+	if err := srv.Run(ctx, ":"+port); err != nil {
+		log.Fatalf("server error: %v", err)
+	}
 }
