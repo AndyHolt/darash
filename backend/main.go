@@ -2,13 +2,22 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 )
 
 func main() {
+	// Structured logger; level from LOG_LEVEL (default INFO) so health-check
+	// request logs (emitted at DEBUG) are hidden unless explicitly enabled.
+	logLevel := slog.LevelInfo
+	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
+		_ = logLevel.UnmarshalText([]byte(lvl))
+	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -39,9 +48,12 @@ func main() {
 		connConfig.Password = os.Getenv("DB_PASSWORD")
 	}
 
-	store, err := NewPgStore(context.Background(), connConfig)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	store, err := NewPgStore(ctx, connConfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create db connection pool: %v\n", err)
+		slog.Error("unable to create db connection pool", "err", err)
 		os.Exit(1)
 	}
 	defer store.Close()
@@ -50,5 +62,8 @@ func main() {
 	tahotService := NewTahotService(store)
 
 	srv := NewServer(morphgntService, tahotService)
-	log.Fatal(srv.ListenAndServe(":" + port))
+	if err := srv.Run(ctx, ":"+port); err != nil {
+		slog.Error("server error", "err", err)
+		os.Exit(1)
+	}
 }
