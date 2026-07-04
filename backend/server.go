@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 )
 
 type Server struct {
@@ -23,5 +24,15 @@ func (s *Server) ListenAndServe(addr string) error {
 	})
 	mux.HandleFunc("GET /api/morphgnt/passage/{ref}", s.morphgntHandler.FetchVerses)
 	mux.HandleFunc("GET /api/tahot/passage/{ref}", s.tahotHandler.FetchVerses)
-	return http.ListenAndServe(addr, mux)
+
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           mux,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    1 << 20,
+	}
+	return srv.ListenAndServe()
 }
