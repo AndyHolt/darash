@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -55,7 +53,7 @@ func main() {
 
 	store, err := NewPgStore(ctx, connConfig)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create db connection pool: %v\n", err)
+		slog.Error("unable to create db connection pool", "err", err)
 		os.Exit(1)
 	}
 	defer store.Close()
@@ -65,6 +63,7 @@ func main() {
 
 	srv := NewServer(morphgntService, tahotService)
 	if err := srv.Run(ctx, ":"+port); err != nil {
-		log.Fatalf("server error: %v", err)
+		slog.Error("server error", "err", err)
+		os.Exit(1)
 	}
 }
