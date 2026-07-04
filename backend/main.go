@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -11,6 +12,14 @@ import (
 )
 
 func main() {
+	// Structured logger; level from LOG_LEVEL (default INFO) so health-check
+	// request logs (emitted at DEBUG) are hidden unless explicitly enabled.
+	logLevel := slog.LevelInfo
+	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
+		_ = logLevel.UnmarshalText([]byte(lvl))
+	}
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel})))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"

@@ -54,7 +54,7 @@ backend-down: _require-env
 
 backend-dev: _require-env
 	cd backend && DB_HOST=localhost DB_PORT=$$PGPORT DB_NAME=$$PGDATABASE \
-		DB_USER=$$PGUSER DB_PASSWORD=$$PGPASSWORD DB_SSLMODE=disable air
+		DB_USER=$$PGUSER DB_PASSWORD=$$PGPASSWORD DB_SSLMODE=disable LOG_LEVEL=debug air
 
 backend-tests:
 	cd backend && go test ./...
