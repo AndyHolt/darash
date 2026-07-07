@@ -37,7 +37,7 @@ func TestTahotFetchVersesEmptyResultReturnsError(t *testing.T) {
 	svc := NewTahotService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
-	if !errors.Is(err, ErrNoWordsFound) {
+	if !errors.Is(err, ref.ErrNoWordsFound) {
 		t.Fatalf("err = %v, want ErrNoWordsFound", err)
 	}
 }

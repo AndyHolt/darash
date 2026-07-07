@@ -8,10 +8,7 @@ import (
 	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
-var (
-	ErrNotNewTestament = errors.New("reference must be in the New Testament")
-	ErrNoWordsFound    = errors.New("no words found for reference")
-)
+var ErrNotNewTestament = errors.New("reference must be in the New Testament")
 
 type Repository interface {
 	FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error)
@@ -34,7 +31,7 @@ func (s *MorphgntService) FetchVerses(ctx context.Context, r ref.Reference) (Pas
 		return Passage{}, fmt.Errorf("fetch passage: %w", err)
 	}
 	if len(words) == 0 {
-		return Passage{}, ErrNoWordsFound
+		return Passage{}, ref.ErrNoWordsFound
 	}
 	return Passage{
 		Reference:  r,

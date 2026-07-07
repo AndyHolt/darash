@@ -32,7 +32,7 @@ func (h *TahotHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case errors.Is(err, ErrNotOldTestament):
 			http.Error(w, err.Error(), http.StatusBadRequest)
-		case errors.Is(err, ErrNoWordsFound):
+		case errors.Is(err, ref.ErrNoWordsFound):
 			http.Error(w, err.Error(), http.StatusNotFound)
 		default:
 			slog.Error("fetch tahot verses error", "ref", refstr, "err", err)

@@ -31,7 +31,7 @@ func (s *TahotService) FetchVerses(ctx context.Context, r ref.Reference) (TahotP
 		return TahotPassage{}, fmt.Errorf("fetch passage: %w", err)
 	}
 	if len(words) == 0 {
-		return TahotPassage{}, ErrNoWordsFound
+		return TahotPassage{}, ref.ErrNoWordsFound
 	}
 	return TahotPassage{
 		Reference: r,

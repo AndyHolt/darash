@@ -37,7 +37,7 @@ func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
 	svc := NewMorphgntService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
-	if !errors.Is(err, ErrNoWordsFound) {
+	if !errors.Is(err, ref.ErrNoWordsFound) {
 		t.Fatalf("err = %v, want ErrNoWordsFound", err)
 	}
 }
