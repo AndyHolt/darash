@@ -7,6 +7,8 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+
+	"github.com/AndyHolt/darash/backend/internal/postgres"
 )
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 		region = "eu-west-1"
 	}
 
-	connConfig := ConnectionConfig{
+	connConfig := postgres.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
 		Database: os.Getenv("DB_NAME"),
