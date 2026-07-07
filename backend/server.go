@@ -8,17 +8,18 @@ import (
 	"time"
 
 	"github.com/AndyHolt/darash/backend/internal/morphgnt"
+	"github.com/AndyHolt/darash/backend/internal/tahot"
 )
 
 type Server struct {
 	morphgntHandler *morphgnt.Handler
-	tahotHandler    *TahotHandler
+	tahotHandler    *tahot.Handler
 }
 
-func NewServer(m *morphgnt.Service, t *TahotService) *Server {
+func NewServer(m *morphgnt.Service, t *tahot.Service) *Server {
 	return &Server{
 		morphgntHandler: morphgnt.NewHandler(m),
-		tahotHandler:    &TahotHandler{service: t},
+		tahotHandler:    tahot.NewHandler(t),
 	}
 }
 

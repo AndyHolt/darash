@@ -1,4 +1,4 @@
-package main
+package tahot
 
 import (
 	"encoding/json"
@@ -9,34 +9,34 @@ import (
 	"testing"
 )
 
-// newTestTahotHandler wires a handler around a service backed by a fake repo.
-func newTestTahotHandler(repo *fakeTahotRepo) *TahotHandler {
-	return &TahotHandler{service: NewTahotService(repo)}
+// newTestHandler wires a handler around a service backed by a fake repo.
+func newTestHandler(repo *fakeRepo) *Handler {
+	return &Handler{service: NewService(repo)}
 }
 
-// fetchTahotVersesRequest builds a request with the {ref} path value populated,
+// fetchVersesRequest builds a request with the {ref} path value populated,
 // since we bypass the mux in handler tests.
-func fetchTahotVersesRequest(ref string) *http.Request {
+func fetchVersesRequest(ref string) *http.Request {
 	req := httptest.NewRequest(http.MethodGet, "/api/tahot/passage/"+ref, nil)
 	req.SetPathValue("ref", ref)
 	return req
 }
 
-func TestFetchTahotVersesHandlerSuccess(t *testing.T) {
+func TestFetchVersesHandlerSuccess(t *testing.T) {
 	gloss := "in"
-	repo := &fakeTahotRepo{words: []TahotWord{
+	repo := &fakeRepo{words: []Word{
 		{
 			Book: "Genesis", Chapter: 1, Verse: 1, WordIndex: "01",
 			Hebrew: "בְּ/רֵאשִׁית", Translation: "in/ beginning",
-			Segments: []TahotWordSegment{
-				{SegmentIndex: 0, Kind: TahotSegmentKindPrefix, Hebrew: "בְּ", Gloss: &gloss},
+			Segments: []WordSegment{
+				{SegmentIndex: 0, Kind: SegmentKindPrefix, Hebrew: "בְּ", Gloss: &gloss},
 			},
 		},
 	}}
-	h := newTestTahotHandler(repo)
+	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()
-	h.FetchVerses(w, fetchTahotVersesRequest("Gen.1.1"))
+	h.FetchVerses(w, fetchVersesRequest("Gen.1.1"))
 
 	if w.Code != http.StatusOK {
 		t.Fatalf("status = %d, want 200; body: %s", w.Code, w.Body.String())
@@ -67,27 +67,27 @@ func TestFetchTahotVersesHandlerSuccess(t *testing.T) {
 	}
 }
 
-func TestFetchTahotVersesHandlerInvalidReferenceReturns400(t *testing.T) {
-	repo := &fakeTahotRepo{}
-	h := newTestTahotHandler(repo)
+func TestFetchVersesHandlerInvalidReferenceReturns400(t *testing.T) {
+	repo := &fakeRepo{}
+	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()
-	h.FetchVerses(w, fetchTahotVersesRequest("Nonsense.1.1"))
+	h.FetchVerses(w, fetchVersesRequest("Nonsense.1.1"))
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("status = %d, want 400; body: %s", w.Code, w.Body.String())
 	}
 	if repo.fetchCalled {
-		t.Error("repo.FetchTahotVerses called for unparseable reference")
+		t.Error("repo.FetchVerses called for unparseable reference")
 	}
 }
 
-func TestFetchTahotVersesHandlerNewTestamentReturns400(t *testing.T) {
-	repo := &fakeTahotRepo{}
-	h := newTestTahotHandler(repo)
+func TestFetchVersesHandlerNewTestamentReturns400(t *testing.T) {
+	repo := &fakeRepo{}
+	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()
-	h.FetchVerses(w, fetchTahotVersesRequest("John.1.1"))
+	h.FetchVerses(w, fetchVersesRequest("John.1.1"))
 
 	if w.Code != http.StatusBadRequest {
 		t.Errorf("status = %d, want 400; body: %s", w.Code, w.Body.String())
@@ -96,28 +96,28 @@ func TestFetchTahotVersesHandlerNewTestamentReturns400(t *testing.T) {
 		t.Errorf("body should mention Old Testament, got %q", w.Body.String())
 	}
 	if repo.fetchCalled {
-		t.Error("repo.FetchTahotVerses called for NT reference")
+		t.Error("repo.FetchVerses called for NT reference")
 	}
 }
 
-func TestFetchTahotVersesHandlerNoWordsReturns404(t *testing.T) {
-	repo := &fakeTahotRepo{words: []TahotWord{}}
-	h := newTestTahotHandler(repo)
+func TestFetchVersesHandlerNoWordsReturns404(t *testing.T) {
+	repo := &fakeRepo{words: []Word{}}
+	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()
-	h.FetchVerses(w, fetchTahotVersesRequest("Gen.1.1"))
+	h.FetchVerses(w, fetchVersesRequest("Gen.1.1"))
 
 	if w.Code != http.StatusNotFound {
 		t.Errorf("status = %d, want 404; body: %s", w.Code, w.Body.String())
 	}
 }
 
-func TestFetchTahotVersesHandlerRepoErrorReturns500(t *testing.T) {
-	repo := &fakeTahotRepo{err: errors.New("db connection lost")}
-	h := newTestTahotHandler(repo)
+func TestFetchVersesHandlerRepoErrorReturns500(t *testing.T) {
+	repo := &fakeRepo{err: errors.New("db connection lost")}
+	h := newTestHandler(repo)
 
 	w := httptest.NewRecorder()
-	h.FetchVerses(w, fetchTahotVersesRequest("Gen.1.1"))
+	h.FetchVerses(w, fetchVersesRequest("Gen.1.1"))
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("status = %d, want 500; body: %s", w.Code, w.Body.String())
