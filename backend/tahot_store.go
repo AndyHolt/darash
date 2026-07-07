@@ -6,7 +6,16 @@ import (
 
 	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type tahotStore struct {
+	db *pgxpool.Pool
+}
+
+func newTahotStore(pool *pgxpool.Pool) *tahotStore {
+	return &tahotStore{db: pool}
+}
 
 // tahotVersesSelect aggregates each word's morpheme segments into a jsonb array
 // (mirroring the lexicon aggregation in versesSelect). GROUP BY w.id alone is
@@ -50,7 +59,7 @@ const tahotVersesSelect = `
 	GROUP BY w.id
 	ORDER BY w.id`
 
-func (p *PgStore) FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error) {
+func (p *tahotStore) FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error) {
 	where, args := ref.VersesFilter(r)
 	query := fmt.Sprintf(tahotVersesSelect, where)
 	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))

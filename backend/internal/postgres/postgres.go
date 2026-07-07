@@ -1,4 +1,9 @@
-package main
+// Package postgres builds a pgx connection pool from environment-derived
+// configuration. It owns TLS-mode selection (including the RDS CA bundle used
+// for verify-full) and optional IAM auth-token minting, but has no knowledge of
+// the application's domain tables — callers wrap the returned *pgxpool.Pool in
+// their own stores.
+package postgres
 
 import (
 	"context"
@@ -16,7 +21,8 @@ import (
 
 const rdsCACertPath = "/etc/ssl/certs/rds-ca.pem"
 
-type ConnectionConfig struct {
+// Config holds the connection parameters for the Postgres pool.
+type Config struct {
 	Host     string
 	Port     string
 	Database string
@@ -27,7 +33,7 @@ type ConnectionConfig struct {
 	Region   string
 }
 
-func (c ConnectionConfig) Config(ctx context.Context) (*pgxpool.Config, error) {
+func (c Config) poolConfig(ctx context.Context) (*pgxpool.Config, error) {
 	config, err := pgxpool.ParseConfig("")
 	if err != nil {
 		return nil, fmt.Errorf("parse pool config: %w", err)
@@ -84,12 +90,10 @@ func (c ConnectionConfig) Config(ctx context.Context) (*pgxpool.Config, error) {
 	return config, nil
 }
 
-type PgStore struct {
-	db *pgxpool.Pool
-}
-
-func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
-	config, err := cfg.Config(ctx)
+// NewPool builds the pool from cfg, opens it, and pings to verify connectivity.
+// The caller owns the returned pool and is responsible for closing it.
+func NewPool(ctx context.Context, cfg Config) (*pgxpool.Pool, error) {
+	config, err := cfg.poolConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("connection config: %w", err)
 	}
@@ -104,9 +108,5 @@ func NewPgStore(ctx context.Context, cfg ConnectionConfig) (*PgStore, error) {
 		return nil, fmt.Errorf("ping db: %w", err)
 	}
 
-	return &PgStore{db: dbpool}, nil
-}
-
-func (p *PgStore) Close() {
-	p.db.Close()
+	return dbpool, nil
 }
