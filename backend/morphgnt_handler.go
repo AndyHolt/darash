@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
 type MorphgntHandler struct {
@@ -15,7 +17,7 @@ type MorphgntHandler struct {
 
 func (h *MorphgntHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 	refstr := r.PathValue("ref")
-	ref, err := ParseRefString(refstr)
+	reference, err := ref.ParseRefString(refstr)
 	if err != nil {
 		slog.Warn("fetch verses reference parse error", "ref", refstr, "err", err)
 		http.Error(w, "invalid passage reference", http.StatusBadRequest)
@@ -25,12 +27,12 @@ func (h *MorphgntHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
 
-	passage, err := h.service.FetchVerses(ctx, ref)
+	passage, err := h.service.FetchVerses(ctx, reference)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrNotNewTestament):
 			http.Error(w, err.Error(), http.StatusBadRequest)
-		case errors.Is(err, ErrNoWordsFound):
+		case errors.Is(err, ref.ErrNoWordsFound):
 			http.Error(w, err.Error(), http.StatusNotFound)
 		default:
 			slog.Error("fetch verses error", "ref", refstr, "err", err)

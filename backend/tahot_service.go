@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
 var ErrNotOldTestament = errors.New("reference must be in the Old Testament")
 
 type TahotRepository interface {
-	FetchTahotVerses(ctx context.Context, ref Reference) ([]TahotWord, error)
+	FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error)
 }
 
 type TahotService struct {
@@ -20,19 +22,19 @@ func NewTahotService(repo TahotRepository) *TahotService {
 	return &TahotService{repo: repo}
 }
 
-func (s *TahotService) FetchVerses(ctx context.Context, ref Reference) (TahotPassage, error) {
-	if ref.Testament() != OldTestament {
+func (s *TahotService) FetchVerses(ctx context.Context, r ref.Reference) (TahotPassage, error) {
+	if r.Testament() != ref.OldTestament {
 		return TahotPassage{}, ErrNotOldTestament
 	}
-	words, err := s.repo.FetchTahotVerses(ctx, ref)
+	words, err := s.repo.FetchTahotVerses(ctx, r)
 	if err != nil {
 		return TahotPassage{}, fmt.Errorf("fetch passage: %w", err)
 	}
 	if len(words) == 0 {
-		return TahotPassage{}, ErrNoWordsFound
+		return TahotPassage{}, ref.ErrNoWordsFound
 	}
 	return TahotPassage{
-		Reference: ref,
+		Reference: r,
 		Verses:    groupVerses(words),
 	}, nil
 }

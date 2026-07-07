@@ -4,15 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
-var (
-	ErrNotNewTestament = errors.New("reference must be in the New Testament")
-	ErrNoWordsFound    = errors.New("no words found for reference")
-)
+var ErrNotNewTestament = errors.New("reference must be in the New Testament")
 
 type Repository interface {
-	FetchVerses(ctx context.Context, ref Reference) ([]Word, error)
+	FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error)
 }
 
 type MorphgntService struct {
@@ -23,19 +22,19 @@ func NewMorphgntService(repo Repository) *MorphgntService {
 	return &MorphgntService{repo: repo}
 }
 
-func (s *MorphgntService) FetchVerses(ctx context.Context, ref Reference) (Passage, error) {
-	if ref.Testament() != NewTestament {
+func (s *MorphgntService) FetchVerses(ctx context.Context, r ref.Reference) (Passage, error) {
+	if r.Testament() != ref.NewTestament {
 		return Passage{}, ErrNotNewTestament
 	}
-	words, err := s.repo.FetchVerses(ctx, ref)
+	words, err := s.repo.FetchVerses(ctx, r)
 	if err != nil {
 		return Passage{}, fmt.Errorf("fetch passage: %w", err)
 	}
 	if len(words) == 0 {
-		return Passage{}, ErrNoWordsFound
+		return Passage{}, ref.ErrNoWordsFound
 	}
 	return Passage{
-		Reference:  ref,
+		Reference:  r,
 		Paragraphs: groupParagraphs(words),
 	}, nil
 }
