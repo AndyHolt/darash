@@ -1,4 +1,4 @@
-package main
+package morphgnt
 
 import (
 	"context"
@@ -14,15 +14,15 @@ type Repository interface {
 	FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error)
 }
 
-type MorphgntService struct {
+type Service struct {
 	repo Repository
 }
 
-func NewMorphgntService(repo Repository) *MorphgntService {
-	return &MorphgntService{repo: repo}
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
 }
 
-func (s *MorphgntService) FetchVerses(ctx context.Context, r ref.Reference) (Passage, error) {
+func (s *Service) FetchVerses(ctx context.Context, r ref.Reference) (Passage, error) {
 	if r.Testament() != ref.NewTestament {
 		return Passage{}, ErrNotNewTestament
 	}

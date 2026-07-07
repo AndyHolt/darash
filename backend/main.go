@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/AndyHolt/darash/backend/internal/morphgnt"
 	"github.com/AndyHolt/darash/backend/internal/postgres"
 )
 
@@ -60,7 +61,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	morphgntService := NewMorphgntService(newMorphgntStore(pool))
+	morphgntService := morphgnt.NewService(morphgnt.NewStore(pool))
 	tahotService := NewTahotService(newTahotStore(pool))
 
 	srv := NewServer(morphgntService, tahotService)

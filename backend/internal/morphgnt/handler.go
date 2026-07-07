@@ -1,4 +1,4 @@
-package main
+package morphgnt
 
 import (
 	"context"
@@ -11,11 +11,15 @@ import (
 	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
-type MorphgntHandler struct {
-	service *MorphgntService
+type Handler struct {
+	service *Service
 }
 
-func (h *MorphgntHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
+func NewHandler(service *Service) *Handler {
+	return &Handler{service: service}
+}
+
+func (h *Handler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 	refstr := r.PathValue("ref")
 	reference, err := ref.ParseRefString(refstr)
 	if err != nil {

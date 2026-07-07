@@ -1,4 +1,4 @@
-package main
+package morphgnt
 
 import (
 	"context"
@@ -9,12 +9,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type morphgntStore struct {
+type Store struct {
 	db *pgxpool.Pool
 }
 
-func newMorphgntStore(pool *pgxpool.Pool) *morphgntStore {
-	return &morphgntStore{db: pool}
+func NewStore(pool *pgxpool.Pool) *Store {
+	return &Store{db: pool}
 }
 
 const versesSelect = `
@@ -47,7 +47,7 @@ const versesSelect = `
 		m.paragraph_id
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
-func (p *morphgntStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
+func (p *Store) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
 	where, args := ref.VersesFilter(r)
 	query := fmt.Sprintf(versesSelect, where)
 	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))
