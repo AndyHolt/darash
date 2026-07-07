@@ -6,7 +6,16 @@ import (
 
 	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type morphgntStore struct {
+	db *pgxpool.Pool
+}
+
+func newMorphgntStore(pool *pgxpool.Pool) *morphgntStore {
+	return &morphgntStore{db: pool}
+}
 
 const versesSelect = `
 	SELECT m.book, m.chapter, m.verse, m.word_index, m.part_of_speech,
@@ -38,7 +47,7 @@ const versesSelect = `
 		m.paragraph_id
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
-func (p *PgStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
+func (p *morphgntStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
 	where, args := ref.VersesFilter(r)
 	query := fmt.Sprintf(versesSelect, where)
 	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))

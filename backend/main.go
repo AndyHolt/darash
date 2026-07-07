@@ -53,15 +53,15 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	store, err := NewPgStore(ctx, connConfig)
+	pool, err := postgres.NewPool(ctx, connConfig)
 	if err != nil {
 		slog.Error("unable to create db connection pool", "err", err)
 		os.Exit(1)
 	}
-	defer store.Close()
+	defer pool.Close()
 
-	morphgntService := NewMorphgntService(store)
-	tahotService := NewTahotService(store)
+	morphgntService := NewMorphgntService(newMorphgntStore(pool))
+	tahotService := NewTahotService(newTahotStore(pool))
 
 	srv := NewServer(morphgntService, tahotService)
 	if err := srv.Run(ctx, ":"+port); err != nil {
