@@ -51,9 +51,9 @@ const tahotVersesSelect = `
 	ORDER BY w.id`
 
 func (p *PgStore) FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error) {
-	where, args := versesFilter(r)
+	where, args := ref.VersesFilter(r)
 	query := fmt.Sprintf(tahotVersesSelect, where)
-	rows, err := p.db.Query(ctx, query, args)
+	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))
 	if err != nil {
 		return nil, fmt.Errorf("query tahot verses: %w", err)
 	}

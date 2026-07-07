@@ -1,4 +1,4 @@
-package main
+package ref
 
 import (
 	"reflect"
@@ -6,9 +6,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-
-	"github.com/AndyHolt/darash/backend/internal/bible/ref"
-	"github.com/jackc/pgx/v5"
 )
 
 // placeholderRE matches @name placeholders in SQL fragments.
@@ -30,9 +27,9 @@ func placeholdersIn(sql string) []string {
 }
 
 func TestVersesFilterSingleVerse(t *testing.T) {
-	where, args := versesFilter(ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
+	where, args := VersesFilter(VerseReference{Book: John, Chapter: 3, Verse: 16})
 
-	wantArgs := pgx.NamedArgs{
+	wantArgs := map[string]any{
 		"book":    "John",
 		"chapter": 3,
 		"verse":   16,
@@ -48,13 +45,13 @@ func TestVersesFilterSingleVerse(t *testing.T) {
 }
 
 func TestVersesFilterRangeSameChapter(t *testing.T) {
-	r := ref.RangeReference{
-		Start: ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 1},
-		End:   ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 8},
+	r := RangeReference{
+		Start: VerseReference{Book: Matthew, Chapter: 12, Verse: 1},
+		End:   VerseReference{Book: Matthew, Chapter: 12, Verse: 8},
 	}
-	where, args := versesFilter(r)
+	where, args := VersesFilter(r)
 
-	wantArgs := pgx.NamedArgs{
+	wantArgs := map[string]any{
 		"book":        "Matthew",
 		"chapter":     12,
 		"start_verse": 1,
@@ -69,13 +66,13 @@ func TestVersesFilterRangeSameChapter(t *testing.T) {
 }
 
 func TestVersesFilterRangeMultiChapter(t *testing.T) {
-	r := ref.RangeReference{
-		Start: ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16},
-		End:   ref.VerseReference{Book: ref.John, Chapter: 4, Verse: 5},
+	r := RangeReference{
+		Start: VerseReference{Book: John, Chapter: 3, Verse: 16},
+		End:   VerseReference{Book: John, Chapter: 4, Verse: 5},
 	}
-	where, args := versesFilter(r)
+	where, args := VersesFilter(r)
 
-	wantArgs := pgx.NamedArgs{
+	wantArgs := map[string]any{
 		"book":          "John",
 		"start_chapter": 3,
 		"start_verse":   16,
@@ -100,28 +97,28 @@ func TestVersesFilterRangeMultiChapter(t *testing.T) {
 }
 
 // TestVersesFilterPlaceholdersMatchArgs guards against typos: every @name in
-// the WHERE fragment must have a matching key in NamedArgs, and vice versa.
+// the WHERE fragment must have a matching key in the args map, and vice versa.
 // A mismatch would make pgx fail at runtime with "parameter not found" or
 // silently leave a placeholder unbound — neither of which is reachable
 // without a DB. This test catches both at unit-test time.
 func TestVersesFilterPlaceholdersMatchArgs(t *testing.T) {
 	tests := []struct {
 		name      string
-		reference ref.Reference
+		reference Reference
 	}{
-		{"verse", ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16}},
-		{"range same chapter", ref.RangeReference{
-			Start: ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 1},
-			End:   ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 8},
+		{"verse", VerseReference{Book: John, Chapter: 3, Verse: 16}},
+		{"range same chapter", RangeReference{
+			Start: VerseReference{Book: Matthew, Chapter: 12, Verse: 1},
+			End:   VerseReference{Book: Matthew, Chapter: 12, Verse: 8},
 		}},
-		{"range multi chapter", ref.RangeReference{
-			Start: ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16},
-			End:   ref.VerseReference{Book: ref.John, Chapter: 4, Verse: 5},
+		{"range multi chapter", RangeReference{
+			Start: VerseReference{Book: John, Chapter: 3, Verse: 16},
+			End:   VerseReference{Book: John, Chapter: 4, Verse: 5},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			where, args := versesFilter(tt.reference)
+			where, args := VersesFilter(tt.reference)
 			placeholders := placeholdersIn(where)
 
 			argKeys := make([]string, 0, len(args))

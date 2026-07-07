@@ -38,46 +38,10 @@ const versesSelect = `
 		m.paragraph_id
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
-func versesFilter(reference ref.Reference) (where string, args pgx.NamedArgs) {
-	switch r := reference.(type) {
-	case ref.VerseReference:
-		return "book = @book AND chapter = @chapter AND verse = @verse",
-			pgx.NamedArgs{
-				"book":    r.Book.String(),
-				"chapter": r.Chapter,
-				"verse":   r.Verse,
-			}
-
-	case ref.RangeReference:
-		if r.Start.Chapter == r.End.Chapter {
-			return "book = @book AND chapter = @chapter AND verse BETWEEN @start_verse AND @end_verse",
-				pgx.NamedArgs{
-					"book":        r.Start.Book.String(),
-					"chapter":     r.Start.Chapter,
-					"start_verse": r.Start.Verse,
-					"end_verse":   r.End.Verse,
-				}
-		}
-		return `book = @book AND (
-				   (chapter = @start_chapter AND verse >= @start_verse)
-				OR (chapter > @start_chapter AND chapter < @end_chapter)
-				OR (chapter = @end_chapter AND verse <= @end_verse)
-				)`,
-			pgx.NamedArgs{
-				"book":          r.Start.Book.String(),
-				"start_chapter": r.Start.Chapter,
-				"start_verse":   r.Start.Verse,
-				"end_chapter":   r.End.Chapter,
-				"end_verse":     r.End.Verse,
-			}
-	}
-	panic(fmt.Sprintf("unhandled Reference type: %T", reference))
-}
-
 func (p *PgStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
-	where, args := versesFilter(r)
+	where, args := ref.VersesFilter(r)
 	query := fmt.Sprintf(versesSelect, where)
-	rows, err := p.db.Query(ctx, query, args)
+	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))
 	if err != nil {
 		return nil, fmt.Errorf("query verses: %w", err)
 	}
