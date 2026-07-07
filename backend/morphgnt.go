@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
+)
 
 type PartOfSpeech string
 
@@ -278,6 +282,6 @@ type Paragraph struct {
 }
 
 type Passage struct {
-	Reference  Reference   `json:"reference"`
-	Paragraphs []Paragraph `json:"paragraphs"`
+	Reference  ref.Reference `json:"reference"`
+	Paragraphs []Paragraph   `json:"paragraphs"`
 }

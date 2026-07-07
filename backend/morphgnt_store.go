@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -37,9 +38,9 @@ const versesSelect = `
 		m.paragraph_id
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
-func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
-	switch r := ref.(type) {
-	case VerseReference:
+func versesFilter(reference ref.Reference) (where string, args pgx.NamedArgs) {
+	switch r := reference.(type) {
+	case ref.VerseReference:
 		return "book = @book AND chapter = @chapter AND verse = @verse",
 			pgx.NamedArgs{
 				"book":    r.Book.String(),
@@ -47,7 +48,7 @@ func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
 				"verse":   r.Verse,
 			}
 
-	case RangeReference:
+	case ref.RangeReference:
 		if r.Start.Chapter == r.End.Chapter {
 			return "book = @book AND chapter = @chapter AND verse BETWEEN @start_verse AND @end_verse",
 				pgx.NamedArgs{
@@ -70,11 +71,11 @@ func versesFilter(ref Reference) (where string, args pgx.NamedArgs) {
 				"end_verse":     r.End.Verse,
 			}
 	}
-	panic(fmt.Sprintf("unhandled Reference type: %T", ref))
+	panic(fmt.Sprintf("unhandled Reference type: %T", reference))
 }
 
-func (p *PgStore) FetchVerses(ctx context.Context, ref Reference) ([]Word, error) {
-	where, args := versesFilter(ref)
+func (p *PgStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
+	where, args := versesFilter(r)
 	query := fmt.Sprintf(versesSelect, where)
 	rows, err := p.db.Query(ctx, query, args)
 	if err != nil {

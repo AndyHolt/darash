@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"testing"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
 type fakeTahotRepo struct {
@@ -12,7 +14,7 @@ type fakeTahotRepo struct {
 	err         error
 }
 
-func (f *fakeTahotRepo) FetchTahotVerses(_ context.Context, _ Reference) ([]TahotWord, error) {
+func (f *fakeTahotRepo) FetchTahotVerses(_ context.Context, _ ref.Reference) ([]TahotWord, error) {
 	f.fetchCalled = true
 	return f.words, f.err
 }
@@ -21,7 +23,7 @@ func TestTahotFetchVersesRejectsNewTestament(t *testing.T) {
 	repo := &fakeTahotRepo{}
 	svc := NewTahotService(repo)
 
-	_, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
+	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if !errors.Is(err, ErrNotOldTestament) {
 		t.Fatalf("err = %v, want ErrNotOldTestament", err)
 	}
@@ -34,7 +36,7 @@ func TestTahotFetchVersesEmptyResultReturnsError(t *testing.T) {
 	repo := &fakeTahotRepo{words: []TahotWord{}}
 	svc := NewTahotService(repo)
 
-	_, err := svc.FetchVerses(context.Background(), VerseReference{Genesis, 1, 1})
+	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if !errors.Is(err, ErrNoWordsFound) {
 		t.Fatalf("err = %v, want ErrNoWordsFound", err)
 	}
@@ -46,7 +48,7 @@ func TestTahotFetchVersesAcceptsOldTestament(t *testing.T) {
 	}}
 	svc := NewTahotService(repo)
 
-	got, err := svc.FetchVerses(context.Background(), VerseReference{Genesis, 1, 1})
+	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -70,7 +72,7 @@ func TestTahotFetchVersesGroupsVerses(t *testing.T) {
 	repo := &fakeTahotRepo{words: words}
 	svc := NewTahotService(repo)
 
-	got, err := svc.FetchVerses(context.Background(), VerseReference{Genesis, 1, 1})
+	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

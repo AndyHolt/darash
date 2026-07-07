@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -29,7 +30,7 @@ func placeholdersIn(sql string) []string {
 }
 
 func TestVersesFilterSingleVerse(t *testing.T) {
-	where, args := versesFilter(VerseReference{John, 3, 16})
+	where, args := versesFilter(ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 
 	wantArgs := pgx.NamedArgs{
 		"book":    "John",
@@ -47,11 +48,11 @@ func TestVersesFilterSingleVerse(t *testing.T) {
 }
 
 func TestVersesFilterRangeSameChapter(t *testing.T) {
-	ref := RangeReference{
-		Start: VerseReference{Matthew, 12, 1},
-		End:   VerseReference{Matthew, 12, 8},
+	r := ref.RangeReference{
+		Start: ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 1},
+		End:   ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 8},
 	}
-	where, args := versesFilter(ref)
+	where, args := versesFilter(r)
 
 	wantArgs := pgx.NamedArgs{
 		"book":        "Matthew",
@@ -68,11 +69,11 @@ func TestVersesFilterRangeSameChapter(t *testing.T) {
 }
 
 func TestVersesFilterRangeMultiChapter(t *testing.T) {
-	ref := RangeReference{
-		Start: VerseReference{John, 3, 16},
-		End:   VerseReference{John, 4, 5},
+	r := ref.RangeReference{
+		Start: ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16},
+		End:   ref.VerseReference{Book: ref.John, Chapter: 4, Verse: 5},
 	}
-	where, args := versesFilter(ref)
+	where, args := versesFilter(r)
 
 	wantArgs := pgx.NamedArgs{
 		"book":          "John",
@@ -105,22 +106,22 @@ func TestVersesFilterRangeMultiChapter(t *testing.T) {
 // without a DB. This test catches both at unit-test time.
 func TestVersesFilterPlaceholdersMatchArgs(t *testing.T) {
 	tests := []struct {
-		name string
-		ref  Reference
+		name      string
+		reference ref.Reference
 	}{
-		{"verse", VerseReference{John, 3, 16}},
-		{"range same chapter", RangeReference{
-			Start: VerseReference{Matthew, 12, 1},
-			End:   VerseReference{Matthew, 12, 8},
+		{"verse", ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16}},
+		{"range same chapter", ref.RangeReference{
+			Start: ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 1},
+			End:   ref.VerseReference{Book: ref.Matthew, Chapter: 12, Verse: 8},
 		}},
-		{"range multi chapter", RangeReference{
-			Start: VerseReference{John, 3, 16},
-			End:   VerseReference{John, 4, 5},
+		{"range multi chapter", ref.RangeReference{
+			Start: ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16},
+			End:   ref.VerseReference{Book: ref.John, Chapter: 4, Verse: 5},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			where, args := versesFilter(tt.ref)
+			where, args := versesFilter(tt.reference)
 			placeholders := placeholdersIn(where)
 
 			argKeys := make([]string, 0, len(args))

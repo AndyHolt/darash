@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"testing"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
 type fakeRepo struct {
@@ -12,7 +14,7 @@ type fakeRepo struct {
 	err         error
 }
 
-func (f *fakeRepo) FetchVerses(_ context.Context, _ Reference) ([]Word, error) {
+func (f *fakeRepo) FetchVerses(_ context.Context, _ ref.Reference) ([]Word, error) {
 	f.fetchCalled = true
 	return f.words, f.err
 }
@@ -21,7 +23,7 @@ func TestFetchVersesRejectsOldTestament(t *testing.T) {
 	repo := &fakeRepo{}
 	svc := NewMorphgntService(repo)
 
-	_, err := svc.FetchVerses(context.Background(), VerseReference{Genesis, 1, 1})
+	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if !errors.Is(err, ErrNotNewTestament) {
 		t.Fatalf("err = %v, want ErrNotNewTestament", err)
 	}
@@ -34,7 +36,7 @@ func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
 	repo := &fakeRepo{words: []Word{}}
 	svc := NewMorphgntService(repo)
 
-	_, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
+	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if !errors.Is(err, ErrNoWordsFound) {
 		t.Fatalf("err = %v, want ErrNoWordsFound", err)
 	}
@@ -46,7 +48,7 @@ func TestFetchVersesAcceptsNewTestament(t *testing.T) {
 	}}
 	svc := NewMorphgntService(repo)
 
-	got, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
+	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -70,7 +72,7 @@ func TestFetchVersesGroupsParagraphs(t *testing.T) {
 	repo := &fakeRepo{words: words}
 	svc := NewMorphgntService(repo)
 
-	got, err := svc.FetchVerses(context.Background(), VerseReference{John, 3, 16})
+	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

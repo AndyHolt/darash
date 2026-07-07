@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
+)
 
 // The morphology enums below mirror the TAHOT decoders in the ingest job
 // (ingest/src/tahot/morphology.py) and follow the morphgnt.go idiom (typed
@@ -457,6 +461,6 @@ type TahotVerse struct {
 }
 
 type TahotPassage struct {
-	Reference Reference    `json:"reference"`
-	Verses    []TahotVerse `json:"verses"`
+	Reference ref.Reference `json:"reference"`
+	Verses    []TahotVerse  `json:"verses"`
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -49,8 +50,8 @@ const tahotVersesSelect = `
 	GROUP BY w.id
 	ORDER BY w.id`
 
-func (p *PgStore) FetchTahotVerses(ctx context.Context, ref Reference) ([]TahotWord, error) {
-	where, args := versesFilter(ref)
+func (p *PgStore) FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error) {
+	where, args := versesFilter(r)
 	query := fmt.Sprintf(tahotVersesSelect, where)
 	rows, err := p.db.Query(ctx, query, args)
 	if err != nil {

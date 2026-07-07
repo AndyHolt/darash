@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
 type TahotHandler struct {
@@ -15,7 +17,7 @@ type TahotHandler struct {
 
 func (h *TahotHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 	refstr := r.PathValue("ref")
-	ref, err := ParseRefString(refstr)
+	reference, err := ref.ParseRefString(refstr)
 	if err != nil {
 		slog.Warn("fetch tahot verses reference parse error", "ref", refstr, "err", err)
 		http.Error(w, "invalid passage reference", http.StatusBadRequest)
@@ -25,7 +27,7 @@ func (h *TahotHandler) FetchVerses(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
 	defer cancel()
 
-	passage, err := h.service.FetchVerses(ctx, ref)
+	passage, err := h.service.FetchVerses(ctx, reference)
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrNotOldTestament):
