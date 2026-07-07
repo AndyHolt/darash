@@ -1,4 +1,4 @@
-package main
+package morphgnt
 
 import (
 	"context"
@@ -21,7 +21,7 @@ func (f *fakeRepo) FetchVerses(_ context.Context, _ ref.Reference) ([]Word, erro
 
 func TestFetchVersesRejectsOldTestament(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewMorphgntService(repo)
+	svc := NewService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if !errors.Is(err, ErrNotNewTestament) {
@@ -34,7 +34,7 @@ func TestFetchVersesRejectsOldTestament(t *testing.T) {
 
 func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
 	repo := &fakeRepo{words: []Word{}}
-	svc := NewMorphgntService(repo)
+	svc := NewService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if !errors.Is(err, ref.ErrNoWordsFound) {
@@ -46,7 +46,7 @@ func TestFetchVersesAcceptsNewTestament(t *testing.T) {
 	repo := &fakeRepo{words: []Word{
 		{Book: "John", Chapter: 3, Verse: 16, ParagraphID: 64003},
 	}}
-	svc := NewMorphgntService(repo)
+	svc := NewService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if err != nil {
@@ -70,7 +70,7 @@ func TestFetchVersesGroupsParagraphs(t *testing.T) {
 		{Book: "John", Chapter: 3, Verse: 18, WordIndex: 1, ParagraphID: 64004, Text: "d"},
 	}
 	repo := &fakeRepo{words: words}
-	svc := NewMorphgntService(repo)
+	svc := NewService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if err != nil {

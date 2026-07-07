@@ -1,4 +1,4 @@
-package main
+package tahot
 
 import (
 	"context"
@@ -8,33 +8,33 @@ import (
 	"github.com/AndyHolt/darash/backend/internal/bible/ref"
 )
 
-type fakeTahotRepo struct {
+type fakeRepo struct {
 	fetchCalled bool
-	words       []TahotWord
+	words       []Word
 	err         error
 }
 
-func (f *fakeTahotRepo) FetchTahotVerses(_ context.Context, _ ref.Reference) ([]TahotWord, error) {
+func (f *fakeRepo) FetchVerses(_ context.Context, _ ref.Reference) ([]Word, error) {
 	f.fetchCalled = true
 	return f.words, f.err
 }
 
-func TestTahotFetchVersesRejectsNewTestament(t *testing.T) {
-	repo := &fakeTahotRepo{}
-	svc := NewTahotService(repo)
+func TestFetchVersesRejectsNewTestament(t *testing.T) {
+	repo := &fakeRepo{}
+	svc := NewService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.John, Chapter: 3, Verse: 16})
 	if !errors.Is(err, ErrNotOldTestament) {
 		t.Fatalf("err = %v, want ErrNotOldTestament", err)
 	}
 	if repo.fetchCalled {
-		t.Error("repo.FetchTahotVerses was called for NT reference; should short-circuit in service")
+		t.Error("repo.FetchVerses was called for NT reference; should short-circuit in service")
 	}
 }
 
-func TestTahotFetchVersesEmptyResultReturnsError(t *testing.T) {
-	repo := &fakeTahotRepo{words: []TahotWord{}}
-	svc := NewTahotService(repo)
+func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
+	repo := &fakeRepo{words: []Word{}}
+	svc := NewService(repo)
 
 	_, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if !errors.Is(err, ref.ErrNoWordsFound) {
@@ -42,35 +42,35 @@ func TestTahotFetchVersesEmptyResultReturnsError(t *testing.T) {
 	}
 }
 
-func TestTahotFetchVersesAcceptsOldTestament(t *testing.T) {
-	repo := &fakeTahotRepo{words: []TahotWord{
+func TestFetchVersesAcceptsOldTestament(t *testing.T) {
+	repo := &fakeRepo{words: []Word{
 		{Book: "Genesis", Chapter: 1, Verse: 1},
 	}}
-	svc := NewTahotService(repo)
+	svc := NewService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if !repo.fetchCalled {
-		t.Error("repo.FetchTahotVerses was not called for OT reference")
+		t.Error("repo.FetchVerses was not called for OT reference")
 	}
 	if len(got.Verses) != 1 || len(got.Verses[0].Words) != 1 {
 		t.Errorf("unexpected passage: %+v", got)
 	}
 }
 
-// TestTahotFetchVersesGroupsVerses verifies the service groups consecutive
-// words with the same (Chapter, Verse) into a single TahotVerse.
-func TestTahotFetchVersesGroupsVerses(t *testing.T) {
-	words := []TahotWord{
+// TestFetchVersesGroupsVerses verifies the service groups consecutive
+// words with the same (Chapter, Verse) into a single Verse.
+func TestFetchVersesGroupsVerses(t *testing.T) {
+	words := []Word{
 		{Book: "Genesis", Chapter: 1, Verse: 1, WordIndex: "01", Hebrew: "a"},
 		{Book: "Genesis", Chapter: 1, Verse: 1, WordIndex: "02", Hebrew: "b"},
 		{Book: "Genesis", Chapter: 1, Verse: 2, WordIndex: "01", Hebrew: "c"},
 		{Book: "Genesis", Chapter: 2, Verse: 1, WordIndex: "01", Hebrew: "d"},
 	}
-	repo := &fakeTahotRepo{words: words}
-	svc := NewTahotService(repo)
+	repo := &fakeRepo{words: words}
+	svc := NewService(repo)
 
 	got, err := svc.FetchVerses(context.Background(), ref.VerseReference{Book: ref.Genesis, Chapter: 1, Verse: 1})
 	if err != nil {
@@ -91,7 +91,7 @@ func TestTahotFetchVersesGroupsVerses(t *testing.T) {
 	}
 
 	// Concatenated verse words must equal the input word sequence.
-	var flat []TahotWord
+	var flat []Word
 	for _, v := range got.Verses {
 		flat = append(flat, v.Words...)
 	}

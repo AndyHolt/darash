@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/AndyHolt/darash/backend/internal/morphgnt"
 	"github.com/AndyHolt/darash/backend/internal/postgres"
+	"github.com/AndyHolt/darash/backend/internal/tahot"
 )
 
 func main() {
@@ -60,8 +62,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	morphgntService := NewMorphgntService(newMorphgntStore(pool))
-	tahotService := NewTahotService(newTahotStore(pool))
+	morphgntService := morphgnt.NewService(morphgnt.NewStore(pool))
+	tahotService := tahot.NewService(tahot.NewStore(pool))
 
 	srv := NewServer(morphgntService, tahotService)
 	if err := srv.Run(ctx, ":"+port); err != nil {

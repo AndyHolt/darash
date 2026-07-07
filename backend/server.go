@@ -6,17 +6,20 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/AndyHolt/darash/backend/internal/morphgnt"
+	"github.com/AndyHolt/darash/backend/internal/tahot"
 )
 
 type Server struct {
-	morphgntHandler *MorphgntHandler
-	tahotHandler    *TahotHandler
+	morphgntHandler *morphgnt.Handler
+	tahotHandler    *tahot.Handler
 }
 
-func NewServer(m *MorphgntService, t *TahotService) *Server {
+func NewServer(m *morphgnt.Service, t *tahot.Service) *Server {
 	return &Server{
-		morphgntHandler: &MorphgntHandler{service: m},
-		tahotHandler:    &TahotHandler{service: t},
+		morphgntHandler: morphgnt.NewHandler(m),
+		tahotHandler:    tahot.NewHandler(t),
 	}
 }
 

@@ -1,4 +1,4 @@
-package main
+package tahot
 
 import (
 	"context"
@@ -9,20 +9,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type tahotStore struct {
+type Store struct {
 	db *pgxpool.Pool
 }
 
-func newTahotStore(pool *pgxpool.Pool) *tahotStore {
-	return &tahotStore{db: pool}
+func NewStore(pool *pgxpool.Pool) *Store {
+	return &Store{db: pool}
 }
 
-// tahotVersesSelect aggregates each word's morpheme segments into a jsonb array
+// versesSelect aggregates each word's morpheme segments into a jsonb array
 // (mirroring the lexicon aggregation in versesSelect). GROUP BY w.id alone is
 // valid because id is the primary key of tahot_words, so every w.* column is
 // functionally dependent on it. Ordering is by w.id (reading order assigned at
 // load time) since word_index is TEXT and not numerically sortable.
-const tahotVersesSelect = `
+const versesSelect = `
 	SELECT w.book, w.chapter, w.verse, w.word_index, w.hebrew_ref,
 		w.text_type, w.variant_markers, w.has_meaning_variant,
 		w.hebrew, w.transliteration, w.translation, w.grammar,
@@ -59,16 +59,16 @@ const tahotVersesSelect = `
 	GROUP BY w.id
 	ORDER BY w.id`
 
-func (p *tahotStore) FetchTahotVerses(ctx context.Context, r ref.Reference) ([]TahotWord, error) {
+func (p *Store) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
 	where, args := ref.VersesFilter(r)
-	query := fmt.Sprintf(tahotVersesSelect, where)
+	query := fmt.Sprintf(versesSelect, where)
 	rows, err := p.db.Query(ctx, query, pgx.NamedArgs(args))
 	if err != nil {
 		return nil, fmt.Errorf("query tahot verses: %w", err)
 	}
-	words, err := pgx.CollectRows(rows, pgx.RowToStructByName[TahotWord])
+	words, err := pgx.CollectRows(rows, pgx.RowToStructByName[Word])
 	if err != nil {
-		return nil, fmt.Errorf("convert rows to TahotWords: %w", err)
+		return nil, fmt.Errorf("convert rows to Words: %w", err)
 	}
 	return words, nil
 }

@@ -1,4 +1,4 @@
-package main
+package morphgnt
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 )
 
 // newTestHandler wires a handler around a service backed by a fake repo.
-func newTestHandler(repo *fakeRepo) *MorphgntHandler {
-	return &MorphgntHandler{service: NewMorphgntService(repo)}
+func newTestHandler(repo *fakeRepo) *Handler {
+	return &Handler{service: NewService(repo)}
 }
 
 // fetchVersesRequest builds a request with the {ref} path value populated,
