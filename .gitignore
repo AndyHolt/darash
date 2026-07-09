@@ -11,3 +11,8 @@ terraform.tfvars
 # TAHOT source files: large (~66MB) and redistribution-restricted; downloaded
 # at ingest time from github.com/STEPBible/STEPBible-Data.
 ingest/src/tahot/data/
+
+# Local SQLite build emitted by `make ingest-run` (a rebuildable projection of
+# the corpus sources that the backend reads directly), plus its atomic-write temps.
+ingest/data.sqlite
+ingest/data.sqlite.*.tmp
