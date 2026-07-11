@@ -16,3 +16,9 @@ ingest/src/tahot/data/
 # the corpus sources that the backend reads directly), plus its atomic-write temps.
 ingest/data.sqlite
 ingest/data.sqlite.*.tmp
+
+# data.sqlite dropped into the Docker build context by the backend deploy
+# workflow (and by a local ingest run with DATA_SQLITE_PATH=backend/data.sqlite);
+# baked into the image, never committed.
+backend/data.sqlite
+backend/data.sqlite.*.tmp

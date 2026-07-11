@@ -22,6 +22,10 @@ FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=builder /rds-ca.pem /etc/ssl/certs/rds-ca.pem
 COPY --from=builder /out/backend /backend
 
+# data.sqlite is built into the backend/ context by the deploy workflow's ingest
+# step.
+COPY data.sqlite /data.sqlite
+
 USER nonroot:nonroot
 
 EXPOSE 8080
