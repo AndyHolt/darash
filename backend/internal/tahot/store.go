@@ -10,26 +10,25 @@ import (
 	"github.com/AndyHolt/darash/backend/internal/sqlite"
 )
 
-// SqliteStore is the SQLite-backed Repository, reading from the baked
-// data.sqlite. It is the dialect port of Store: the Postgres jsonb aggregation
-// becomes SQLite's json_group_array / json_object, rows are scanned manually via
-// database/sql (there is no pgx RowToStructByName), the aggregated segments
-// column is decoded from JSON text, and has_meaning_variant — stored as INTEGER
-// 0/1 because SQLite has no boolean — is scanned as an int and folded to bool.
-type SqliteStore struct {
+// Store is the SQLite-backed Repository, reading from the baked data.sqlite.
+// The segment aggregation uses SQLite's json_group_array / json_object, rows are
+// scanned manually via database/sql, the aggregated segments column is decoded
+// from JSON text, and has_meaning_variant — stored as INTEGER 0/1 because SQLite
+// has no boolean — is scanned as an int and folded to bool.
+type Store struct {
 	db *sql.DB
 }
 
-func NewSqliteStore(db *sql.DB) *SqliteStore {
-	return &SqliteStore{db: db}
+func NewStore(db *sql.DB) *Store {
+	return &Store{db: db}
 }
 
-// sqliteVersesSelect ports versesSelect to SQLite. json_group_array(json_object(
-// ...) ORDER BY s.segment_index) keeps the segments in morpheme order (SQLite
-// ≥3.44 supports ORDER BY inside an aggregate); FILTER (WHERE s.id IS NOT NULL)
-// with COALESCE(..., '[]') keeps a word with no segments at an empty array. The
-// column list and its order match scanWord.
-const sqliteVersesSelect = `
+// versesSelect aggregates each word's morpheme segments into a JSON array:
+// json_group_array(json_object(...) ORDER BY s.segment_index) keeps the segments
+// in morpheme order (SQLite ≥3.44 supports ORDER BY inside an aggregate); FILTER
+// (WHERE s.id IS NOT NULL) with COALESCE(..., '[]') keeps a word with no segments
+// at an empty array. The column list and its order match scanWord.
+const versesSelect = `
 	SELECT w.book, w.chapter, w.verse, w.word_index, w.hebrew_ref,
 		w.text_type, w.variant_markers, w.has_meaning_variant,
 		w.hebrew, w.transliteration, w.translation, w.grammar,
@@ -66,9 +65,9 @@ const sqliteVersesSelect = `
 	GROUP BY w.id
 	ORDER BY w.id`
 
-func (s *SqliteStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
+func (s *Store) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
 	where, args := ref.VersesFilter(r)
-	query := fmt.Sprintf(sqliteVersesSelect, where)
+	query := fmt.Sprintf(versesSelect, where)
 
 	rows, err := s.db.QueryContext(ctx, query, sqlite.NamedArgs(args)...)
 	if err != nil {
@@ -90,7 +89,7 @@ func (s *SqliteStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word,
 	return words, nil
 }
 
-// scanWord reads one row of sqliteVersesSelect. The nullable columns scan into
+// scanWord reads one row of versesSelect. The nullable columns scan into
 // pointer fields (NULL becomes nil); has_meaning_variant arrives as an INTEGER
 // and is folded to bool; the aggregated segments column arrives as JSON text and
 // is unmarshalled into the Segments slice.

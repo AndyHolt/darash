@@ -10,25 +10,23 @@ import (
 	"github.com/AndyHolt/darash/backend/internal/sqlite"
 )
 
-// SqliteStore is the SQLite-backed Repository, reading from the baked
-// data.sqlite. It is the dialect port of Store: the Postgres jsonb aggregation
-// becomes SQLite's json_group_array / json_object, and rows are scanned
-// manually via database/sql (there is no pgx RowToStructByName), decoding the
-// aggregated lexicon column from JSON text.
-type SqliteStore struct {
+// Store is the SQLite-backed Repository, reading from the baked data.sqlite.
+// The lexicon aggregation uses SQLite's json_group_array / json_object, and rows
+// are scanned manually via database/sql, decoding the aggregated lexicon column
+// from JSON text.
+type Store struct {
 	db *sql.DB
 }
 
-func NewSqliteStore(db *sql.DB) *SqliteStore {
-	return &SqliteStore{db: db}
+func NewStore(db *sql.DB) *Store {
+	return &Store{db: db}
 }
 
-// sqliteVersesSelect ports versesSelect to SQLite. The lexicon aggregation
-// mirrors the Postgres one: json_group_array(json_object(...)) FILTER (WHERE
-// l.id IS NOT NULL) keeps words with no lexicon match at an empty array, and
-// COALESCE(..., '[]') guards the all-filtered group. The column list and its
-// order match scanWord.
-const sqliteVersesSelect = `
+// versesSelect aggregates each word's lexicon entries into a JSON array:
+// json_group_array(json_object(...)) FILTER (WHERE l.id IS NOT NULL) keeps words
+// with no lexicon match at an empty array, and COALESCE(..., '[]') guards the
+// all-filtered group. The column list and its order match scanWord.
+const versesSelect = `
 	SELECT m.book, m.chapter, m.verse, m.word_index, m.part_of_speech,
 		m.person, m.tense, m.voice, m.mood, m.grammatical_case,
 		m.number, m.gender, m.degree,
@@ -58,9 +56,9 @@ const sqliteVersesSelect = `
 		m.paragraph_id
 	ORDER BY m.book, m.chapter, m.verse, m.word_index`
 
-func (s *SqliteStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
+func (s *Store) FetchVerses(ctx context.Context, r ref.Reference) ([]Word, error) {
 	where, args := ref.VersesFilter(r)
-	query := fmt.Sprintf(sqliteVersesSelect, where)
+	query := fmt.Sprintf(versesSelect, where)
 
 	rows, err := s.db.QueryContext(ctx, query, sqlite.NamedArgs(args)...)
 	if err != nil {
@@ -82,7 +80,7 @@ func (s *SqliteStore) FetchVerses(ctx context.Context, r ref.Reference) ([]Word,
 	return words, nil
 }
 
-// scanWord reads one row of sqliteVersesSelect. The nullable morphology columns
+// scanWord reads one row of versesSelect. The nullable morphology columns
 // scan straight into the Word's pointer fields (NULL becomes a nil pointer);
 // the aggregated lexicon column arrives as JSON text and is unmarshalled into
 // the Lexicon slice.

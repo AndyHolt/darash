@@ -47,8 +47,8 @@ func main() {
 	}
 	defer func() { _ = db.Close() }()
 
-	morphgntService := morphgnt.NewService(morphgnt.NewSqliteStore(db))
-	tahotService := tahot.NewService(tahot.NewSqliteStore(db))
+	morphgntService := morphgnt.NewService(morphgnt.NewStore(db))
+	tahotService := tahot.NewService(tahot.NewStore(db))
 
 	srv := NewServer(morphgntService, tahotService)
 	if err := srv.Run(ctx, ":"+port); err != nil {

@@ -70,7 +70,7 @@ func insertLexicon(t *testing.T, db *sql.DB, lemma, translit, gloss, meaning str
 // Seeded (John 3:16): θεός (noun, one lexicon entry), ἀγαπάω (verb with all
 // morphology set, two lexicon entries), κόσμος (noun, no lexicon entry). A word
 // in 3:17 checks the reference filter excludes it.
-func newStore(t *testing.T) *SqliteStore {
+func newStore(t *testing.T) *Store {
 	t.Helper()
 	seed, path := sqlitetest.New(t)
 
@@ -103,10 +103,10 @@ func newStore(t *testing.T) *SqliteStore {
 		t.Fatalf("open store db: %v", err)
 	}
 	t.Cleanup(func() { _ = db.Close() })
-	return NewSqliteStore(db)
+	return NewStore(db)
 }
 
-func TestSqliteStoreFetchVerses(t *testing.T) {
+func TestStoreFetchVerses(t *testing.T) {
 	store := newStore(t)
 
 	words, err := store.FetchVerses(context.Background(),
@@ -177,7 +177,7 @@ func TestSqliteStoreFetchVerses(t *testing.T) {
 	}
 }
 
-func TestSqliteStoreFetchVersesRange(t *testing.T) {
+func TestStoreFetchVersesRange(t *testing.T) {
 	store := newStore(t)
 
 	r, err := ref.NewRangeReference(

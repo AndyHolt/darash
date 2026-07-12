@@ -100,7 +100,7 @@ func insertSegment(t *testing.T, db *sql.DB, wordID int64, s segRow) {
 //   - a word with has_meaning_variant set — checks the INTEGER→bool fold.
 //
 // A word in 1:2 checks the reference filter excludes it.
-func newStore(t *testing.T) *SqliteStore {
+func newStore(t *testing.T) *Store {
 	t.Helper()
 	seed, path := sqlitetest.New(t)
 
@@ -138,10 +138,10 @@ func newStore(t *testing.T) *SqliteStore {
 		t.Fatalf("open store db: %v", err)
 	}
 	t.Cleanup(func() { _ = db.Close() })
-	return NewSqliteStore(db)
+	return NewStore(db)
 }
 
-func TestSqliteStoreFetchVerses(t *testing.T) {
+func TestStoreFetchVerses(t *testing.T) {
 	store := newStore(t)
 
 	words, err := store.FetchVerses(context.Background(),
@@ -233,7 +233,7 @@ func TestSqliteStoreFetchVerses(t *testing.T) {
 	}
 }
 
-func TestSqliteStoreFetchVersesRange(t *testing.T) {
+func TestStoreFetchVersesRange(t *testing.T) {
 	store := newStore(t)
 
 	r, err := ref.NewRangeReference(
