@@ -44,8 +44,14 @@ func Open(path string) (*sql.DB, error) {
 
 // dsn builds the modernc.org/sqlite DSN, encoding the per-connection pragmas as
 // _pragma query parameters.
+//
+// mode=ro opens the file with SQLITE_OPEN_READONLY (no CREATE): the baked corpus
+// is read-only, so a missing or unreadable file must fail loudly rather than
+// have SQLite silently create an empty database in its place. This complements
+// query_only(1), which rejects writes at the SQL layer.
 func dsn(path string) string {
 	q := url.Values{}
+	q.Set("mode", "ro")
 	q.Add("_pragma", "query_only(1)")
 	q.Add("_pragma", fmt.Sprintf("mmap_size(%d)", mmapBytes))
 	return "file:" + path + "?" + q.Encode()

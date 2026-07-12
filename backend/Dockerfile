@@ -25,7 +25,10 @@ COPY --from=builder /out/backend /backend
 # data.sqlite is built into the backend/ context by the deploy workflow's ingest
 # step. This ENV is the single source of truth for where the file lives: the
 # binary reads DATA_DB_PATH rather than compiling the location in.
-COPY data.sqlite /data.sqlite
+#
+# permissions (chmod) must be set explicitly to 0444 to allow non-root runtime
+# user to read sqlite file which is created with mode 0600 by ingest.
+COPY --chmod=0444 data.sqlite /data.sqlite
 ENV DATA_DB_PATH=/data.sqlite
 
 USER nonroot:nonroot
