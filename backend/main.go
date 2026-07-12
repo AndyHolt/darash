@@ -5,11 +5,10 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 
 	"github.com/AndyHolt/darash/backend/internal/morphgnt"
-	"github.com/AndyHolt/darash/backend/internal/postgres"
+	"github.com/AndyHolt/darash/backend/internal/sqlite"
 	"github.com/AndyHolt/darash/backend/internal/tahot"
 )
 
@@ -27,43 +26,29 @@ func main() {
 		port = "8080"
 	}
 
-	sslMode := os.Getenv("DB_SSLMODE")
-	if sslMode == "" {
-		sslMode = "verify-full"
-	}
-
-	iamAuth, _ := strconv.ParseBool(os.Getenv("DB_IAM_AUTH"))
-
-	region := os.Getenv("AWS_REGION")
-	if region == "" {
-		region = "eu-west-1"
-	}
-
-	connConfig := postgres.Config{
-		Host:     os.Getenv("DB_HOST"),
-		Port:     os.Getenv("DB_PORT"),
-		Database: os.Getenv("DB_NAME"),
-		User:     os.Getenv("DB_USER"),
-		SSLMode:  sslMode,
-		IAMAuth:  iamAuth,
-		Region:   region,
-	}
-	if !iamAuth {
-		connConfig.Password = os.Getenv("DB_PASSWORD")
+	// DATA_DB_PATH is the SQLite file the backend serves from. The deployment
+	// image sets it via ENV to the baked-in path; `make backend-dev` points it at
+	// the local ingest output. It has no compiled-in default on purpose, so the
+	// path lives in exactly one place per environment (the Dockerfile, the
+	// Makefile) rather than being duplicated as a literal in the binary.
+	dbPath := os.Getenv("DATA_DB_PATH")
+	if dbPath == "" {
+		slog.Error("DATA_DB_PATH is not set")
+		os.Exit(1)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	pool, err := postgres.NewPool(ctx, connConfig)
+	db, err := sqlite.Open(dbPath)
 	if err != nil {
-		slog.Error("unable to create db connection pool", "err", err)
+		slog.Error("unable to open sqlite database", "err", err)
 		os.Exit(1)
 	}
-	defer pool.Close()
+	defer func() { _ = db.Close() }()
 
-	morphgntService := morphgnt.NewService(morphgnt.NewStore(pool))
-	tahotService := tahot.NewService(tahot.NewStore(pool))
+	morphgntService := morphgnt.NewService(morphgnt.NewStore(db))
+	tahotService := tahot.NewService(tahot.NewStore(db))
 
 	srv := NewServer(morphgntService, tahotService)
 	if err := srv.Run(ctx, ":"+port); err != nil {

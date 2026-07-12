@@ -22,6 +22,12 @@ FROM gcr.io/distroless/static-debian12:nonroot
 COPY --from=builder /rds-ca.pem /etc/ssl/certs/rds-ca.pem
 COPY --from=builder /out/backend /backend
 
+# data.sqlite is built into the backend/ context by the deploy workflow's ingest
+# step. This ENV is the single source of truth for where the file lives: the
+# binary reads DATA_DB_PATH rather than compiling the location in.
+COPY data.sqlite /data.sqlite
+ENV DATA_DB_PATH=/data.sqlite
+
 USER nonroot:nonroot
 
 EXPOSE 8080
