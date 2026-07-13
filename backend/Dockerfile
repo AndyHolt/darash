@@ -19,6 +19,18 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 
 FROM gcr.io/distroless/static-debian12:nonroot
 
+# AWS Lambda Web Adapter, loaded as a Lambda extension. On Lambda it proxies
+# invoke events to the app's HTTP port (PORT, default 8080) so the net/http mux
+# runs unchanged. Outside Lambda — e.g. on ECS — /opt/extensions is only read by
+# the Lambda runtime, so the adapter never runs and the container is unaffected.
+# One image thus serves both. Stay on x86_64 while ECS still runs it; the arm64
+# flip comes after ECS is gone.
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+# Point the adapter's readiness probe at the real 200 route (default is /,
+# which the app does not serve).
+ENV AWS_LWA_READINESS_CHECK_PATH=/health
+
 COPY --from=builder /rds-ca.pem /etc/ssl/certs/rds-ca.pem
 COPY --from=builder /out/backend /backend
 
