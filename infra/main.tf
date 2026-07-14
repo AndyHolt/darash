@@ -108,6 +108,16 @@ module "backend_service" {
   db_resource_id            = module.postgres.resource_id
 }
 
+# Runs the same ECR image as the ECS service, from a Function URL instead of an
+# ALB. Created alongside the live ALB stack; nothing routes to it until the
+# CloudFront /api/* cutover, so this is inert in prod until then.
+module "backend_lambda" {
+  source = "./modules/backend-lambda"
+
+  project   = var.project
+  image_uri = "${module.backend_ecr.repository_url}:latest"
+}
+
 locals {
   backend_deploy_policy = jsonencode({
     Version = "2012-10-17"
@@ -160,6 +170,16 @@ locals {
           module.backend_service.task_execution_role_arn,
           module.backend_service.task_role_arn,
         ]
+      },
+      # Lets the deploy workflow roll the Lambda to a newly-pushed image with
+      # `aws lambda update-function-code` (added to backend-deploy in the next
+      # PR). The ECS statements above stay until the old stack is torn down, so
+      # the workflow deploys to both during the parallel-run period.
+      {
+        Sid      = "LambdaDeploy"
+        Effect   = "Allow"
+        Action   = "lambda:UpdateFunctionCode"
+        Resource = module.backend_lambda.function_arn
       },
     ]
   })
