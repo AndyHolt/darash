@@ -86,6 +86,12 @@ jobs:
         with:
           context: backend
           push: true
+          # Lambda's CreateFunction rejects a manifest list / OCI image index.
+          # build-push-action attaches a provenance attestation by default,
+          # which wraps even a single-platform push in an index; disable it so
+          # the pushed tag is a plain image manifest Lambda accepts. (SBOM
+          # attestations are off by default, so no flag needed for those.)
+          provenance: false
           tags: |
             ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
             ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
