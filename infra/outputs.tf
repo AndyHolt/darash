@@ -73,6 +73,21 @@ output "backend_service_name" {
   value       = module.backend_service.service_name
 }
 
+output "backend_lambda_function_name" {
+  description = "Name of the backend Lambda function. Used by the backend-deploy workflow to update function code."
+  value       = module.backend_lambda.function_name
+}
+
+output "backend_lambda_function_arn" {
+  description = "ARN of the backend Lambda function."
+  value       = module.backend_lambda.function_arn
+}
+
+output "backend_lambda_function_url" {
+  description = "HTTPS endpoint of the backend Lambda function URL. AWS_IAM auth; becomes the CloudFront /api/* origin at cutover."
+  value       = module.backend_lambda.function_url
+}
+
 output "cloudfront_distribution_domain_name" {
   description = "Domain name of the CloudFront distribution. Used as the CNAME target for the root domain in Cloudflare."
   value       = module.frontend_hosting.cloudfront_distribution_domain_name

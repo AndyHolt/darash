@@ -108,6 +108,16 @@ module "backend_service" {
   db_resource_id            = module.postgres.resource_id
 }
 
+# Runs the same ECR image as the ECS service, from a Function URL instead of an
+# ALB. Created alongside the live ALB stack; nothing routes to it until the
+# CloudFront /api/* cutover, so this is inert in prod until then.
+module "backend_lambda" {
+  source = "./modules/backend-lambda"
+
+  project   = var.project
+  image_uri = "${module.backend_ecr.repository_url}:latest"
+}
+
 locals {
   backend_deploy_policy = jsonencode({
     Version = "2012-10-17"
