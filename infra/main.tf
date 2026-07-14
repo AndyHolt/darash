@@ -171,6 +171,16 @@ locals {
           module.backend_service.task_role_arn,
         ]
       },
+      # Lets the deploy workflow roll the Lambda to a newly-pushed image with
+      # `aws lambda update-function-code` (added to backend-deploy in the next
+      # PR). The ECS statements above stay until the old stack is torn down, so
+      # the workflow deploys to both during the parallel-run period.
+      {
+        Sid      = "LambdaDeploy"
+        Effect   = "Allow"
+        Action   = "lambda:UpdateFunctionCode"
+        Resource = module.backend_lambda.function_arn
+      },
     ]
   })
 }
