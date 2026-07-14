@@ -194,6 +194,36 @@ data "aws_iam_policy_document" "terraform_ci" {
     resources = ["*"]
   }
 
+  # Manage the backend Lambda, its function URL, and its resource policy. The
+  # AddPermission/RemovePermission/GetPolicy actions are for the CloudFront OAC
+  # invoke permission added at cutover — granted here so bootstrap doesn't need
+  # a second manual apply then. All scoped to the project's function ARNs.
+  statement {
+    sid = "ProjectScopedLambda"
+    actions = [
+      "lambda:CreateFunction",
+      "lambda:GetFunction",
+      "lambda:DeleteFunction",
+      "lambda:UpdateFunctionCode",
+      "lambda:UpdateFunctionConfiguration",
+      "lambda:GetFunctionConfiguration",
+      "lambda:GetFunctionCodeSigningConfig",
+      "lambda:GetRuntimeManagementConfig",
+      "lambda:ListVersionsByFunction",
+      "lambda:TagResource",
+      "lambda:UntagResource",
+      "lambda:ListTags",
+      "lambda:GetPolicy",
+      "lambda:AddPermission",
+      "lambda:RemovePermission",
+      "lambda:CreateFunctionUrlConfig",
+      "lambda:GetFunctionUrlConfig",
+      "lambda:UpdateFunctionUrlConfig",
+      "lambda:DeleteFunctionUrlConfig",
+    ]
+    resources = ["arn:aws:lambda:${var.region}:${local.account_id}:function:${var.project}-*"]
+  }
+
   statement {
     sid = "ProjectScopedLogs"
     actions = [
@@ -205,7 +235,10 @@ data "aws_iam_policy_document" "terraform_ci" {
       "logs:UntagResource",
       "logs:ListTagsForResource",
     ]
-    resources = ["arn:aws:logs:${var.region}:${local.account_id}:log-group:/ecs/${var.project}-*"]
+    resources = [
+      "arn:aws:logs:${var.region}:${local.account_id}:log-group:/ecs/${var.project}-*",
+      "arn:aws:logs:${var.region}:${local.account_id}:log-group:/aws/lambda/${var.project}-*",
+    ]
   }
 
   statement {
