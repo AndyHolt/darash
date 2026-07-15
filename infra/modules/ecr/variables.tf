@@ -20,3 +20,9 @@ variable "force_delete" {
   type        = bool
   default     = false
 }
+
+variable "tagged_image_retention_count" {
+  description = "How many of the most recent tagged images to keep. Older tagged images are expired by the lifecycle policy. Each deploy pushes the same image under a SHA tag and 'latest', so this is roughly that many deploys of rollback history."
+  type        = number
+  default     = 10
+}
