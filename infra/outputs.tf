@@ -58,21 +58,6 @@ output "backend_ecr_repository_arn" {
   value       = module.backend_ecr.repository_arn
 }
 
-output "backend_alb_dns_name" {
-  description = "Public DNS name of the backend ALB. Used as the CNAME target for the api subdomain in Cloudflare."
-  value       = module.backend_service.alb_dns_name
-}
-
-output "backend_cluster_name" {
-  description = "Name of the ECS cluster running the backend service."
-  value       = module.backend_service.cluster_name
-}
-
-output "backend_service_name" {
-  description = "Name of the ECS service running the backend."
-  value       = module.backend_service.service_name
-}
-
 output "backend_lambda_function_name" {
   description = "Name of the backend Lambda function. Used by the backend-deploy workflow to update function code."
   value       = module.backend_lambda.function_name

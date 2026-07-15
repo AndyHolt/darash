@@ -1,5 +1,3 @@
-data "aws_caller_identity" "current" {}
-
 module "aws_interface" {
   source = "./modules/aws-interface"
 
@@ -93,24 +91,8 @@ data "aws_acm_certificate" "api" {
   most_recent = true
 }
 
-module "backend_service" {
-  source = "./modules/backend-service"
-
-  project                   = var.project
-  vpc_id                    = module.aws_interface.vpc_id
-  subnet_ids                = module.aws_interface.subnet_ids
-  backend_security_group_id = module.aws_interface.backend_security_group_id
-  certificate_arn           = data.aws_acm_certificate.api.arn
-  container_image           = "${module.backend_ecr.repository_url}:latest"
-  db_host                   = module.postgres.address
-  db_port                   = module.postgres.port
-  db_name                   = module.postgres.db_name
-  db_resource_id            = module.postgres.resource_id
-}
-
-# Runs the same ECR image as the ECS service, from a Function URL instead of an
-# ALB. Created alongside the live ALB stack; nothing routes to it until the
-# CloudFront /api/* cutover, so this is inert in prod until then.
+# Serves /api/* from a Function URL fronted by CloudFront (see
+# frontend-hosting). Runs the same ECR image the deploy workflow pushes.
 module "backend_lambda" {
   source = "./modules/backend-lambda"
 
@@ -142,39 +124,8 @@ locals {
         ]
         Resource = module.backend_ecr.repository_arn
       },
-      # RegisterTaskDefinition and DescribeTaskDefinition don't support
-      # resource-level scoping per the AWS Service Authorization Reference.
-      {
-        Sid    = "EcsTaskDefinition"
-        Effect = "Allow"
-        Action = [
-          "ecs:RegisterTaskDefinition",
-          "ecs:DescribeTaskDefinition",
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "EcsDeploy"
-        Effect = "Allow"
-        Action = [
-          "ecs:DescribeServices",
-          "ecs:UpdateService",
-        ]
-        Resource = "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/${var.project}-backend/${var.project}-backend"
-      },
-      {
-        Sid    = "PassTaskRoles"
-        Effect = "Allow"
-        Action = "iam:PassRole"
-        Resource = [
-          module.backend_service.task_execution_role_arn,
-          module.backend_service.task_role_arn,
-        ]
-      },
       # Lets the deploy workflow roll the Lambda to a newly-pushed image with
-      # `aws lambda update-function-code` (added to backend-deploy in the next
-      # PR). The ECS statements above stay until the old stack is torn down, so
-      # the workflow deploys to both during the parallel-run period.
+      # `aws lambda update-function-code`.
       {
         Sid    = "LambdaDeploy"
         Effect = "Allow"
