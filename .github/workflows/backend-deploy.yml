@@ -15,15 +15,11 @@ permissions:
 env:
   AWS_REGION: eu-west-1
   ECR_REPOSITORY: darash-backend
-  ECS_CLUSTER: darash-backend
-  ECS_SERVICE: darash-backend
-  TASK_FAMILY: darash-backend
-  CONTAINER_NAME: darash-backend
   LAMBDA_FUNCTION: darash-backend
 
 jobs:
   deploy:
-    name: Build image and deploy to ECS
+    name: Build image and deploy to Lambda
     runs-on: ubuntu-latest
 
     # Throwaway Postgres so `ingest` can run its unchanged pg load; it is
@@ -101,8 +97,7 @@ jobs:
 
       # Point the Lambda at the image this run just pushed, pinning the digest
       # so the deploy is immutable (the function's Terraform ignore_changes on
-      # image_uri expects CI to own the running digest). Runs alongside the ECS
-      # deploy below until the old stack is torn down.
+      # image_uri expects CI to own the running digest).
       - name: Update Lambda function code
         run: |
           aws lambda update-function-code \
@@ -111,26 +106,3 @@ jobs:
             > /dev/null
           aws lambda wait function-updated \
             --function-name "${LAMBDA_FUNCTION}"
-
-      - name: Fetch current task definition
-        run: |
-          aws ecs describe-task-definition \
-            --task-definition "${TASK_FAMILY}" \
-            --query 'taskDefinition' \
-            > task-definition.json
-
-      - name: Render new task definition
-        id: render
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: task-definition.json
-          container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}@${{ steps.build.outputs.digest }}
-
-      - name: Deploy to ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
-        with:
-          task-definition: ${{ steps.render.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true

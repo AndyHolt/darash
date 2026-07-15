@@ -1,6 +1,5 @@
 locals {
   s3_origin_id     = "s3-frontend"
-  alb_origin_id    = "alb-api"
   lambda_origin_id = "lambda-api"
 
   # CloudFront origin domains are bare hosts; the function URL comes as a full
@@ -135,21 +134,6 @@ resource "aws_cloudfront_distribution" "this" {
     domain_name              = local.lambda_origin_domain
     origin_id                = local.lambda_origin_id
     origin_access_control_id = aws_cloudfront_origin_access_control.lambda.id
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-    }
-  }
-
-  # ALB origin — the old /api/* target. Kept defined but unreferenced so a
-  # revert of the cutover restores it cleanly; removed with the rest of the old
-  # stack in a later PR.
-  origin {
-    domain_name = var.alb_origin_domain
-    origin_id   = local.alb_origin_id
 
     custom_origin_config {
       http_port              = 80

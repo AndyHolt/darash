@@ -1,116 +1,11 @@
-data "aws_caller_identity" "current" {}
-
-module "aws_interface" {
-  source = "./modules/aws-interface"
-
-  project       = var.project
-  db_port       = 5432
-  ingress_cidrs = []
-}
-
-module "postgres" {
-  source = "./modules/postgres"
-
-  identifier             = var.project
-  db_name                = var.db_name
-  username               = var.db_username
-  db_subnet_group_name   = module.aws_interface.db_subnet_group_name
-  vpc_security_group_ids = module.aws_interface.vpc_security_group_ids
-
-  # AWS Free plan rejects retention periods above its (undocumented) free-tier
-  # cap with FreeTierRestrictionError. 0 disables automated backups entirely,
-  # which is acceptable here given the data is reproducible from ingest.
-  backup_retention_period = 0
-
-  # Allows the instance to be reached from outside the VPC (e.g. GitHub Actions
-  # ingest workflow). The security group still controls which IPs can connect.
-  publicly_accessible = true
-}
-
-# Shared policy for workflows that need to connect to the prod DB: read
-# Terraform state, temporarily open a SG rule, and fetch the master secret.
-locals {
-  db_workflow_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          "arn:aws:s3:::darash-terraform-state",
-          "arn:aws:s3:::darash-terraform-state/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:DescribeSecurityGroups"
-        ]
-        Resource = "*"
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:GetSecretValue"]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-module "ingest_role" {
-  source = "./modules/github-actions-role"
-
-  role_name              = "${var.project}-ingest-prod"
-  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
-  policy_json            = local.db_workflow_policy
-}
-
-module "query_role" {
-  source = "./modules/github-actions-role"
-
-  role_name              = "${var.project}-db-query"
-  oidc_subject_condition = "repo:AndyHolt/darash:ref:refs/heads/main"
-  policy_json            = local.db_workflow_policy
-}
-
 module "backend_ecr" {
   source = "./modules/ecr"
 
   name = "${var.project}-backend"
 }
 
-# Looks up the manually-created ACM certificate. `most_recent` handles the
-# case where a cert was reissued — always picks the newest ISSUED one
-# matching the domain.
-data "aws_acm_certificate" "api" {
-  domain      = var.domain_name
-  statuses    = ["ISSUED"]
-  most_recent = true
-}
-
-module "backend_service" {
-  source = "./modules/backend-service"
-
-  project                   = var.project
-  vpc_id                    = module.aws_interface.vpc_id
-  subnet_ids                = module.aws_interface.subnet_ids
-  backend_security_group_id = module.aws_interface.backend_security_group_id
-  certificate_arn           = data.aws_acm_certificate.api.arn
-  container_image           = "${module.backend_ecr.repository_url}:latest"
-  db_host                   = module.postgres.address
-  db_port                   = module.postgres.port
-  db_name                   = module.postgres.db_name
-  db_resource_id            = module.postgres.resource_id
-}
-
-# Runs the same ECR image as the ECS service, from a Function URL instead of an
-# ALB. Created alongside the live ALB stack; nothing routes to it until the
-# CloudFront /api/* cutover, so this is inert in prod until then.
+# Serves /api/* from a Function URL fronted by CloudFront (see
+# frontend-hosting). Runs the same ECR image the deploy workflow pushes.
 module "backend_lambda" {
   source = "./modules/backend-lambda"
 
@@ -142,39 +37,8 @@ locals {
         ]
         Resource = module.backend_ecr.repository_arn
       },
-      # RegisterTaskDefinition and DescribeTaskDefinition don't support
-      # resource-level scoping per the AWS Service Authorization Reference.
-      {
-        Sid    = "EcsTaskDefinition"
-        Effect = "Allow"
-        Action = [
-          "ecs:RegisterTaskDefinition",
-          "ecs:DescribeTaskDefinition",
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "EcsDeploy"
-        Effect = "Allow"
-        Action = [
-          "ecs:DescribeServices",
-          "ecs:UpdateService",
-        ]
-        Resource = "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:service/${var.project}-backend/${var.project}-backend"
-      },
-      {
-        Sid    = "PassTaskRoles"
-        Effect = "Allow"
-        Action = "iam:PassRole"
-        Resource = [
-          module.backend_service.task_execution_role_arn,
-          module.backend_service.task_role_arn,
-        ]
-      },
       # Lets the deploy workflow roll the Lambda to a newly-pushed image with
-      # `aws lambda update-function-code` (added to backend-deploy in the next
-      # PR). The ECS statements above stay until the old stack is torn down, so
-      # the workflow deploys to both during the parallel-run period.
+      # `aws lambda update-function-code`.
       {
         Sid    = "LambdaDeploy"
         Effect = "Allow"
@@ -214,7 +78,6 @@ module "frontend_hosting" {
 
   project              = var.project
   s3_bucket_name       = "${var.project}-frontend"
-  alb_origin_domain    = "${var.api_subdomain}.${var.domain_name}"
   lambda_function_url  = module.backend_lambda.function_url
   lambda_function_name = module.backend_lambda.function_name
   certificate_arn      = data.aws_acm_certificate.frontend.arn
