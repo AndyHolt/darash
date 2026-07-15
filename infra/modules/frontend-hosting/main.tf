@@ -1,6 +1,11 @@
 locals {
-  s3_origin_id  = "s3-frontend"
-  alb_origin_id = "alb-api"
+  s3_origin_id     = "s3-frontend"
+  alb_origin_id    = "alb-api"
+  lambda_origin_id = "lambda-api"
+
+  # CloudFront origin domains are bare hosts; the function URL comes as a full
+  # https:// URL with a trailing slash.
+  lambda_origin_domain = trimsuffix(trimprefix(var.lambda_function_url, "https://"), "/")
 }
 
 # --- S3 bucket for frontend assets ------------------------------------------
@@ -53,6 +58,29 @@ resource "aws_cloudfront_origin_access_control" "this" {
   signing_protocol                  = "sigv4"
 }
 
+# Signs /api/* origin requests to the Lambda function URL (AWS_IAM auth). The
+# AllViewerExceptHostHeader origin-request policy below is required for this to
+# work: the SigV4 signature covers the Lambda URL's own Host, so the viewer Host
+# must not be forwarded.
+resource "aws_cloudfront_origin_access_control" "lambda" {
+  name                              = "${var.project}-backend-lambda"
+  origin_access_control_origin_type = "lambda"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+# Lets this distribution invoke the function URL. The function URL is AWS_IAM
+# auth, so unsigned callers get 403; only CloudFront (matched by SourceArn) can
+# reach it, via the OAC signature above.
+resource "aws_lambda_permission" "cloudfront" {
+  statement_id           = "AllowCloudFrontInvoke"
+  action                 = "lambda:InvokeFunctionUrl"
+  function_name          = var.lambda_function_name
+  principal              = "cloudfront.amazonaws.com"
+  source_arn             = aws_cloudfront_distribution.this.arn
+  function_url_auth_type = "AWS_IAM"
+}
+
 # --- Managed cache and origin-request policies -------------------------------
 
 data "aws_cloudfront_cache_policy" "caching_optimized" {
@@ -85,7 +113,23 @@ resource "aws_cloudfront_distribution" "this" {
     origin_access_control_id = aws_cloudfront_origin_access_control.this.id
   }
 
-  # ALB origin — proxies /api/* to avoid CORS
+  # Lambda origin — serves /api/* from the backend function URL
+  origin {
+    domain_name              = local.lambda_origin_domain
+    origin_id                = local.lambda_origin_id
+    origin_access_control_id = aws_cloudfront_origin_access_control.lambda.id
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  # ALB origin — the old /api/* target. Kept defined but unreferenced so a
+  # revert of the cutover restores it cleanly; removed with the rest of the old
+  # stack in a later PR.
   origin {
     domain_name = var.alb_origin_domain
     origin_id   = local.alb_origin_id
@@ -108,10 +152,10 @@ resource "aws_cloudfront_distribution" "this" {
     cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
   }
 
-  # /api/* → ALB, no caching
+  # /api/* → Lambda function URL, no caching
   ordered_cache_behavior {
     path_pattern             = "/api/*"
-    target_origin_id         = local.alb_origin_id
+    target_origin_id         = local.lambda_origin_id
     viewer_protocol_policy   = "redirect-to-https"
     allowed_methods          = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods           = ["GET", "HEAD"]

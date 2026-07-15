@@ -212,11 +212,13 @@ data "aws_acm_certificate" "frontend" {
 module "frontend_hosting" {
   source = "./modules/frontend-hosting"
 
-  project           = var.project
-  s3_bucket_name    = "${var.project}-frontend"
-  alb_origin_domain = "${var.api_subdomain}.${var.domain_name}"
-  certificate_arn   = data.aws_acm_certificate.frontend.arn
-  domain_aliases    = [var.domain_name]
+  project              = var.project
+  s3_bucket_name       = "${var.project}-frontend"
+  alb_origin_domain    = "${var.api_subdomain}.${var.domain_name}"
+  lambda_function_url  = module.backend_lambda.function_url
+  lambda_function_name = module.backend_lambda.function_name
+  certificate_arn      = data.aws_acm_certificate.frontend.arn
+  domain_aliases       = [var.domain_name]
 }
 
 locals {
