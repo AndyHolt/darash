@@ -9,9 +9,9 @@ variable "image_uri" {
 }
 
 variable "architecture" {
-  description = "Instruction set architecture for the function. Stays x86_64 while ECS still runs the same image; the arm64 flip comes after ECS is gone."
+  description = "Instruction set architecture for the function. arm64 (Graviton) — cheaper per GB-second than x86_64 and the image is built for it in backend-deploy."
   type        = string
-  default     = "x86_64"
+  default     = "arm64"
 }
 
 variable "memory_size" {
