@@ -211,8 +211,8 @@ func TestStoreFetchVerses(t *testing.T) {
 		t.Errorf("root MorphCode = %v, want Ncfsa", root.MorphCode)
 	}
 
-	// הָאָרֶץ: no segments — the FILTER/COALESCE path yields an empty (not nil)
-	// slice, so it JSON-encodes as [] like the Postgres store.
+	// הָאָרֶץ: no segments — the COALESCE path yields an empty (not nil)
+	// slice, so it JSON-encodes as [] (an empty array, not null).
 	haaretz := words[1]
 	if haaretz.Segments == nil {
 		t.Errorf("הָאָרֶץ Segments = nil, want empty non-nil slice")

@@ -1,5 +1,5 @@
 // Package tahot exposes the Hebrew Old Testament (TAHOT) corpus: its morphology
-// types, the passage service, the Postgres-backed store, and the HTTP handler.
+// types, the passage service, the SQLite-backed store, and the HTTP handler.
 // The package name supplies the namespace, so the domain types are unprefixed
 // (Word, Service, Handler, PartOfSpeech, …) even where they share a name with
 // the Greek equivalents in package morphgnt.

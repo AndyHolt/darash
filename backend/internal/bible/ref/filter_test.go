@@ -98,9 +98,9 @@ func TestVersesFilterRangeMultiChapter(t *testing.T) {
 
 // TestVersesFilterPlaceholdersMatchArgs guards against typos: every @name in
 // the WHERE fragment must have a matching key in the args map, and vice versa.
-// A mismatch would make pgx fail at runtime with "parameter not found" or
-// silently leave a placeholder unbound — neither of which is reachable
-// without a DB. This test catches both at unit-test time.
+// A mismatch would only surface at query time against a real DB — an unbound
+// placeholder or an argument no placeholder consumes — neither of which is
+// reachable without a DB. This test catches both at unit-test time.
 func TestVersesFilterPlaceholdersMatchArgs(t *testing.T) {
 	tests := []struct {
 		name      string

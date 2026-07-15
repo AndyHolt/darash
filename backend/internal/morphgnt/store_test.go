@@ -166,8 +166,8 @@ func TestStoreFetchVerses(t *testing.T) {
 		t.Errorf("ἀγαπάω Mood = %v, want indicative", agapao.Mood)
 	}
 
-	// κόσμος: no lexicon match — the FILTER/COALESCE path yields an empty (not
-	// nil) slice, so it JSON-encodes as [] like the Postgres store.
+	// κόσμος: no lexicon match — the COALESCE path yields an empty (not nil)
+	// slice, so it JSON-encodes as [] (an empty array, not null).
 	kosmos := words[2]
 	if kosmos.Lexicon == nil {
 		t.Errorf("κόσμος Lexicon = nil, want empty non-nil slice")
