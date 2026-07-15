@@ -7,9 +7,6 @@
 # it does COPY-only work, which needs no emulation.
 FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS builder
 
-RUN apk add --no-cache curl
-RUN curl -sSfo /rds-ca.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-
 WORKDIR /src
 
 COPY go.mod go.sum ./
@@ -39,7 +36,6 @@ COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt
 # which the app does not serve).
 ENV AWS_LWA_READINESS_CHECK_PATH=/health
 
-COPY --from=builder /rds-ca.pem /etc/ssl/certs/rds-ca.pem
 COPY --chmod=0555 --from=builder /out/backend /backend
 
 # data.sqlite is built into the backend/ context by the deploy workflow's ingest

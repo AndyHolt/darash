@@ -1,18 +1,7 @@
-# Load PG* connection vars from .env if it exists. The `-` prefix means make
-# won't error when the file is absent (e.g. in CI where env vars are set
-# externally). `export` makes all variables available to recipe subprocesses.
-# Note: this exports everything in .env (including PGPASSWORD) to ALL targets.
-# If a future target should not have access to these, source .env per-target
-# instead.
--include .env
-export
-
 .PHONY: pre-commit prek \
 	ingest-run ingest-morphgnt-run ingest-tbesg-run ingest-tests \
-	backend-up backend-down backend-dev backend-tests \
-	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-tests frontend-preview \
-	db-up db-down db-psql \
-	_require-env
+	backend-dev backend-tests \
+	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-tests frontend-preview
 
 pre-commit: prek
 prek:
@@ -47,28 +36,8 @@ $(DATA_SQLITE): $(INGEST_SRC)
 ingest-tests:
 	cd ingest && uv run pytest
 
-# db-* targets are for local dev and require .env to exist.
-_require-env:
-	@test -f .env || (echo "error: .env not found — copy .env.example to .env" && exit 1)
-
-db-up: _require-env
-	docker compose -f infra/dev/docker-compose.yml up -d
-
-db-down: _require-env
-	docker compose -f infra/dev/docker-compose.yml down
-
-db-psql: _require-env
-	docker compose -f infra/dev/docker-compose.yml exec postgres psql -U "$$PGUSER" -d "$$PGDATABASE"
-
-backend-up: _require-env
-	docker compose -f infra/dev/docker-compose.yml --profile backend up -d --build
-
-backend-down: _require-env
-	docker compose -f infra/dev/docker-compose.yml --profile backend down
-
-# Serve from the local data.sqlite, building it first if it is missing. No .env
-# needed: the sqlite file is the only dependency. LOG_LEVEL=debug surfaces
-# request logs; air gives live reload.
+# Serve from the local data.sqlite, building it first if it is missing.
+# LOG_LEVEL=debug surfaces request logs; air gives live reload.
 backend-dev: $(DATA_SQLITE)
 	cd backend && DATA_DB_PATH=$(DATA_SQLITE) LOG_LEVEL=debug air
 
