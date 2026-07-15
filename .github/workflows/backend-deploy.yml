@@ -22,24 +22,6 @@ jobs:
     name: Build image and deploy to Lambda
     runs-on: ubuntu-latest
 
-    # Throwaway Postgres so `ingest` can run its unchanged pg load; it is
-    # discarded when the job ends. The image is baked from the SQLite file the
-    # same run also emits (DATA_SQLITE_PATH below), not from this database.
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: darash
-          POSTGRES_PASSWORD: darash
-          POSTGRES_DB: darash
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -61,16 +43,10 @@ jobs:
         run: uv sync
 
       # Build data.sqlite into the Docker build context (backend/) so the image
-      # below bakes it in. The pg load runs against the throwaway service
-      # container; only the SQLite file is kept.
+      # below bakes it in.
       - name: Build data.sqlite
         working-directory: ingest
         env:
-          PGHOST: localhost
-          PGPORT: 5432
-          PGUSER: darash
-          PGPASSWORD: darash
-          PGDATABASE: darash
           DATA_SQLITE_PATH: ${{ github.workspace }}/backend/data.sqlite
         run: PYTHONPATH=src uv run python main.py
 
