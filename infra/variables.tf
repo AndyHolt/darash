@@ -15,9 +15,3 @@ variable "domain_name" {
   type        = string
   default     = "darashbible.com"
 }
-
-variable "api_subdomain" {
-  description = "Subdomain that will point at the backend ALB (e.g. 'api' for api.darashbible.com). Informational only; the DNS record itself is managed manually in Cloudflare."
-  type        = string
-  default     = "api"
-}

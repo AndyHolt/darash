@@ -8,11 +8,6 @@ variable "s3_bucket_name" {
   type        = string
 }
 
-variable "alb_origin_domain" {
-  description = "Domain name of the ALB origin for /api/* requests (e.g. api.example.com). Must be covered by the ALB's ACM certificate."
-  type        = string
-}
-
 variable "lambda_function_url" {
   description = "HTTPS endpoint of the backend Lambda function URL. Becomes the /api/* origin; CloudFront reaches it via OAC-signed requests."
   type        = string
