@@ -158,18 +158,25 @@ to `main` that touch `frontend/**`, and can be triggered manually via
 
 ## Deploying the backend
 
-The `backend-deploy` workflow (`.github/workflows/backend-deploy.yml`) builds
-a Docker image from `backend/`, pushes it to the `darash-backend` ECR repo,
-and rolls out a new ECS task-definition revision. It runs automatically on
-pushes to `main` that touch `backend/**`, and can be triggered manually via
-`workflow_dispatch`.
+The `backend-deploy` workflow (`.github/workflows/backend-deploy.yml`) runs
+`ingest` to build `data.sqlite`, builds an `arm64` Docker image from `backend/`
+with that file baked in, pushes it to the `darash-backend` ECR repo (tagged with
+the commit SHA and `latest`), and points the `darash-backend` Lambda at the new
+image. It runs automatically on pushes to `main` that touch `backend/**`, and
+can be triggered manually via `workflow_dispatch`.
 
-Rolling back a bad deploy — flip the service back to the previous task-def
-revision:
+Rolling back a bad deploy — point the function at an earlier image. Each deploy
+pushes an image tagged with its commit SHA, so pick a previous SHA (the
+function's Terraform ignores `image_uri`, so this won't be reverted by
+`infra-deploy`):
 ```bash
-aws ecs update-service --region eu-west-1 \
-  --cluster darash-backend --service darash-backend \
-  --task-definition darash-backend:<previous-revision>
+REGISTRY=$(aws ecr describe-repositories --region eu-west-1 \
+  --repository-names darash-backend \
+  --query 'repositories[0].repositoryUri' --output text)
+aws lambda update-function-code --region eu-west-1 \
+  --function-name darash-backend --image-uri "$REGISTRY:<previous-sha>"
+aws lambda wait function-updated --region eu-west-1 \
+  --function-name darash-backend
 ```
-Find `<previous-revision>` with
-`aws ecs list-task-definitions --family-prefix darash-backend`.
+List available image tags with
+`aws ecr list-images --region eu-west-1 --repository-name darash-backend`.
