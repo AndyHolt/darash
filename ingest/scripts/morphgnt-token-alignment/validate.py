@@ -19,14 +19,15 @@ We compare on (id, lemma) only. Lemma is the right signal:
 Run from repo root:
     cd ingest && PYTHONPATH=src uv run python scripts/morphgnt-token-alignment/validate.py
 
-Requires PG* env vars (loaded by `make` from .env; export manually if running
-outside make).
+Reads the local ``data.sqlite`` produced by an ingest run (`make ingest-run`);
+override its location with ``DATA_SQLITE_PATH``.
 """
 
+import sqlite3
 import unicodedata
 import urllib.request
 
-from morphgnt.db import connect
+from data_sqlite import target_path
 
 TOKENS_URL = "https://raw.githubusercontent.com/jtauber/vocabulary-tools/master/gnt_data/tokens.txt"
 
@@ -49,8 +50,8 @@ def fetch_tokens() -> list[tuple[int, str, str]]:
 
 def fetch_rows() -> list[tuple[int, str, str]]:
     """Return [(id, text, lemma)] from morphgnt_sblgnt ordered by id."""
-    with connect() as conn, conn.cursor() as cur:
-        cur.execute("SELECT id, text, lemma FROM morphgnt_sblgnt ORDER BY id")
+    with sqlite3.connect(target_path()) as conn:
+        cur = conn.execute("SELECT id, text, lemma FROM morphgnt_sblgnt ORDER BY id")
         return cur.fetchall()
 
 
