@@ -1,24 +1,7 @@
-module "aws_interface" {
-  source = "./modules/aws-interface"
-
-  project       = var.project
-  db_port       = 5432
-  ingress_cidrs = []
-}
-
 module "backend_ecr" {
   source = "./modules/ecr"
 
   name = "${var.project}-backend"
-}
-
-# Looks up the manually-created ACM certificate. `most_recent` handles the
-# case where a cert was reissued — always picks the newest ISSUED one
-# matching the domain.
-data "aws_acm_certificate" "api" {
-  domain      = var.domain_name
-  statuses    = ["ISSUED"]
-  most_recent = true
 }
 
 # Serves /api/* from a Function URL fronted by CloudFront (see

@@ -1,13 +1,3 @@
-output "db_security_group_id" {
-  description = "Security group ID attached to the RDS instance."
-  value       = module.aws_interface.db_security_group_id
-}
-
-output "backend_security_group_id" {
-  description = "Security group ID for backend instances."
-  value       = module.aws_interface.backend_security_group_id
-}
-
 output "backend_deploy_role_arn" {
   description = "IAM role ARN for the backend-deploy GitHub Actions workflow."
   value       = module.backend_deploy_role.role_arn
