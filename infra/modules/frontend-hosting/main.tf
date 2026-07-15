@@ -87,13 +87,15 @@ resource "aws_lambda_permission" "cloudfront" {
   function_url_auth_type = "AWS_IAM"
 }
 
+# No function_url_auth_type here: that argument is only valid for the
+# InvokeFunctionUrl action (AddPermission rejects it otherwise). SourceArn alone
+# scopes this to the distribution.
 resource "aws_lambda_permission" "cloudfront_invoke_function" {
-  statement_id           = "AllowCloudFrontInvokeFunction"
-  action                 = "lambda:InvokeFunction"
-  function_name          = var.lambda_function_name
-  principal              = "cloudfront.amazonaws.com"
-  source_arn             = aws_cloudfront_distribution.this.arn
-  function_url_auth_type = "AWS_IAM"
+  statement_id  = "AllowCloudFrontInvokeFunction"
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_function_name
+  principal     = "cloudfront.amazonaws.com"
+  source_arn    = aws_cloudfront_distribution.this.arn
 }
 
 # --- Managed cache and origin-request policies -------------------------------
