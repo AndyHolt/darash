@@ -176,9 +176,15 @@ locals {
       # PR). The ECS statements above stay until the old stack is torn down, so
       # the workflow deploys to both during the parallel-run period.
       {
-        Sid      = "LambdaDeploy"
-        Effect   = "Allow"
-        Action   = "lambda:UpdateFunctionCode"
+        Sid    = "LambdaDeploy"
+        Effect = "Allow"
+        Action = [
+          "lambda:UpdateFunctionCode",
+          # `aws lambda wait function-updated` polls GetFunctionConfiguration to
+          # block until the image swap finishes, so the deploy step needs read
+          # access to the function's config alongside the update action.
+          "lambda:GetFunctionConfiguration",
+        ]
         Resource = module.backend_lambda.function_arn
       },
     ]
