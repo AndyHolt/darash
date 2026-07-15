@@ -82,6 +82,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: backend
+          platforms: linux/arm64
           push: true
           # Lambda's CreateFunction rejects a manifest list / OCI image index.
           # build-push-action attaches a provenance attestation by default,
