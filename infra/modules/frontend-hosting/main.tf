@@ -72,9 +72,24 @@ resource "aws_cloudfront_origin_access_control" "lambda" {
 # Lets this distribution invoke the function URL. The function URL is AWS_IAM
 # auth, so unsigned callers get 403; only CloudFront (matched by SourceArn) can
 # reach it, via the OAC signature above.
+#
+# Two actions are required, not one: for function URLs created after October
+# 2025, the OAC principal needs BOTH lambda:InvokeFunctionUrl and
+# lambda:InvokeFunction, or the signed origin request is rejected with a 403
+# AccessDeniedException before it reaches the function. aws_lambda_permission
+# takes a single action, so this is two resources.
 resource "aws_lambda_permission" "cloudfront" {
   statement_id           = "AllowCloudFrontInvoke"
   action                 = "lambda:InvokeFunctionUrl"
+  function_name          = var.lambda_function_name
+  principal              = "cloudfront.amazonaws.com"
+  source_arn             = aws_cloudfront_distribution.this.arn
+  function_url_auth_type = "AWS_IAM"
+}
+
+resource "aws_lambda_permission" "cloudfront_invoke_function" {
+  statement_id           = "AllowCloudFrontInvokeFunction"
+  action                 = "lambda:InvokeFunction"
   function_name          = var.lambda_function_name
   principal              = "cloudfront.amazonaws.com"
   source_arn             = aws_cloudfront_distribution.this.arn
