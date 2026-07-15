@@ -19,16 +19,6 @@ resource "aws_s3_bucket_versioning" "state" {
   }
 }
 
-# --- ECS service-linked role ------------------------------------------------
-
-# AWS auto-provisions AWSServiceRoleForElasticLoadBalancing on first ALB
-# creation when the caller has iam:CreateServiceLinkedRole, so there's no
-# equivalent resource for ELB here. ECS's CreateService does not auto-create
-# its SLR, so we create it explicitly once at the account level.
-resource "aws_iam_service_linked_role" "ecs" {
-  aws_service_name = "ecs.amazonaws.com"
-}
-
 # --- GitHub Actions OIDC provider -------------------------------------------
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -40,35 +30,6 @@ resource "aws_iam_openid_connect_provider" "github" {
 # --- IAM policy for the terraform-ci role -----------------------------------
 
 data "aws_iam_policy_document" "terraform_ci" {
-  statement {
-    sid = "RdsEc2SecretsKms"
-    actions = [
-      "rds:*",
-      "ec2:Describe*",
-      "ec2:CreateSecurityGroup",
-      "ec2:DeleteSecurityGroup",
-      "ec2:AuthorizeSecurityGroupIngress",
-      "ec2:RevokeSecurityGroupIngress",
-      "ec2:AuthorizeSecurityGroupEgress",
-      "ec2:RevokeSecurityGroupEgress",
-      "ec2:CreateTags",
-      "ec2:DeleteTags",
-      "ec2:GetSecurityGroupsForVpc",
-      "ec2:DescribeSecurityGroupRules",
-      "ec2:CreateSecurityGroupEgressRule",
-      "ec2:DeleteSecurityGroupEgressRule",
-      "ec2:CreateSecurityGroupIngressRule",
-      "ec2:DeleteSecurityGroupIngressRule",
-      "secretsmanager:CreateSecret",
-      "secretsmanager:TagResource",
-      "secretsmanager:GetSecretValue",
-      "secretsmanager:DescribeSecret",
-      "kms:CreateGrant",
-      "kms:DescribeKey",
-    ]
-    resources = ["*"]
-  }
-
   statement {
     sid = "TerraformState"
     actions = [
@@ -115,19 +76,6 @@ data "aws_iam_policy_document" "terraform_ci" {
   }
 
   statement {
-    sid     = "CreateElbServiceLinkedRole"
-    actions = ["iam:CreateServiceLinkedRole"]
-    resources = [
-      "arn:aws:iam::${local.account_id}:role/aws-service-role/elasticloadbalancing.amazonaws.com/AWSServiceRoleForElasticLoadBalancing",
-    ]
-    condition {
-      test     = "StringEquals"
-      variable = "iam:AWSServiceName"
-      values   = ["elasticloadbalancing.amazonaws.com"]
-    }
-  }
-
-  statement {
     sid = "ProjectScopedEcr"
     actions = [
       "ecr:CreateRepository",
@@ -147,52 +95,6 @@ data "aws_iam_policy_document" "terraform_ci" {
       "ecr:BatchDeleteImage",
     ]
     resources = ["arn:aws:ecr:${var.region}:${local.account_id}:repository/${var.project}-*"]
-  }
-
-  statement {
-    sid = "ProjectScopedEcs"
-    actions = [
-      "ecs:CreateCluster",
-      "ecs:DeleteCluster",
-      "ecs:DescribeClusters",
-      "ecs:UpdateCluster",
-      "ecs:TagResource",
-      "ecs:UntagResource",
-      "ecs:ListTagsForResource",
-      "ecs:CreateService",
-      "ecs:UpdateService",
-      "ecs:DeleteService",
-      "ecs:DescribeServices",
-      "ecs:UpdateServicePrimaryTaskSet",
-    ]
-    resources = [
-      "arn:aws:ecs:${var.region}:${local.account_id}:cluster/${var.project}-*",
-      "arn:aws:ecs:${var.region}:${local.account_id}:service/${var.project}-*/${var.project}-*",
-      "arn:aws:ecs:${var.region}:${local.account_id}:task-definition/${var.project}-*:*",
-    ]
-  }
-
-  # ecs:Register/Deregister/DescribeTaskDefinition don't support meaningful
-  # resource-level scoping (per the AWS Service Authorization Reference) and
-  # must be granted on "*". Lumped in with the rest of the read-only ECS
-  # discovery actions that likewise can't be scoped.
-  statement {
-    sid = "EcsDiscovery"
-    actions = [
-      "ecs:List*",
-      "ecs:DescribeTasks",
-      "ecs:DescribeTaskSets",
-      "ecs:RegisterTaskDefinition",
-      "ecs:DeregisterTaskDefinition",
-      "ecs:DescribeTaskDefinition",
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid       = "Elb"
-    actions   = ["elasticloadbalancing:*"]
-    resources = ["*"]
   }
 
   # Manage the backend Lambda, its function URL, and its resource policy. The
@@ -237,7 +139,6 @@ data "aws_iam_policy_document" "terraform_ci" {
       "logs:ListTagsForResource",
     ]
     resources = [
-      "arn:aws:logs:${var.region}:${local.account_id}:log-group:/ecs/${var.project}-*",
       "arn:aws:logs:${var.region}:${local.account_id}:log-group:/aws/lambda/${var.project}-*",
     ]
   }
