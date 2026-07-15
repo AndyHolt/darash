@@ -19,6 +19,7 @@ env:
   ECS_SERVICE: darash-backend
   TASK_FAMILY: darash-backend
   CONTAINER_NAME: darash-backend
+  LAMBDA_FUNCTION: darash-backend
 
 jobs:
   deploy:
@@ -97,6 +98,19 @@ jobs:
             ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # Point the Lambda at the image this run just pushed, pinning the digest
+      # so the deploy is immutable (the function's Terraform ignore_changes on
+      # image_uri expects CI to own the running digest). Runs alongside the ECS
+      # deploy below until the old stack is torn down.
+      - name: Update Lambda function code
+        run: |
+          aws lambda update-function-code \
+            --function-name "${LAMBDA_FUNCTION}" \
+            --image-uri "${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}@${{ steps.build.outputs.digest }}" \
+            > /dev/null
+          aws lambda wait function-updated \
+            --function-name "${LAMBDA_FUNCTION}"
 
       - name: Fetch current task definition
         run: |
