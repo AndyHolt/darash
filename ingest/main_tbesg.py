@@ -2,9 +2,6 @@ import logging
 import sqlite3
 
 from data_sqlite import atomic_writer
-from tbesg.db import connect as pg_connect
-from tbesg.db import ensure_schema
-from tbesg.db import load_entries as pg_load_entries
 from tbesg.fetch import fetch_and_parse
 from tbesg.sqlite import load_entries as sqlite_load_entries
 
@@ -13,16 +10,10 @@ log = logging.getLogger(__name__)
 
 
 def load_all(sqlite_conn: sqlite3.Connection) -> None:
-    """Fetch and parse the TBESG lexicon, then load it into Postgres and `sqlite_conn`."""
+    """Fetch and parse the TBESG lexicon, then load it into `sqlite_conn`."""
     log.info("Fetching and parsing TBESG lexicon...")
     entries = fetch_and_parse()
     log.info(f"Parsed {len(entries)} entries")
-
-    log.info("Loading entries into Postgres...")
-    conn = pg_connect()
-    ensure_schema(conn)
-    pg_load_entries(conn, entries)
-    conn.close()
 
     log.info("Loading entries into SQLite...")
     sqlite_load_entries(sqlite_conn, entries)
