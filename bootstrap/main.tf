@@ -106,6 +106,7 @@ data "aws_iam_policy_document" "terraform_ci" {
       "iam:DeleteRolePolicy",
       "iam:ListRolePolicies",
       "iam:ListAttachedRolePolicies",
+      "iam:ListInstanceProfilesForRole",
       "iam:AttachRolePolicy",
       "iam:DetachRolePolicy",
       "iam:PassRole",
