@@ -7,9 +7,9 @@ import "fmt"
 // every corpus table, so both the MorphGNT and TAHOT stores build their queries
 // from this single filter.
 //
-// The args are returned as a plain map[string]any rather than pgx.NamedArgs to
-// keep this package free of a database-driver dependency; callers wrap the map
-// in pgx.NamedArgs (which is itself a map[string]any) at the query site.
+// The args are returned as a plain map[string]any to keep this package free of
+// a database-driver dependency; callers turn each entry into a sql.Named
+// argument at the query site (see sqlite.NamedArgs).
 func VersesFilter(r Reference) (where string, args map[string]any) {
 	switch r := r.(type) {
 	case VerseReference:

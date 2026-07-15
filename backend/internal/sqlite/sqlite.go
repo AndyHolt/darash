@@ -1,12 +1,10 @@
 // Package sqlite opens the read-only SQLite database the backend serves from.
-// It replaces the old Postgres pool: the corpus is static, read-only source
-// data, so a file the process mmaps is enough — there is no connection string,
-// TLS, or auth to manage.
+// The corpus is static, read-only source data, so a file the process mmaps is
+// enough — there is no connection string, TLS, or auth to manage.
 //
 // The database is a data.sqlite file (baked into the deployment image in prod,
 // produced by `make ingest-run` locally). Its schema is owned by ingest; this
-// package only reads it. The pgx-backed stores are replaced by ones over the
-// *sql.DB returned here.
+// package only reads it. The corpus stores query the *sql.DB returned here.
 package sqlite
 
 import (

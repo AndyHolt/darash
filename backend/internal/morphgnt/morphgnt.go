@@ -1,5 +1,5 @@
 // Package morphgnt exposes the Greek New Testament (MorphGNT SBLGNT) corpus:
-// its morphology types, the passage service, the Postgres-backed store, and the
+// its morphology types, the passage service, the SQLite-backed store, and the
 // HTTP handler. The package name supplies the namespace, so the domain types
 // are unprefixed (Word, Service, Handler, PartOfSpeech, …).
 package morphgnt
