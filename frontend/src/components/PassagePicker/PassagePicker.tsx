@@ -182,13 +182,15 @@ export function PassagePicker({ corpus, passageRef, query }: PassagePickerProps)
           {isLoading && !hasFailed ? <Loader2 className="animate-spin" /> : <ChevronDown />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto min-w-72 p-2">
+      <PopoverContent className="max-h-(--radix-popover-content-available-height) w-auto min-w-72 p-2">
         <PopoverHeader>
           <PopoverTitle>Choose passage</PopoverTitle>
           <PopoverDescription>{renderStepDescription()}</PopoverDescription>
         </PopoverHeader>
         {renderStepControl()}
-        {renderStep()}
+        {/* Only the step list scrolls; the header and back/title control stay
+            pinned so navigation is always reachable on short viewports. */}
+        <div className="min-h-0 flex-1 overflow-y-auto">{renderStep()}</div>
       </PopoverContent>
     </Popover>
   );
