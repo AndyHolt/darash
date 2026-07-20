@@ -290,8 +290,12 @@ def _clean(value: str) -> str | None:
 
 
 def _clean_strong(token: str) -> str | None:
-    """Strip ``{}`` braces and the trailing ``+`` (covers-next-word) marker."""
-    token = token.strip().strip("{}").rstrip("+").strip()
+    """Strip ``{}`` braces and the trailing ``+`` (covers-next-word) marker.
+
+    The marker sits *outside* the braces (``{H1008G}+``), so the ``+`` comes off
+    first — stripping braces first would leave the closing one stranded behind it.
+    """
+    token = token.strip().rstrip("+").strip().strip("{}").strip()
     return token or None
 
 
