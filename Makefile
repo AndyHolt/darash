@@ -1,5 +1,5 @@
 .PHONY: pre-commit prek \
-	ingest-run ingest-morphgnt-run ingest-tbesg-run ingest-tests \
+	ingest-run ingest-morphgnt-run ingest-tahot-run ingest-tbesg-run ingest-tbesh-run ingest-tests \
 	backend-dev backend-tests \
 	frontend-install frontend-dev frontend-build frontend-check frontend-typecheck frontend-tests frontend-preview
 
@@ -23,6 +23,9 @@ ingest-tahot-run:
 
 ingest-tbesg-run:
 	cd ingest && DATA_SQLITE_PATH=$(DATA_SQLITE) PYTHONPATH=src uv run python main_tbesg.py
+
+ingest-tbesh-run:
+	cd ingest && DATA_SQLITE_PATH=$(DATA_SQLITE) PYTHONPATH=src uv run python main_tbesh.py
 
 # Rebuild the db when any ingest source is newer than it (or it is missing), so
 # editing a loader and running `make backend-dev` picks the change up. The corpus
