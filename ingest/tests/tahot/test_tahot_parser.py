@@ -47,6 +47,23 @@ LEV_23_38_4 = line(
     "H9002=ו=and/H9006=מ=from/H9005=ל=to/{H0905J=בַּד=besides}",
 )
 
+# Jer.48.13#08 — prefix + root whose Strong's carries the "+" (covers-next-word)
+# marker, which sits outside the braces: "{H1008G}+".
+JER_48_13_8 = line(
+    "Jer.48.13#08=L",
+    "מִ/בֵּ֥ית",
+    "mi./Beit",
+    "from/ Beth-",
+    "H9006/{H1008G}+",
+    "HR/Npl",
+    "",
+    "",
+    "H1008G_A",
+    "",
+    "",
+    "H9006=מ=from/{H1008G=בֵּֽיתְ־אֵל=Bethel»Bethel@Gen.12.8-Zec}+",
+)
+
 # Gen.8.17#14 — a Qere whose Ketiv differs only in spelling (lower-case "k"):
 # the variant sits in the Spelling Variants column (8), so it is NOT a meaning
 # variant.
@@ -162,6 +179,13 @@ class TestSegmentation:
         root = w.segments[-1]
         assert root.morphology is not None
         assert root.morphology.part_of_speech == PartOfSpeech.NOUN
+
+    def test_covers_next_word_marker_stripped_with_braces(self):
+        # "{H1008G}+" — the "+" sits outside the braces, so both come off and the
+        # Strong's stays a clean lexicon key.
+        w = Word.from_line(JER_48_13_8)
+        assert [s.strong for s in w.segments] == ["H9006", "H1008G"]
+        assert w.root_strong == "H1008G"
 
 
 class TestVariants:
