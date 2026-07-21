@@ -426,6 +426,28 @@ type WordSegment struct {
 	Number          *Number         `json:"number,omitempty"          db:"number"`
 	State           *State          `json:"state,omitempty"           db:"state"`
 	FunctionMarker  *FunctionMarker `json:"function_marker,omitempty" db:"function_marker"`
+	Lexicon         *Lexicon        `json:"lexicon,omitempty"         db:"lexicon"`
+}
+
+// Lexicon is the TBESH entry for a segment's disambiguated Strong's number,
+// expanding the segment's terse gloss ("in", "God") into a full definition.
+//
+// A pointer, not a slice as in morphgnt: TBESH is keyed by disambiguated
+// Strong's, which is unique across the lexicon and is exactly what TAHOT tags
+// each morpheme with, so a segment has zero or one entry. The morphgnt side
+// carries []Lexicon only because it matches by lexical form, which can fan out.
+// Nil for punctuation segments (no Strong's) and for the ~0.07% of Strong's
+// codes TBESH does not carry — those keep their bare gloss.
+//
+// StrongRelation qualifies how this entry relates to its unified Strong's
+// number ("", "a Spelling of", "a Meaning of", …).
+type Lexicon struct {
+	Hebrew          string `json:"hebrew"`
+	Transliteration string `json:"transliteration"`
+	Morph           string `json:"morph"`
+	Gloss           string `json:"gloss"`
+	Meaning         string `json:"meaning"`
+	StrongRelation  string `json:"strong_relation"`
 }
 
 // Word is a single Hebrew word with its morpheme segments, variant

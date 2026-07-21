@@ -28,6 +28,14 @@ func NewStore(db *sql.DB) *Store {
 // in morpheme order (SQLite ≥3.44 supports ORDER BY inside an aggregate); FILTER
 // (WHERE s.id IS NOT NULL) with COALESCE(..., '[]') keeps a word with no segments
 // at an empty array. The column list and its order match scanWord.
+//
+// The tbesh_lexicon join is 1:1 on segments — disambiguated_strong is UNIQUE, and
+// a segment carries at most one Strong's — so it neither multiplies rows nor
+// disturbs GROUP BY w.id. Segments with no Strong's (punctuation) or an unmatched
+// one get a NULL lexicon: the CASE emits SQL NULL rather than an object of NULLs,
+// which decodes to a nil *Lexicon. Nesting json_object inside json_object is
+// safe because SQLite tags its result as JSON, so it is embedded as an object
+// rather than quoted as a string, and CASE preserves that tag.
 const versesSelect = `
 	SELECT w.book, w.chapter, w.verse, w.word_index, w.hebrew_ref,
 		w.text_type, w.variant_markers, w.has_meaning_variant,
@@ -54,13 +62,22 @@ const versesSelect = `
 					'gender',          s.gender,
 					'number',          s.number,
 					'state',           s.state,
-					'function_marker', s.function_marker
+					'function_marker', s.function_marker,
+					'lexicon', CASE WHEN lx.id IS NULL THEN NULL ELSE json_object(
+						'hebrew',          lx.hebrew,
+						'transliteration', lx.transliteration,
+						'morph',           lx.morph,
+						'gloss',           lx.gloss,
+						'meaning',         lx.meaning,
+						'strong_relation', lx.strong_relation
+					) END
 				) ORDER BY s.segment_index
 			) FILTER (WHERE s.id IS NOT NULL),
 			'[]'
 		) AS segments
 	FROM tahot_words w
 	LEFT JOIN tahot_word_segments s ON s.word_id = w.id
+	LEFT JOIN tbesh_lexicon lx ON lx.disambiguated_strong = s.strong
 	WHERE %s
 	GROUP BY w.id
 	ORDER BY w.id`
