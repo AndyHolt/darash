@@ -1,12 +1,24 @@
 // Package sqlitetest builds throwaway SQLite databases for the store tests.
 //
-// The Schema DDL here duplicates ingest/src/{morphgnt,tahot,tbesg}/sqlite.py on
+// The stores are almost entirely SQL: FetchVerses is a little database/sql
+// plumbing around one long query, and the behaviour worth testing lives inside
+// that query — json_group_array(... ORDER BY ...) segment ordering, FILTER +
+// COALESCE for the segmentless word, LEFT JOIN against GROUP BY, NULL columns
+// folding to nil pointers, INTEGER 0/1 folding to bool, and the WHERE fragment
+// and named args that ref.VersesFilter hands over. None of that can be checked
+// without an engine to execute it, so the store tests run against a real
+// database. The layers above the store need no such thing and do not use this
+// package: service and handler tests drive a fake Repository instead.
+//
+// A temp file rather than an in-memory database, because sqlite.Open takes a
+// path and applies its read-only pragmas through the DSN — the file is what lets
+// a test open the same data the way production does.
+//
+// The Schema DDL duplicates ingest/src/{morphgnt,tahot,tbesg,tbesh}/sqlite.py on
 // purpose: it is the backend's own statement of the shape it expects the baked
-// data.sqlite to have, and the store tests run their ported SQL against it. This
-// is not a drift guard — if ingest changes the schema and this copy is not
-// updated, the tests keep passing against the stale copy; keeping the two in
-// lockstep is manual (see the migration plan's PR 2 design decisions). Its job
-// is to exercise the SQL dialect port, which is the actual risk.
+// data.sqlite to have. It is not a drift guard — if ingest changes the schema and
+// this copy is not updated, the tests keep passing against the stale copy.
+// Keeping the two in lockstep is manual discipline.
 package sqlitetest
 
 import (
@@ -18,9 +30,11 @@ import (
 )
 
 // Schema mirrors the tables ingest writes into data.sqlite: the morphgnt corpus,
-// the tbesg lexicon (entry + searchable form index), and the tahot corpus (word
-// + morpheme segments). INTEGER PRIMARY KEY throughout (Postgres SERIAL/BIGINT
-// collapse to it); BOOLEAN became INTEGER; foreign keys are declarative only.
+// the tbesg lexicon (entry + searchable form index), the tahot corpus (word +
+// morpheme segments), and the tbesh lexicon (joined to tahot segments by
+// disambiguated Strong's, so no form index). INTEGER PRIMARY KEY throughout,
+// booleans stored as INTEGER 0/1, and foreign keys declarative only — matching
+// what ingest writes.
 const Schema = `
 CREATE TABLE morphgnt_sblgnt (
     id               INTEGER PRIMARY KEY,
@@ -129,6 +143,22 @@ CREATE INDEX idx_tahot_words_root_strong ON tahot_words (root_strong);
 CREATE INDEX idx_tahot_words_reference   ON tahot_words (book, chapter, verse);
 CREATE INDEX idx_tahot_segments_strong   ON tahot_word_segments (strong);
 CREATE INDEX idx_tahot_segments_word_id  ON tahot_word_segments (word_id);
+
+CREATE TABLE tbesh_lexicon (
+    id                   INTEGER PRIMARY KEY,
+    extended_strong      TEXT NOT NULL,
+    disambiguated_strong TEXT NOT NULL,
+    strong_relation      TEXT NOT NULL,
+    unified_strong       TEXT NOT NULL,
+    hebrew               TEXT NOT NULL,
+    transliteration      TEXT NOT NULL,
+    morph                TEXT NOT NULL,
+    gloss                TEXT NOT NULL,
+    meaning              TEXT NOT NULL
+);
+
+CREATE UNIQUE INDEX idx_tbesh_lexicon_dstrong ON tbesh_lexicon (disambiguated_strong);
+CREATE INDEX idx_tbesh_lexicon_estrong        ON tbesh_lexicon (extended_strong);
 `
 
 // New creates a temp-file SQLite database with Schema applied and returns an
