@@ -23,13 +23,21 @@ func fetchVersesRequest(ref string) *http.Request {
 }
 
 func TestFetchVersesHandlerSuccess(t *testing.T) {
-	gloss := "in"
+	prefixGloss, rootGloss := "in", "beginning"
 	repo := &fakeRepo{words: []Word{
 		{
 			Book: "Genesis", Chapter: 1, Verse: 1, WordIndex: "01",
 			Hebrew: "בְּ/רֵאשִׁית", Translation: "in/ beginning",
 			Segments: []WordSegment{
-				{SegmentIndex: 0, Kind: SegmentKindPrefix, Hebrew: "בְּ", Gloss: &gloss},
+				{SegmentIndex: 0, Kind: SegmentKindPrefix, Hebrew: "בְּ", Gloss: &prefixGloss},
+				{
+					SegmentIndex: 1, Kind: SegmentKindRoot, Hebrew: "רֵאשִׁית", Gloss: &rootGloss,
+					Lexicon: &Lexicon{
+						Hebrew: "רֵאשִׁית", Transliteration: "rešiyt", Morph: "HNf",
+						Gloss: "beginning", Meaning: "the <i>first</i>, in place, time, order or rank",
+						StrongRelation: "a Meaning of",
+					},
+				},
 			},
 		},
 	}}
@@ -62,8 +70,42 @@ func TestFetchVersesHandlerSuccess(t *testing.T) {
 	if len(decoded.Verses) != 1 || len(decoded.Verses[0].Words) != 1 {
 		t.Errorf("verses = %+v, want 1 verse with 1 word", decoded.Verses)
 	}
-	if segs, ok := decoded.Verses[0].Words[0]["segments"].([]interface{}); !ok || len(segs) != 1 {
-		t.Errorf("word segments = %v, want 1 segment", decoded.Verses[0].Words[0]["segments"])
+	segs, ok := decoded.Verses[0].Words[0]["segments"].([]interface{})
+	if !ok || len(segs) != 2 {
+		t.Fatalf("word segments = %v, want 2 segments", decoded.Verses[0].Words[0]["segments"])
+	}
+
+	// The lexicon entry survives the service and handler unchanged, and is
+	// serialised as a nested object rather than a string or an array.
+	root, ok := segs[1].(map[string]interface{})
+	if !ok {
+		t.Fatalf("segments[1] = %v, want an object", segs[1])
+	}
+	lex, ok := root["lexicon"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("segments[1].lexicon = %v, want an object", root["lexicon"])
+	}
+	for key, want := range map[string]string{
+		"hebrew":          "רֵאשִׁית",
+		"transliteration": "rešiyt",
+		"morph":           "HNf",
+		"gloss":           "beginning",
+		"meaning":         "the <i>first</i>, in place, time, order or rank",
+		"strong_relation": "a Meaning of",
+	} {
+		if lex[key] != want {
+			t.Errorf("lexicon.%s = %v, want %q", key, lex[key], want)
+		}
+	}
+
+	// A segment with no entry omits the key entirely (omitempty on a nil
+	// pointer), rather than emitting "lexicon": null.
+	prefix, ok := segs[0].(map[string]interface{})
+	if !ok {
+		t.Fatalf("segments[0] = %v, want an object", segs[0])
+	}
+	if _, present := prefix["lexicon"]; present {
+		t.Errorf("segments[0] has a lexicon key (%v), want it omitted", prefix["lexicon"])
 	}
 }
 

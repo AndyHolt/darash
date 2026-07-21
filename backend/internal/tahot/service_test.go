@@ -43,8 +43,19 @@ func TestFetchVersesEmptyResultReturnsError(t *testing.T) {
 }
 
 func TestFetchVersesAcceptsOldTestament(t *testing.T) {
+	lex := &Lexicon{
+		Hebrew: "רֵאשִׁית", Transliteration: "rešiyt", Morph: "HNf",
+		Gloss: "beginning", Meaning: "the <i>first</i>, in place, time, order or rank",
+		StrongRelation: "a Meaning of",
+	}
 	repo := &fakeRepo{words: []Word{
-		{Book: "Genesis", Chapter: 1, Verse: 1},
+		{
+			Book: "Genesis", Chapter: 1, Verse: 1,
+			Segments: []WordSegment{
+				{SegmentIndex: 0, Kind: SegmentKindRoot, Hebrew: "רֵאשִׁית", Lexicon: lex},
+				{SegmentIndex: 1, Kind: SegmentKindPunctuation, Hebrew: "׃"},
+			},
+		},
 	}}
 	svc := NewService(repo)
 
@@ -56,7 +67,20 @@ func TestFetchVersesAcceptsOldTestament(t *testing.T) {
 		t.Error("repo.FetchVerses was not called for OT reference")
 	}
 	if len(got.Verses) != 1 || len(got.Verses[0].Words) != 1 {
-		t.Errorf("unexpected passage: %+v", got)
+		t.Fatalf("unexpected passage: %+v", got)
+	}
+
+	// Grouping words into verses passes segments — and their lexicon entries —
+	// through untouched, including the nil entry on a segment without one.
+	segs := got.Verses[0].Words[0].Segments
+	if len(segs) != 2 {
+		t.Fatalf("segments = %d, want 2", len(segs))
+	}
+	if segs[0].Lexicon != lex {
+		t.Errorf("segments[0].Lexicon = %+v, want the seeded entry", segs[0].Lexicon)
+	}
+	if segs[1].Lexicon != nil {
+		t.Errorf("segments[1].Lexicon = %+v, want nil", *segs[1].Lexicon)
 	}
 }
 
