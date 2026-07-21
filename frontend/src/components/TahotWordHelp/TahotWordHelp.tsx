@@ -1,11 +1,14 @@
 import { ItemTitle } from "@/components/ui/item";
 import {
+  DefinitionList,
+  Disclosure,
   WordDataRow,
   WordFreqStats,
   WordHelp,
   type WordHelpInteraction,
 } from "@/components/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings";
+import { cn } from "@/lib/utils";
 import {
   cleanGloss,
   formatSegmentParsing,
@@ -20,10 +23,11 @@ export interface TahotWordHelpProps extends WordHelpInteraction {
 
 /**
  * Hebrew word-help card: composes the text-agnostic {@link WordHelp} base with a
- * morpheme-segment breakdown. Unlike the Greek card there is no lexicon
- * `meaning` data yet, so each segment shows only its parsing label and gloss —
- * the disclosure/definition seam is intentionally left for when lexicon entries
- * land.
+ * morpheme-segment breakdown. Each segment shows its parsing label and gloss;
+ * when its disambiguated Strong's number resolves to a TBESH lexicon entry, the
+ * row becomes a {@link Disclosure} that expands the terse gloss into the full
+ * definition, mirroring the Greek card. Segments TBESH does not cover —
+ * punctuation, and the ~0.07% of codes with no entry — keep the plain row.
  */
 export function TahotWordHelp({ word, ...interaction }: TahotWordHelpProps) {
   // Punctuation segments (sof-passuq, petuhah/setumah markers) carry no
@@ -39,27 +43,76 @@ export function TahotWordHelp({ word, ...interaction }: TahotWordHelpProps) {
         </ItemTitle>
         {showFrequencyStats ? <FreqStats word={word} /> : null}
       </div>
-      {segments.map((seg) => (
-        <SegmentRow key={seg.segment_index} seg={seg} />
+      {segments.map((seg, i) => (
+        <SegmentRow
+          key={seg.segment_index}
+          seg={seg}
+          isFirst={i === 0}
+          isLast={i === segments.length - 1}
+        />
       ))}
     </WordHelp>
   );
 }
 
-function SegmentRow({ seg }: { seg: WordSegment }) {
+function SegmentRow({
+  seg,
+  isFirst,
+  isLast,
+}: {
+  seg: WordSegment;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   const parsing = formatSegmentParsing(seg);
   const gloss = cleanGloss(seg.gloss);
 
+  const hebrew = (
+    <span className="font-hebrew shrink-0" dir="rtl">
+      {seg.hebrew}
+    </span>
+  );
+  const parsingGloss = (
+    <>
+      {parsing}
+      {parsing && gloss ? " — " : null}
+      {gloss ? <span className="italic">{gloss}</span> : null}
+    </>
+  );
+
+  // With a lexicon entry the whole segment line becomes the disclosure toggle,
+  // so the definition can expand beneath it at the card's full width (rather than
+  // indented inside the gloss column, as it would be if only the gloss toggled).
+  if (seg.lexicon) {
+    return (
+      // A touch of space above each segment (bar the first) gives the rows room
+      // to breathe when collapsed.
+      <WordDataRow className={cn(!isFirst && "mt-1")}>
+        <Disclosure
+          summary={
+            <span className="flex items-baseline gap-2">
+              {hebrew}
+              <span>{parsingGloss}</span>
+            </span>
+          }
+        >
+          {/* English definition prose with inline Hebrew: pin it LTR so the
+              surrounding English is not reordered around the Hebrew runs. When a
+              later segment follows, add space beneath so the definition does not
+              crowd the next segment row (which itself adds a matching mt-1); the
+              last segment leaves the gap to the next word's card as-is. */}
+          <div dir="ltr" className={cn(!isLast && "mb-1")}>
+            <DefinitionList meanings={[seg.lexicon.meaning]} />
+          </div>
+        </Disclosure>
+      </WordDataRow>
+    );
+  }
+
   return (
-    <WordDataRow className="flex items-baseline gap-2">
-      <span className="font-hebrew shrink-0" dir="rtl">
-        {seg.hebrew}
-      </span>
-      <span className="flex-1">
-        {parsing}
-        {parsing && gloss ? " — " : null}
-        {gloss ? <span className="italic">{gloss}</span> : null}
-      </span>
+    <WordDataRow className={cn(!isFirst && "mt-1", "flex items-baseline gap-2")}>
+      {hebrew}
+      <span className="flex-1">{parsingGloss}</span>
     </WordDataRow>
   );
 }
