@@ -104,15 +104,15 @@ function SegmentRow({
               crowd the next segment row (which itself adds a matching mt-1); the
               last segment leaves the gap to the next word's card as-is. */}
           <div dir="ltr" className={cn("mt-1", !isLast && "mb-1")}>
-            {/* Headword line: the lexicon's citation lemma, transliteration and
-                a BDB-style part-of-speech label. The summary above shows the
-                surface morpheme in context, not the dictionary form, so this is
-                what gives the entry its lexicon feel. */}
+            {/* Headword line: the lexicon's citation lemma and a BDB-style
+                part-of-speech label. The summary above shows the surface
+                morpheme in context, not the dictionary form, so this is what
+                gives the entry its lexicon feel. (No transliteration: BDB/HALOT
+                omit it, and the source's romanisation is idiosyncratic.) */}
             <p className="font-lexicon text-xs">
               <span className="font-hebrew" dir="rtl">
                 {seg.lexicon.hebrew}
-              </span>{" "}
-              <span className="italic">{seg.lexicon.transliteration}</span>
+              </span>
               {morph ? <span className="italic"> · {morph}</span> : null}
             </p>
             <DefinitionList meanings={[seg.lexicon.meaning]} />
