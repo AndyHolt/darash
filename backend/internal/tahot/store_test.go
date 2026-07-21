@@ -89,6 +89,28 @@ func insertSegment(t *testing.T, db *sql.DB, wordID int64, s segRow) {
 	}
 }
 
+// lexRow is a seed row for tbesh_lexicon. Only disambiguated_strong (the join
+// key) and the fields the store projects are exposed.
+type lexRow struct {
+	dstrong, relation       string
+	hebrew, translit, morph string
+	gloss, meaning          string
+}
+
+func insertLexicon(t *testing.T, db *sql.DB, l lexRow) {
+	t.Helper()
+	_, err := db.Exec(`
+		INSERT INTO tbesh_lexicon
+			(extended_strong, disambiguated_strong, strong_relation, unified_strong,
+			 hebrew, transliteration, morph, gloss, meaning)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		l.dstrong, l.dstrong, l.relation, l.dstrong,
+		l.hebrew, l.translit, l.morph, l.gloss, l.meaning)
+	if err != nil {
+		t.Fatalf("insert lexicon %q: %v", l.dstrong, err)
+	}
+}
+
 // newStore seeds a Genesis 1 passage and returns a store reading it through the
 // real read-only serving path (sqlite.Open), so the test exercises Open's
 // pragmas too, not just a writable fixture handle.
@@ -96,8 +118,11 @@ func insertSegment(t *testing.T, db *sql.DB, wordID int64, s segRow) {
 // Seeded (Genesis 1:1):
 //   - בְּרֵאשִׁית: two segments (a prefix with all morphology NULL and a root with
 //     full morphology), inserted out of segment_index order to prove the ORDER BY.
+//     Both Strong's codes have a tbesh_lexicon entry.
 //   - הָאָרֶץ: no segments — checks the FILTER/COALESCE empty-array path.
-//   - a word with has_meaning_variant set — checks the INTEGER→bool fold.
+//   - a word with has_meaning_variant set — checks the INTEGER→bool fold. Its two
+//     segments cover the lexicon join's miss cases: a root whose Strong's has no
+//     TBESH entry, and a punctuation segment with a NULL Strong's.
 //
 // A word in 1:2 checks the reference filter excludes it.
 func newStore(t *testing.T) *Store {
@@ -124,13 +149,31 @@ func newStore(t *testing.T) *Store {
 		chapter: 1, verse: 1, wordIndex: "02", hebrew: "הָאָרֶץ",
 	})
 
-	insertWord(t, seed, wordRow{
+	vayomer := insertWord(t, seed, wordRow{
 		chapter: 1, verse: 1, wordIndex: "03", hebrew: "וַיֹּאמֶר",
 		hasMeaningVariant: true,
+	})
+	// H0430J is one of the handful of TAHOT codes TBESH does not carry.
+	insertSegment(t, seed, vayomer, segRow{
+		segmentIndex: 1, kind: "root", hebrew: "יֹּאמֶר",
+		translit: "yomer", gloss: "he said", strong: "H0430J", morphCode: "Vqw3ms",
+	})
+	insertSegment(t, seed, vayomer, segRow{
+		segmentIndex: 2, kind: "punctuation", hebrew: "׃",
 	})
 
 	insertWord(t, seed, wordRow{
 		chapter: 1, verse: 2, wordIndex: "01", hebrew: "רוּחַ",
+	})
+
+	insertLexicon(t, seed, lexRow{
+		dstrong: "H9003", hebrew: "בְּ", translit: "be", morph: "HR",
+		gloss: "in/on/with", meaning: "in, on, with<br>a preposition",
+	})
+	insertLexicon(t, seed, lexRow{
+		dstrong: "H7225", relation: "a Meaning of", hebrew: "רֵאשִׁית",
+		translit: "rešiyt", morph: "HNf", gloss: "beginning",
+		meaning: "the <i>first</i>, in place, time, order or rank",
 	})
 
 	db, err := sqlite.Open(path)
@@ -192,6 +235,16 @@ func TestStoreFetchVerses(t *testing.T) {
 	if prefix.Gloss == nil || *prefix.Gloss != "in" {
 		t.Errorf("prefix Gloss = %v, want in", prefix.Gloss)
 	}
+	// A prefix joins the lexicon like any other segment: H9003 has an entry.
+	if prefix.Lexicon == nil {
+		t.Fatalf("prefix Lexicon = nil, want the H9003 entry")
+	}
+	if prefix.Lexicon.Gloss != "in/on/with" {
+		t.Errorf("prefix Lexicon.Gloss = %q, want in/on/with", prefix.Lexicon.Gloss)
+	}
+	if prefix.Lexicon.StrongRelation != "" {
+		t.Errorf("prefix Lexicon.StrongRelation = %q, want empty", prefix.Lexicon.StrongRelation)
+	}
 
 	// The root segment (index 2) has its morphology set → non-nil pointers.
 	root := bereshit.Segments[1]
@@ -209,6 +262,22 @@ func TestStoreFetchVerses(t *testing.T) {
 	}
 	if root.MorphCode == nil || *root.MorphCode != "Ncfsa" {
 		t.Errorf("root MorphCode = %v, want Ncfsa", root.MorphCode)
+	}
+	// The full entry, checking every projected column and that the nested
+	// json_object arrives as an object rather than a quoted string.
+	if root.Lexicon == nil {
+		t.Fatalf("root Lexicon = nil, want the H7225 entry")
+	}
+	want := Lexicon{
+		Hebrew:          "רֵאשִׁית",
+		Transliteration: "rešiyt",
+		Morph:           "HNf",
+		Gloss:           "beginning",
+		Meaning:         "the <i>first</i>, in place, time, order or rank",
+		StrongRelation:  "a Meaning of",
+	}
+	if *root.Lexicon != want {
+		t.Errorf("root Lexicon = %+v, want %+v", *root.Lexicon, want)
 	}
 
 	// הָאָרֶץ: no segments — the COALESCE path yields an empty (not nil)
@@ -228,8 +297,21 @@ func TestStoreFetchVerses(t *testing.T) {
 	}
 
 	// וַיֹּאמֶר: has_meaning_variant stored as INTEGER 1 folds to true.
-	if !words[2].HasMeaningVariant {
+	vayomer := words[2]
+	if !vayomer.HasMeaningVariant {
 		t.Errorf("וַיֹּאמֶר HasMeaningVariant = false, want true")
+	}
+
+	// The lexicon join's two miss cases both yield a nil *Lexicon: a Strong's
+	// with no TBESH entry, and punctuation with no Strong's at all.
+	if len(vayomer.Segments) != 2 {
+		t.Fatalf("וַיֹּאמֶר segments: got %d, want 2", len(vayomer.Segments))
+	}
+	if lex := vayomer.Segments[0].Lexicon; lex != nil {
+		t.Errorf("unmatched-strong segment Lexicon = %+v, want nil", *lex)
+	}
+	if lex := vayomer.Segments[1].Lexicon; lex != nil {
+		t.Errorf("punctuation segment Lexicon = %+v, want nil", *lex)
 	}
 }
 
