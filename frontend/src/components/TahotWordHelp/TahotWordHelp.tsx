@@ -101,7 +101,16 @@ function SegmentRow({
               later segment follows, add space beneath so the definition does not
               crowd the next segment row (which itself adds a matching mt-1); the
               last segment leaves the gap to the next word's card as-is. */}
-          <div dir="ltr" className={cn(!isLast && "mb-1")}>
+          <div dir="ltr" className={cn("mt-1", !isLast && "mb-1")}>
+            {/* Headword line: the lexicon's citation lemma and transliteration.
+                The summary above shows the surface morpheme in context, not the
+                dictionary form, so this is what gives the entry its lexicon feel. */}
+            <p className="font-lexicon text-xs">
+              <span className="font-hebrew" dir="rtl">
+                {seg.lexicon.hebrew}
+              </span>{" "}
+              <span className="italic">{seg.lexicon.transliteration}</span>
+            </p>
             <DefinitionList meanings={[seg.lexicon.meaning]} />
           </div>
         </Disclosure>
