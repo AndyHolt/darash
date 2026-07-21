@@ -111,6 +111,23 @@ export type Subtype =
   // preposition
   | "with article";
 
+// The TBESH lexicon entry for a segment's disambiguated Strong's number,
+// expanding its terse gloss ("in", "God") into a full definition. Zero-or-one
+// per segment — TBESH is keyed by disambiguated Strong's, which is unique and is
+// exactly what TAHOT tags each morpheme with — so a single optional value, not
+// an array like the morphgnt side (which matches by form and can fan out).
+// Absent for punctuation segments and for the ~0.07% of codes TBESH lacks, which
+// keep their bare gloss. `strong_relation` qualifies how the entry relates to
+// its unified Strong's ("", "a Spelling of", "a Meaning of", …).
+export interface Lexicon {
+  hebrew: string;
+  transliteration: string;
+  morph: string;
+  gloss: string;
+  meaning: string;
+  strong_relation: string;
+}
+
 export interface WordSegment {
   segment_index: number;
   kind: SegmentKind;
@@ -130,6 +147,7 @@ export interface WordSegment {
   number?: GrammaticalNumber;
   state?: State;
   function_marker?: FunctionMarker;
+  lexicon?: Lexicon;
 }
 
 export interface Word {

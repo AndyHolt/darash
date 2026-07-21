@@ -1,5 +1,6 @@
 import { ItemTitle } from "@/components/ui/item";
 import {
+  DefinitionList,
   Disclosure,
   WordDataRow,
   WordFreqStats,
@@ -7,9 +8,7 @@ import {
   type WordHelpInteraction,
 } from "@/components/WordHelp";
 import { useWordHelpSettings } from "@/components/WordHelpSettings";
-import { cn } from "@/lib/utils";
 import { formatGloss, formatParsing, meaningsOf, type Word } from "@/texts/morphgnt";
-import { MeaningText } from "./MeaningText";
 
 export interface MorphgntWordHelpProps extends WordHelpInteraction {
   word: Word;
@@ -75,18 +74,5 @@ function Gloss({ word, meanings }: { word: Word; meanings: string[] }) {
         <DefinitionList meanings={meanings} />
       </Disclosure>
     </WordDataRow>
-  );
-}
-
-function DefinitionList({ meanings }: { meanings: string[] }) {
-  return (
-    <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
-      {meanings.map((markup, i) => (
-        // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
-        <p key={i} className={cn(i > 0 && "mt-2")}>
-          <MeaningText markup={markup} />
-        </p>
-      ))}
-    </div>
   );
 }

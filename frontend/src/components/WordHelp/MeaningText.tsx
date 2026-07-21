@@ -1,7 +1,14 @@
-import { Fragment, type ReactNode } from "react";
-import { type MeaningSpan, parseMeaning } from "@/texts/morphgnt";
+/**
+ * Renders lexicon definitions — TBESG for Greek, TBESH for Hebrew — from the
+ * parsed {@link MeaningSpan} tree: {@link MeaningText} for one definition, and
+ * {@link DefinitionList} for the set a word-help card shows when expanded.
+ */
 
-// The parsed meaning tree is rendered by mapping each TBESG source tag to a
+import { Fragment, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
+import { type MeaningSpan, parseMeaning } from "@/texts/lexicon";
+
+// The parsed meaning tree is rendered by mapping each lexicon source tag to a
 // small, named component describing what that piece of the definition *is*.
 // These components emit only a semantic element or a class hook — the emphasis
 // "stack" (colours, weight) is defined in one place in the `.definition` block
@@ -24,7 +31,7 @@ function BibleRef({ children }: { children: ReactNode }) {
 }
 
 function RelatedWords({ children }: { children: ReactNode }) {
-  // TBESG <re>: a cross-reference / synonym note (e.g. "SYN.: …").
+  // Lexicon <re>: a cross-reference / synonym note (e.g. "SYN.: …").
   return <span className="meaning-re">{children}</span>;
 }
 
@@ -76,4 +83,18 @@ function renderSpans(spans: MeaningSpan[]): ReactNode {
 
 export function MeaningText({ markup }: { markup: string }) {
   return <>{renderSpans(parseMeaning(markup))}</>;
+}
+
+/** The definitions a word-help card reveals when its gloss is expanded. */
+export function DefinitionList({ meanings }: { meanings: string[] }) {
+  return (
+    <div className="definition mt-1 text-xs leading-relaxed font-lexicon">
+      {meanings.map((markup, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: lexicon entries for a word are a fixed list that is never reordered.
+        <p key={i} className={cn(i > 0 && "mt-2")}>
+          <MeaningText markup={markup} />
+        </p>
+      ))}
+    </div>
+  );
 }
