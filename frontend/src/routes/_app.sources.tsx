@@ -76,6 +76,50 @@ function Sources() {
             }}
           />
         </section>
+
+        <section className="space-y-2">
+          <h3 className="font-semibold">Definitions</h3>
+          <p>
+            The fuller lexicon definitions for Hebrew words are from TBESH (Translators Brief
+            lexicon of Extended Strongs for Hebrew), part of the{" "}
+            <a
+              href="https://github.com/STEPBible/STEPBible-Data/tree/master/Lexicons"
+              target="_blank"
+              rel="noreferrer"
+              className={linkClass}
+            >
+              STEPBible-Data
+            </a>{" "}
+            lexicons.
+          </p>
+          <Attribution
+            title={
+              <a
+                href="https://github.com/STEPBible/STEPBible-Data"
+                target="_blank"
+                rel="noreferrer"
+                className={linkClass}
+              >
+                STEPBible-Data
+              </a>
+            }
+            by={
+              <a
+                href="https://www.stepbible.org"
+                target="_blank"
+                rel="noreferrer"
+                className={linkClass}
+              >
+                STEP Bible
+              </a>
+            }
+            license={{
+              label: "CC BY 4.0",
+              url: "https://creativecommons.org/licenses/by/4.0/",
+              components: ["by"],
+            }}
+          />
+        </section>
       </section>
 
       <section className="space-y-4">
