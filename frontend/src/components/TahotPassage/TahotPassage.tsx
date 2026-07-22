@@ -171,9 +171,7 @@ function Word({
       </span>
       <Paseq paseq={paseq} />
       {joinsNext ? null : " "}
-      {paragraphMarker ? (
-        <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
-      ) : null}
+      <ParagraphMarker marker={paragraphMarker} />
     </>
   );
 }
@@ -185,11 +183,18 @@ function PlainWord({ word }: { word: WordData }) {
       {text ? <span>{text}</span> : null}
       <Paseq paseq={paseq} />
       {text && !joinsNext ? " " : null}
-      {paragraphMarker ? (
-        <span className="mx-2 text-muted-foreground select-none">{paragraphMarker}</span>
-      ) : null}
+      <ParagraphMarker marker={paragraphMarker} />
     </>
   );
+}
+
+// The petuhah/setumah paragraph-division marker, shown inline between words and
+// set apart with a horizontal margin on each side. Non-selectable, since it is
+// editorial structure rather than text. Renders nothing for the common word
+// that carries no marker.
+function ParagraphMarker({ marker }: { marker?: string }) {
+  if (!marker) return null;
+  return <span className="mx-2 text-sm text-muted-foreground select-none">{marker}</span>;
 }
 
 // The paseq word-divider, set apart with a space on each side. The leading space
