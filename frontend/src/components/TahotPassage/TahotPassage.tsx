@@ -194,7 +194,7 @@ function PlainWord({ word }: { word: WordData }) {
 // that carries no marker.
 function ParagraphMarker({ marker }: { marker?: string }) {
   if (!marker) return null;
-  return <span className="mx-2 text-muted-foreground select-none">{marker}</span>;
+  return <span className="mx-2 text-sm text-muted-foreground select-none">{marker}</span>;
 }
 
 // The paseq word-divider, set apart with a space on each side. The leading space
