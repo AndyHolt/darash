@@ -60,10 +60,14 @@ function Word({
   return (
     <>
       {word.verse === 1 && word.word_index === 1 && (
-        <span className="mr-1 text-primary font-bold font-sans text-base">{word.chapter}</span>
+        <span className="mr-1 text-primary font-bold font-sans text-base [font-size-adjust:none]">
+          {word.chapter}
+        </span>
       )}
       {word.word_index === 1 && word.verse !== 1 && (
-        <sup className="mr-1 text-muted-foreground font-sans text-xs">{word.verse}</sup>
+        <sup className="mr-1 text-muted-foreground font-sans text-xs [font-size-adjust:none]">
+          {word.verse}
+        </sup>
       )}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the word help sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}

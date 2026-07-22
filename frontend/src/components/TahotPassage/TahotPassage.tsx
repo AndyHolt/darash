@@ -90,9 +90,17 @@ function verseKey(verse: Verse): string {
 // both LTR and RTL.
 function VerseMarker({ verse }: { verse: Verse }) {
   if (verse.verse === 1) {
-    return <span className="me-1 text-primary font-bold font-sans text-base">{verse.chapter}</span>;
+    return (
+      <span className="me-1 text-primary font-bold font-sans text-base [font-size-adjust:none]">
+        {verse.chapter}
+      </span>
+    );
   }
-  return <sup className="me-1 text-muted-foreground font-sans text-xs">{verse.verse}</sup>;
+  return (
+    <sup className="me-1 text-muted-foreground font-sans text-xs [font-size-adjust:none]">
+      {verse.verse}
+    </sup>
+  );
 }
 
 function ProseVerse({
