@@ -1,5 +1,5 @@
 import { MorphgntWordHelp } from "@/components/MorphgntWordHelp";
-import { PassageLayout, usePassageReader } from "@/components/PassageReader";
+import { PassageLayout, usePassageReader, VerseMarker } from "@/components/PassageReader";
 import type { WordInteraction } from "@/components/WordHelp";
 import { shouldShowHelp } from "@/components/WordHelpSettings";
 import { type Passage, type Word as WordData, wordKey } from "@/texts/morphgnt";
@@ -59,16 +59,7 @@ function Word({
 }: WordProps) {
   return (
     <>
-      {word.verse === 1 && word.word_index === 1 && (
-        <span className="mr-1 text-primary font-bold font-sans text-base [font-size-adjust:none]">
-          {word.chapter}
-        </span>
-      )}
-      {word.word_index === 1 && word.verse !== 1 && (
-        <sup className="mr-1 text-muted-foreground font-sans text-xs [font-size-adjust:none]">
-          {word.verse}
-        </sup>
-      )}
+      {word.word_index === 1 && <VerseMarker chapter={word.chapter} verse={word.verse} />}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: every word is a hover/click target for the word help sidebar; making each one a focusable button would create hundreds of tab stops per chapter and break reading flow. */}
       {/* biome-ignore lint/a11y/useKeyWithClickEvents: see above — keyboard navigation across every word is intentionally not provided; click is supplementary to hover. */}
       <span

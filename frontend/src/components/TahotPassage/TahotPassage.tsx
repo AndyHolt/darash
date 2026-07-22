@@ -1,5 +1,5 @@
 import type React from "react";
-import { PassageLayout, usePassageReader } from "@/components/PassageReader";
+import { PassageLayout, usePassageReader, VerseMarker } from "@/components/PassageReader";
 import { TahotWordHelp } from "@/components/TahotWordHelp";
 import type { WordInteraction } from "@/components/WordHelp";
 import { shouldShowHelp } from "@/components/WordHelpSettings";
@@ -85,24 +85,6 @@ function verseKey(verse: Verse): string {
   return `${verse.chapter}.${verse.verse}`;
 }
 
-// Chapter number at a chapter's first verse, otherwise a verse superscript. The
-// margin uses the logical inline-end side so the marker sits before the word in
-// both LTR and RTL.
-function VerseMarker({ verse }: { verse: Verse }) {
-  if (verse.verse === 1) {
-    return (
-      <span className="me-1 text-primary font-bold font-sans text-base [font-size-adjust:none]">
-        {verse.chapter}
-      </span>
-    );
-  }
-  return (
-    <sup className="me-1 text-muted-foreground font-sans text-xs [font-size-adjust:none]">
-      {verse.verse}
-    </sup>
-  );
-}
-
 function ProseVerse({
   verse,
   renderWord,
@@ -112,7 +94,7 @@ function ProseVerse({
 }) {
   return (
     <>
-      <VerseMarker verse={verse} />
+      <VerseMarker chapter={verse.chapter} verse={verse.verse} />
       {verse.words.map(renderWord)}
     </>
   );
@@ -131,7 +113,7 @@ function PoetryVerse({
     <>
       {line.cola.map((colon, i) => (
         <div key={wordKey(colon[0])} className={i === 0 ? undefined : "ps-6"}>
-          {i === 0 && <VerseMarker verse={line.verse} />}
+          {i === 0 && <VerseMarker chapter={line.verse.chapter} verse={line.verse.verse} />}
           {colon.map(renderWord)}
         </div>
       ))}
