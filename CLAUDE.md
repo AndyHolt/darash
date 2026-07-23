@@ -32,11 +32,12 @@ The repo is a monorepo with four top-level code areas:
   the CloudFront distribution proxies `/api/*` to the backend Lambda's Function
   URL, so the frontend always calls same-origin `/api/...` — never hardcode the
   API URL.
-- `infra/` + `bootstrap/` — Terraform. `bootstrap/` is applied locally once
-  and creates the S3 state bucket, OIDC provider, and the CI role that
-  `infra/` then uses. `infra/` runs via the `infra-deploy.yml` workflow. See
-  README.md for the bootstrap dance and the manual Cloudflare DNS / ACM steps
-  that Terraform doesn't automate.
+- `infra/` — Terraform, split into two root modules. `infra/bootstrap/` is
+  applied locally once and creates the S3 state bucket, OIDC provider, and the
+  CI role that `infra/app/` then uses. `infra/app/` holds the application
+  infrastructure and runs via the `infra-deploy.yml` workflow. See README.md
+  for the bootstrap dance and the manual Cloudflare DNS / ACM steps that
+  Terraform doesn't automate.
 
 ## Common commands
 
