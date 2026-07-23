@@ -51,6 +51,13 @@ jobs:
       - name: Sync to S3
         run: aws s3 sync frontend/dist "s3://${S3_BUCKET}" --delete
 
+      # `aws s3 sync` guesses content types from the extension and does not
+      # know `.webmanifest`, so it would otherwise upload as octet-stream.
+      - name: Fix web manifest content type
+        run: |
+          aws s3 cp frontend/dist/site.webmanifest "s3://${S3_BUCKET}/site.webmanifest" \
+            --content-type application/manifest+json
+
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
