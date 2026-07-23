@@ -5,99 +5,101 @@
 > For Ezra had set his heart to study the Law of the LORD, and to do it and to
 > teach his statutes and rules in Israel. (Ezra 7:10)
 
+Darash is an interactive reader for the Bible in Hebrew and Greek. Like physical
+original language reader editions, Darash displays the text with helps: parsing
+help for difficult forms, and meaning helps for unfamiliar words. Unlike
+physical readers editions, the amount of help is configurable and interactive.
 
-🏗️ WIP
+The name "Darash" is from Ezra 7:10, being the root of the word translated as
+"study". I have built the app to help develop proficiency with the biblical
+languages that enables deeper study of the scriptures. I do so with the prayer
+that for me and for others, like Ezra, we will set our hearts to study the
+scriptures, and having carefully studied, to both do it and teach it to others.
 
+## What it does
 
-## Bootstrapping setup
+- Read the **Greek New Testament** (SBLGNT) and **Hebrew Old Testament**
+  (Tyndale TAHOT) in the original languages.
+- See uncommon words, with their **morphology** (full parsing) and **lexical
+  help** in the sidebar to help you read the text without constantly turning to
+  a lexicon and grammar.
+- Tap any word for help, or to go deeper into its meaning with the Translators'
+  Brief lexicons — TBESG for Greek, TBESH for Hebrew.
+- Word **frequency stats** to support vocabulary learning.
 
-### Bootstrap Terraform
+## Data sources
 
-The S3 bucket that holds Terraform remote state, the GitHub Actions OIDC
-provider, and the `darash-terraform-ci` IAM role + policy are managed by a
-separate Terraform configuration under [`infra/bootstrap/`](./infra/bootstrap). That
-module is applied locally rather than via CI (it's what grants CI its
-permissions in the first place). See
-[`infra/bootstrap/README.md`](./infra/bootstrap/README.md) for usage.
+Darash builds on freely licensed scholarship. The `ingest/` job fetches these
+sources and projects them into the SQLite file the app serves — see
+[Attribution & licensing](#attribution--licensing) for terms.
 
-### Github repo secrets
+| Source | What it provides |
+| --- | --- |
+| [MorphGNT SBLGNT](https://github.com/morphgnt/sblgnt) | Greek New Testament text (SBLGNT) with morphological tagging |
+| [TAHOT](https://github.com/STEPBible/STEPBible-Data) (STEPBible / Tyndale House) | Translators Amalgamated Hebrew Old Testament, tagged |
+| [TBESG](https://github.com/STEPBible/STEPBible-Data) (STEPBible / Tyndale House) | Translators Brief lexicon of Extended Strongs for Greek |
+| [TBESH](https://github.com/STEPBible/STEPBible-Data) (STEPBible / Tyndale House) | Translators Brief lexicon of Extended Strongs for Hebrew |
 
-Add the bootstrapped AWS role ARN to Github secrets so the `infra-deploy.yml`
-workflow can assume it:
+## Architecture
+
+A monorepo with four top-level code areas:
+
+- **`ingest/`** — Python (uv-managed) job that fetches and parses the sources
+  above into a SQLite file (`data.sqlite`). The database is a rebuildable
+  projection of the source data, not a mutable store.
+- **`backend/`** — Go HTTP server (`net/http` + `modernc.org/sqlite`) that
+  serves the data read-only over `/api/*`. Runs as a Lambda in production.
+- **`frontend/`** — React 19 + Vite + TanStack Router/Query, with shadcn/ui and
+  Tailwind. Calls the backend same-origin at `/api/...`.
+- **`infra/`** + `.github/workflows/` — Terraform (split into `infra/bootstrap/`
+  and `infra/app/`) and the CI/CD pipelines.
+
+For a deeper tour of the layers, conventions, and schema ownership, see
+[`CLAUDE.md`](./CLAUDE.md).
+
+## Local development
+
+Prerequisites: [Go](https://go.dev), [uv](https://docs.astral.sh/uv/),
+[Node.js](https://nodejs.org) with [pnpm](https://pnpm.io), and `make`.
+
+Run the two dev servers (each in its own terminal):
+
 ```bash
-cd infra/bootstrap && terraform output -raw terraform_ci_role_arn | gh secret set AWS_ROLE_ARN
+make backend-dev     # builds ingest/data.sqlite if needed, runs the API with live reload
+make frontend-dev    # Vite dev server; proxies /api/* to the backend
 ```
 
-### Backend deploy role
+`backend-dev` builds `ingest/data.sqlite` on demand. To re-fetch the source
+data and rebuild it explicitly:
 
-Add the backend deploy role ARN to GitHub secrets so the `backend-deploy`
-workflow can assume it. Fetch it after the first `infra/app/` apply:
 ```bash
-cd infra/app && terraform output -raw backend_deploy_role_arn | gh secret set AWS_BACKEND_DEPLOY_ROLE_ARN
+make ingest-run      # all corpora; or ingest-morphgnt-run / ingest-tahot-run / ...
 ```
 
-### ACM certificate in us-east-1
+Checks and tests (also run in CI):
 
-CloudFront requires ACM certificates to be in `us-east-1`. Create a wildcard
-certificate for `*.darashbible.com` in the `us-east-1` region manually via the
-AWS console or CLI. Validate it using DNS (add the CNAME record Cloudflare).
-
-### Frontend DNS (Cloudflare)
-
-The frontend is served by a CloudFront distribution backed by an S3 bucket.
-API requests (`/api/*`) are proxied through the same distribution to the
-backend Lambda's Function URL, avoiding CORS issues. After the first `infra/app/`
-apply that creates the CloudFront distribution:
-
-1. Get the CloudFront distribution domain name:
-   ```bash
-   cd infra/app && terraform output -raw cloudfront_distribution_domain_name
-   ```
-2. In the Cloudflare dashboard for `darashbible.com`, add a DNS record:
-   - Type: `CNAME`
-   - Name: `@` (root domain)
-   - Target: the CloudFront distribution domain name from step 1
-   - Proxy status: **DNS only** (grey cloud)
-
-### Frontend deploy secrets
-
-Add the frontend deploy role ARN and CloudFront distribution ID to GitHub
-secrets so the frontend deployment workflow can assume the role and invalidate
-the cache:
 ```bash
-cd infra/app && terraform output -raw frontend_deploy_role_arn | gh secret set AWS_FRONTEND_DEPLOY_ROLE_ARN
-cd infra/app && terraform output -raw cloudfront_distribution_id | gh secret set AWS_CLOUDFRONT_DISTRIBUTION_ID
+make pre-commit          # prek (pre-commit) across the repo
+make frontend-check      # biome
+make frontend-typecheck  # tsc -b
+make ingest-tests        # pytest
+make backend-tests       # go test ./...
 ```
 
-## Deploying the frontend
+## Deployment
 
-The `frontend-deploy` workflow (`.github/workflows/frontend-deploy.yml`) builds
-the React app with Vite and syncs the output to the `darash-frontend` S3
-bucket, then invalidates the CloudFront cache. It runs automatically on pushes
-to `main` that touch `frontend/**`, and can be triggered manually via
-`workflow_dispatch`.
+Frontend and backend deploy automatically from `main` via GitHub Actions
+(CloudFront + S3 for the frontend, ECR + Lambda for the backend). The full
+topology, one-time bootstrap, and rollback runbook are in
+[`docs/deployment.md`](./docs/deployment.md).
 
-## Deploying the backend
+## Attribution & licensing
 
-The `backend-deploy` workflow (`.github/workflows/backend-deploy.yml`) runs
-`ingest` to build `data.sqlite`, builds an `arm64` Docker image from `backend/`
-with that file baked in, pushes it to the `darash-backend` ECR repo (tagged with
-the commit SHA and `latest`), and points the `darash-backend` Lambda at the new
-image. It runs automatically on pushes to `main` that touch `backend/**`, and
-can be triggered manually via `workflow_dispatch`.
+- **MorphGNT SBLGNT** — the SBLGNT text is © Society of Biblical Literature and
+  used under the [SBLGNT license](https://sblgnt.com/license/); the MorphGNT
+  morphological annotations are CC BY-SA 3.0.
+- **TAHOT, TBESG, TBESH** — © [Tyndale House, Cambridge](https://tyndale.cam.ac.uk)
+  and [STEPBible.org](https://www.stepbible.org), released under
+  [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
-Rolling back a bad deploy — point the function at an earlier image. Each deploy
-pushes an image tagged with its commit SHA, so pick a previous SHA (the
-function's Terraform ignores `image_uri`, so this won't be reverted by
-`infra-deploy`):
-```bash
-REGISTRY=$(aws ecr describe-repositories --region eu-west-1 \
-  --repository-names darash-backend \
-  --query 'repositories[0].repositoryUri' --output text)
-aws lambda update-function-code --region eu-west-1 \
-  --function-name darash-backend --image-uri "$REGISTRY:<previous-sha>"
-aws lambda wait function-updated --region eu-west-1 \
-  --function-name darash-backend
-```
-List available image tags with
-`aws ecr list-images --region eu-west-1 --repository-name darash-backend`.
+Refer to each upstream project for the authoritative terms.
