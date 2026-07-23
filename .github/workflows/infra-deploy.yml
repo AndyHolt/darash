@@ -3,7 +3,7 @@ name: Infrastructure deploy
 on:
   push:
     branches: [main]
-    paths: [infra/**]
+    paths: [infra/app/**]
 
 permissions:
   id-token: write       # needed for OIDC
@@ -30,9 +30,9 @@ jobs:
           aws-region: eu-west-1
 
       - name: Terraform init
-        working-directory: infra
+        working-directory: infra/app
         run: terraform init
 
       - name: Terraform apply
-        working-directory: infra
+        working-directory: infra/app
         run: terraform apply -auto-approve
